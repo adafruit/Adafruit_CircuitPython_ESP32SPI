@@ -7,6 +7,7 @@ from micropython import const
 class ESP_SPIcontrol:
     GET_CONN_STATUS_CMD   = const(0x20)
     GET_FW_VERSION_CMD    = const(0x37)
+    GET_MACADDR_CMD       = const(0x22)
     START_CMD             = const(0xE0)
     END_CMD               = const(0xEE)
     ERR_CMD               = const(0xEF)
@@ -72,18 +73,23 @@ class ESP_SPIcontrol:
 
 
     def send_command(self, cmd, params=None):
-        num_params = 0  # default to no params
-        if params:
-            num_params = len(params)
-        packet = bytearray(4+num_params)
-        packet[0] = START_CMD
-        packet[1] = cmd & ~REPLY_FLAG
-        packet[2] = num_params
+        if not params:
+            params = []
+        packet = []
+        packet.append(START_CMD)
+        packet.append(cmd & ~REPLY_FLAG)
+        packet.append(len(params))
 
         # handle parameters here
+        for param in params:
+            packet.append(len(param))
+            packet += (param)
 
-        packet[3] = END_CMD
-        self._spi.write(packet)
+        packet.append(END_CMD)
+        print("packet len:", len(packet))
+        while len(packet) % 4 != 0:
+            packet.append(0xFF)
+        self._spi.write(bytearray(packet))
         print("Wrote: ", [hex(b) for b in packet])
 
     def get_param(self):
@@ -146,3 +152,15 @@ class ESP_SPIcontrol:
         resp = self.wait_response_cmd(GET_FW_VERSION_CMD, 1)
         self.slave_deselect()
         return ''.join([chr(c) for c in resp[0]])
+
+    def get_MAC(self):
+        print("MAC address")
+        self.wait_for_slave_select()
+        self.send_command(GET_MACADDR_CMD, [[0xFF]])
+        self.slave_deselect()
+
+        self.wait_for_slave_ready()
+        self.spi_slave_select()
+        resp = self.wait_response_cmd(GET_MACADDR_CMD, 1)
+        self.slave_deselect()
+        return resp[0]
