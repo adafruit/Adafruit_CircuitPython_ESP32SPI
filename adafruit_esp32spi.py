@@ -6,12 +6,21 @@ from digitalio import DigitalInOut, Direction, Pull
 from micropython import const
 
 class ESP_SPIcontrol:
+    SET_NET_CMD           = const(0x10)
+    SET_PASSPHRASE_CMD    = const(0x11)
+
     GET_CONN_STATUS_CMD   = const(0x20)
+    GET_IPADDR_CMD        = const(0x21)
     GET_MACADDR_CMD       = const(0x22)
+    GET_CURR_SSID_CMD     = const(0x23)
+    GET_CURR_RSSI_CMD     = const(0x25)
+    GET_CURR_ENCT_CMD     = const(0x26)
+
     SCAN_NETWORKS         = const(0x27)
     GET_IDX_RSSI_CMD      = const(0x32)
     GET_IDX_ENCT_CMD      = const(0x33)
     START_SCAN_NETWORKS   = const(0x36)
+
     GET_FW_VERSION_CMD    = const(0x37)
 
     START_CMD             = const(0xE0)
@@ -23,9 +32,12 @@ class ESP_SPIcontrol:
     WL_NO_SHIELD          = const(0xFF)
     WL_NO_MODULE          = const(0xFF)
     WL_IDLE_STATUS        = const(0)
+    WL_NO_SSID_AVAIL      = const(1)
+    WL_SCAN_COMPLETED     = const(2)
+    WL_CONNECTED          = const(3)
 
-    def __init__(self, spi, cs_pin, ready_pin, reset_pin, gpio0_pin, *, debug=True):
-        self.debug = debug
+    def __init__(self, spi, cs_pin, ready_pin, reset_pin, gpio0_pin, *, debug=False):
+        self._debug = debug
         self._buffer = bytearray(10)
         self._pbuf = bytearray(1)  # buffer for param read
 
@@ -69,16 +81,18 @@ class ESP_SPIcontrol:
         return self._ready.value == False
 
     def wait_for_slave_ready(self):
-        print("Wait for slave ready", end='')
+        if self._debug:
+            print("Wait for slave ready", end='')
         while not self.slave_ready():
-            print('.', end='')
+            if self._debug:
+                print('.', end='')
             time.sleep(0.01)
-        print()
+        if self._debug:
+            print()
 
     def wait_for_slave_select(self):
         self.wait_for_slave_ready()
         self.spi_slave_select()
-
 
     def send_command(self, cmd, params=None):
         if not params:
@@ -94,18 +108,21 @@ class ESP_SPIcontrol:
             packet += (param)
 
         packet.append(END_CMD)
-        print("packet len:", len(packet))
+        if self._debug:
+            print("packet len:", len(packet))
         while len(packet) % 4 != 0:
             packet.append(0xFF)
 
         self.wait_for_slave_select()
         self._spi.write(bytearray(packet))
-        print("Wrote: ", [hex(b) for b in packet])
+        if self._debug:
+            print("Wrote: ", [hex(b) for b in packet])
         self.slave_deselect()
 
     def get_param(self):
         self._spi.readinto(self._pbuf)
-        print("Read param", hex(self._pbuf[0]))
+        if self._debug:
+            print("Read param", hex(self._pbuf[0]))
         return self._pbuf[0]
 
     def wait_spi_char(self, desired):
@@ -151,18 +168,21 @@ class ESP_SPIcontrol:
         self.send_command(cmd, params)
         return self.wait_response_cmd(cmd, reply_params)
 
-    def get_connection_status(self):
+    @property
+    def status(self):
         print("Connection status")
         resp = self.send_command_get_response(GET_CONN_STATUS_CMD)
         print("Status:", resp[0][0])
         return resp[0][0]   # one byte response
 
-    def get_firmware_version(self):
+    @property
+    def firmware_version(self):
         print("Firmware version")
         resp = self.send_command_get_response(GET_FW_VERSION_CMD)
         return resp[0]
 
-    def get_MAC(self):
+    @property
+    def MAC_address(self):
         print("MAC address")
         resp = self.send_command_get_response(GET_MACADDR_CMD, [b'\xFF'])
         return resp[0]
@@ -196,3 +216,53 @@ class ESP_SPIcontrol:
             if len(APs):
                 break
         return APs
+
+    def wifi_set_network(self, ssid):
+        print("Set Network")
+        resp = self.send_command_get_response(SET_NET_CMD, [ssid])
+        if resp[0][0] != 1:
+            raise RuntimeError("Failed to set network")
+
+    def wifi_set_passphrase(self, ssid, passphrase):
+        print("Set passphrase")
+        resp = self.send_command_get_response(SET_PASSPHRASE_CMD, [ssid, passphrase])
+        print(resp)
+        if resp[0][0] != 1:
+            raise RuntimeError("Failed to set passphrase")
+
+    @property
+    def ssid(self):
+        resp = self.send_command_get_response(GET_CURR_SSID_CMD, [b'\xFF'])
+        return resp[0]
+
+    @property
+    def rssi(self):
+        resp = self.send_command_get_response(GET_CURR_RSSI_CMD, [b'\xFF'])
+        return struct.unpack('<i', resp[0])[0]
+
+    @property
+    def network_data(self):
+        resp = self.send_command_get_response(GET_IPADDR_CMD, [b'\xFF'], reply_params=3)
+        return {'ip_addr': resp[0], 'netmask': resp[1], 'gateway': resp[2]}
+
+    @property
+    def ip_address(self):
+        raw_ip = self.network_data['ip_addr']
+        return "%d.%d.%d.%d" % (raw_ip[0], raw_ip[1], raw_ip[2], raw_ip[3])
+
+    def connect_AP(self, ssid, password):
+        print("Connect AP")
+        if password:
+            self.wifi_set_passphrase(ssid, password)
+        else:
+            self.wifi_set_network(ssid)
+        for i in range(10): # retries
+            stat = self.status
+            if stat == WL_CONNECTED:
+                return stat
+            time.sleep(1)
+        if stat in (WL_CONNECT_FAILED, WL_CONNECTION_LOST, WL_DISCONNECTED):
+            raise RuntimeError("Failed to connect to ssid", ssid)
+        if stat == WL_NO_SSID_AVAIL:
+            raise RuntimeError("No such ssid", ssid)
+        raise RuntimeError("Unknown error 0x%02X" % stat)
