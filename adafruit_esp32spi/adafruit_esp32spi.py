@@ -81,8 +81,12 @@ class ESP_SPIcontrol:
         self._cs.direction = Direction.OUTPUT
         self._ready.direction = Direction.INPUT
         self._reset.direction = Direction.OUTPUT
-        self._gpio0.direction = Direction.OUTPUT
+        self._gpio0.direction = Direction.INPUT
 
+        self.reset()
+
+    def reset(self):
+        self._gpio0.direction = Direction.OUTPUT
         if self._debug:
             print("Reset ESP32")
         self._gpio0.value = True  # not bootload mode
@@ -100,9 +104,12 @@ class ESP_SPIcontrol:
         self._spi.configure(baudrate=100000) # start slow
         self._cs.value = False # the actual select
         times = time.monotonic()
-        while (time.monotonic() - times) < 0.1: # wait up to 100ms
+        while (time.monotonic() - times) < 1: # wait up to 1000ms
             if self._ready.value:
                 return
+        # some failure
+        self._cs.value = True
+        self._spi.unlock()
         raise RuntimeError("ESP32 timed out on SPI select")
 
     def slave_deselect(self):
