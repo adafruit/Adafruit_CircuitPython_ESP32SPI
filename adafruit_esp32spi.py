@@ -1,3 +1,4 @@
+import struct
 import time
 import board
 import busio
@@ -8,6 +9,8 @@ class ESP_SPIcontrol:
     GET_CONN_STATUS_CMD   = const(0x20)
     GET_MACADDR_CMD       = const(0x22)
     SCAN_NETWORKS         = const(0x27)
+    GET_IDX_RSSI_CMD      = const(0x32)
+    GET_IDX_ENCT_CMD      = const(0x33)
     START_SCAN_NETWORKS   = const(0x36)
     GET_FW_VERSION_CMD    = const(0x37)
 
@@ -94,8 +97,11 @@ class ESP_SPIcontrol:
         print("packet len:", len(packet))
         while len(packet) % 4 != 0:
             packet.append(0xFF)
+
+        self.wait_for_slave_select()
         self._spi.write(bytearray(packet))
         print("Wrote: ", [hex(b) for b in packet])
+        self.slave_deselect()
 
     def get_param(self):
         self._spi.readinto(self._pbuf)
@@ -119,6 +125,9 @@ class ESP_SPIcontrol:
             raise RuntimeError("Expected %02X but got %02X" % (desired, r))
 
     def wait_response_cmd(self, cmd, num_responses=None):
+        self.wait_for_slave_ready()
+        self.spi_slave_select()
+
         self.wait_spi_char(START_CMD)
         self.check_data(cmd | REPLY_FLAG)
         if num_responses is not None:
@@ -134,68 +143,49 @@ class ESP_SPIcontrol:
                 response.append(self.get_param())
             responses.append(bytes(response))
         self.check_data(END_CMD)
+
+        self.slave_deselect()
         return responses
+
+    def send_command_get_response(self, cmd, params=None, *, reply_params=1):
+        self.send_command(cmd, params)
+        return self.wait_response_cmd(cmd, reply_params)
 
     def get_connection_status(self):
         print("Connection status")
-        self.wait_for_slave_select()
-        self.send_command(GET_CONN_STATUS_CMD)
-        self.slave_deselect()
-
-        self.wait_for_slave_ready()
-        self.spi_slave_select()
-        resp = self.wait_response_cmd(GET_CONN_STATUS_CMD, 1)
-        self.slave_deselect()
+        resp = self.send_command_get_response(GET_CONN_STATUS_CMD)
         print("Status:", resp[0][0])
         return resp[0][0]   # one byte response
 
     def get_firmware_version(self):
         print("Firmware version")
-        self.wait_for_slave_select()
-        self.send_command(GET_FW_VERSION_CMD)
-        self.slave_deselect()
-
-        self.wait_for_slave_ready()
-        self.spi_slave_select()
-        resp = self.wait_response_cmd(GET_FW_VERSION_CMD, 1)
-        self.slave_deselect()
+        resp = self.send_command_get_response(GET_FW_VERSION_CMD)
         return resp[0]
 
     def get_MAC(self):
         print("MAC address")
-        self.wait_for_slave_select()
-        self.send_command(GET_MACADDR_CMD, [[0xFF]])
-        self.slave_deselect()
-
-        self.wait_for_slave_ready()
-        self.spi_slave_select()
-        resp = self.wait_response_cmd(GET_MACADDR_CMD, 1)
-        self.slave_deselect()
+        resp = self.send_command_get_response(GET_MACADDR_CMD, [b'\xFF'])
         return resp[0]
 
     def start_scan_networks(self):
         print("Start scan")
-        self.wait_for_slave_select()
-        self.send_command(START_SCAN_NETWORKS)
-        self.slave_deselect()
-
-        self.wait_for_slave_ready()
-        self.spi_slave_select()
-        resp = self.wait_response_cmd(START_SCAN_NETWORKS, 1)
-        self.slave_deselect()
+        resp = self.send_command_get_response(START_SCAN_NETWORKS)
         if resp[0][0] != 1:
             raise RuntimeError("Failed to start AP scan")
 
     def get_scan_networks(self):
-        self.wait_for_slave_select()
         self.send_command(SCAN_NETWORKS)
-        self.slave_deselect()
-
-        self.wait_for_slave_ready()
-        self.spi_slave_select()
-        resp = self.wait_response_cmd(SCAN_NETWORKS)
-        self.slave_deselect()
-        return resp
+        names = self.wait_response_cmd(SCAN_NETWORKS)
+        print("SSID names:", names)
+        APs = []
+        for i, name in enumerate(names):
+            AP = {'ssid': name}
+            rssi = self.send_command_get_response(GET_IDX_RSSI_CMD, [[i]])[0]
+            AP['rssi'] = struct.unpack('<i', rssi)[0]
+            encr = self.send_command_get_response(GET_IDX_ENCT_CMD, [[i]])[0]
+            AP['encryption'] = encr[0]
+            APs.append(AP)
+        return APs
 
     def scan_networks(self):
         self.start_scan_networks()
