@@ -6,8 +6,11 @@ from micropython import const
 
 class ESP_SPIcontrol:
     GET_CONN_STATUS_CMD   = const(0x20)
-    GET_FW_VERSION_CMD    = const(0x37)
     GET_MACADDR_CMD       = const(0x22)
+    SCAN_NETWORKS         = const(0x27)
+    START_SCAN_NETWORKS   = const(0x36)
+    GET_FW_VERSION_CMD    = const(0x37)
+
     START_CMD             = const(0xE0)
     END_CMD               = const(0xEE)
     ERR_CMD               = const(0xEF)
@@ -63,9 +66,11 @@ class ESP_SPIcontrol:
         return self._ready.value == False
 
     def wait_for_slave_ready(self):
-        print("wait for slave ready")
+        print("Wait for slave ready", end='')
         while not self.slave_ready():
-            print('.')
+            print('.', end='')
+            time.sleep(0.01)
+        print()
 
     def wait_for_slave_select(self):
         self.wait_for_slave_ready()
@@ -113,10 +118,13 @@ class ESP_SPIcontrol:
         if r != desired:
             raise RuntimeError("Expected %02X but got %02X" % (desired, r))
 
-    def wait_response_cmd(self, cmd, num_responses):
+    def wait_response_cmd(self, cmd, num_responses=None):
         self.wait_spi_char(START_CMD)
         self.check_data(cmd | REPLY_FLAG)
-        self.check_data(num_responses)
+        if num_responses is not None:
+            self.check_data(num_responses)
+        else:
+            num_responses = self.get_param()
         responses = []
         for num in range(num_responses):
             response = []
@@ -124,7 +132,7 @@ class ESP_SPIcontrol:
             print("parameter #%d length is %d" % (num, param_len))
             for j in range(param_len):
                 response.append(self.get_param())
-            responses.append(response)
+            responses.append(bytes(response))
         self.check_data(END_CMD)
         return responses
 
@@ -151,7 +159,7 @@ class ESP_SPIcontrol:
         self.spi_slave_select()
         resp = self.wait_response_cmd(GET_FW_VERSION_CMD, 1)
         self.slave_deselect()
-        return ''.join([chr(c) for c in resp[0]])
+        return resp[0]
 
     def get_MAC(self):
         print("MAC address")
@@ -164,3 +172,37 @@ class ESP_SPIcontrol:
         resp = self.wait_response_cmd(GET_MACADDR_CMD, 1)
         self.slave_deselect()
         return resp[0]
+
+    def start_scan_networks(self):
+        print("Start scan")
+        self.wait_for_slave_select()
+        self.send_command(START_SCAN_NETWORKS)
+        self.slave_deselect()
+
+        self.wait_for_slave_ready()
+        self.spi_slave_select()
+        resp = self.wait_response_cmd(START_SCAN_NETWORKS, 1)
+        self.slave_deselect()
+        if resp[0][0] != 1:
+            raise RuntimeError("Failed to start AP scan")
+
+    def get_scan_networks(self):
+        self.wait_for_slave_select()
+        self.send_command(SCAN_NETWORKS)
+        self.slave_deselect()
+
+        self.wait_for_slave_ready()
+        self.spi_slave_select()
+        resp = self.wait_response_cmd(SCAN_NETWORKS)
+        self.slave_deselect()
+        return resp
+
+    def scan_networks(self):
+        self.start_scan_networks()
+        APs = None
+        for _ in range(10):  # attempts
+            time.sleep(2)
+            APs = self.get_scan_networks()
+            if len(APs):
+                break
+        return APs
