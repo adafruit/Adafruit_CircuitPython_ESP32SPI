@@ -340,9 +340,11 @@ class ESP_SPIcontrol:
         resp = resp[0][0]
         if resp == 255:
             raise RuntimeError("No sockets available")
+        if self._debug:
+            print("Allocated socket #%d" % resp)
         return resp
 
-    def socket_open(self, dest, ip, port, socket_num, conn_mode=TCP_MODE):
+    def socket_open(self, socket_num, ip, port, conn_mode=TCP_MODE):
         if self._debug:
             print("*** Open socket")
         port_param = struct.pack('>H', port)
@@ -378,20 +380,17 @@ class ESP_SPIcontrol:
                                               sent_param_len_16=True, recv_param_len_16=True)
         return resp[0]
 
-    def socket_connect(self, dest, port):
+    def socket_connect(self, socket_num, dest, port):
         if self._debug:
             print("*** Socket connect")
         if isinstance(dest, str):          # convert to IP address
             dest = self.get_host_by_name(dest)
-        self.sock_num = self.get_socket()
-        if self._debug:
-            print("Allocated socket #%d" % self.sock_num)
 
-        self.socket_open(dest, dest, port, self.sock_num)
+        self.socket_open(socket_num, dest, port)
         times = time.monotonic()
         while (time.monotonic() - times) < 3:  # wait 3 seconds
-            if self.socket_connected(self.sock_num):
-                return
+            if self.socket_connected(socket_num):
+                return True
             time.sleep(0.01)
         raise RuntimeError("Failed to establish connection")
 
