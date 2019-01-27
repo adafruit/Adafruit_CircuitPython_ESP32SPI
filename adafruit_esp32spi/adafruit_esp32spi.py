@@ -64,6 +64,8 @@ class ESP_SPIcontrol:
     SOCKET_TIME_WAIT   = const(10)
 
     TCP_MODE = const(0)
+    UDP_MODE = const(1)
+    TLS_MODE = const(2)
 
     def __init__(self, spi, cs_pin, ready_pin, reset_pin, gpio0_pin, *, debug=False):
         self._debug = debug
@@ -344,13 +346,17 @@ class ESP_SPIcontrol:
             print("Allocated socket #%d" % resp)
         return resp
 
-    def socket_open(self, socket_num, ip, port, conn_mode=TCP_MODE):
+    def socket_open(self, socket_num, dest, port, conn_mode=TCP_MODE):
         if self._debug:
             print("*** Open socket")
         port_param = struct.pack('>H', port)
-        resp = self.send_command_get_response(START_CLIENT_TCP_CMD,
-                                              [ip, port_param,
-                                               [socket_num], [conn_mode]])
+        if isinstance(dest, str):          # use the 5 arg version
+            dest = bytes(dest, 'utf-8')
+            resp = self.send_command_get_response(START_CLIENT_TCP_CMD,
+                                                  [dest, b'\x00\x00\x00\x00', port_param, [socket_num], [conn_mode]])
+        else:                              # ip address, use 4 arg vesion
+            resp = self.send_command_get_response(START_CLIENT_TCP_CMD,
+                                                  [dest, port_param, [socket_num], [conn_mode]])
         if resp[0][0] != 1:
             raise RuntimeError("Could not connect to remote server")
 
@@ -362,6 +368,8 @@ class ESP_SPIcontrol:
         return self.socket_status(socket_num) == SOCKET_ESTABLISHED
 
     def socket_write(self, socket_num, buffer):
+        if self._debug:
+            print("Writing:", buffer)
         resp = self.send_command_get_response(SEND_DATA_TCP_CMD,
                                               [[socket_num], buffer],
                                               sent_param_len_16=True)
@@ -369,6 +377,10 @@ class ESP_SPIcontrol:
         sent = resp[0][0]
         if sent != len(buffer):
             raise RuntimeError("Failed to send %d bytes (sent %d)" % (len(buffer), sent))
+
+        resp = self.send_command_get_response(DATA_SENT_TCP_CMD, [[socket_num]])
+        if self._debug:
+            print("** DATA SENT: ",resp)
         return sent
 
     def socket_available(self, socket_num):
@@ -380,13 +392,11 @@ class ESP_SPIcontrol:
                                               sent_param_len_16=True, recv_param_len_16=True)
         return resp[0]
 
-    def socket_connect(self, socket_num, dest, port):
+    def socket_connect(self, socket_num, dest, port, conn_mode=TCP_MODE):
         if self._debug:
-            print("*** Socket connect")
-        if isinstance(dest, str):          # convert to IP address
-            dest = self.get_host_by_name(dest)
+            print("*** Socket connect mode", conn_mode)
 
-        self.socket_open(socket_num, dest, port)
+        self.socket_open(socket_num, dest, port, conn_mode=conn_mode)
         times = time.monotonic()
         while (time.monotonic() - times) < 3:  # wait 3 seconds
             if self.socket_connected(socket_num):

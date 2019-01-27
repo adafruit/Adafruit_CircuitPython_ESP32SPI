@@ -37,7 +37,7 @@ class socket:
         a hostname string). 'conntype' is an extra that may indicate SSL or not,
         depending on the underlying interface"""
         host, port = address
-        if not _the_interface.socket_connect(self._socknum, host, port):
+        if not _the_interface.socket_connect(self._socknum, host, port, conn_mode=conntype):
             raise RuntimeError("Failed to connect to host", host)
         self._buffer = b''
 
