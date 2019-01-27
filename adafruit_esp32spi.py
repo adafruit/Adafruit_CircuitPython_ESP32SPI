@@ -17,14 +17,25 @@ class ESP_SPIcontrol:
     GET_CURR_ENCT_CMD     = const(0x26)
 
     SCAN_NETWORKS         = const(0x27)
+    GET_SOCKET_CMD  = const(0x3F)
+    GET_STATE_TCP_CMD   = const(0x29)
+    DATA_SENT_TCP_CMD	= const(0x2A)
+    AVAIL_DATA_TCP_CMD	= const(0x2B)
+    GET_DATA_TCP_CMD	= const(0x2C)
+    START_CLIENT_TCP_CMD = const(0x2D)
+    STOP_CLIENT_TCP_CMD = const(0x2E)
+    GET_CLIENT_STATE_TCP_CMD  = const(0x2F)
+    DISCONNECT_CMD	 = const(0x30)
     GET_IDX_RSSI_CMD      = const(0x32)
     GET_IDX_ENCT_CMD      = const(0x33)
     REQ_HOST_BY_NAME_CMD  = const(0x34)
     GET_HOST_BY_NAME_CMD  = const(0x35)
     START_SCAN_NETWORKS   = const(0x36)
+    GET_FW_VERSION_CMD    = const(0x37)
     PING_CMD			  = const(0x3E)
 
-    GET_FW_VERSION_CMD    = const(0x37)
+    SEND_DATA_TCP_CMD = const(0x44)
+
 
     START_CMD             = const(0xE0)
     END_CMD               = const(0xEE)
@@ -38,6 +49,20 @@ class ESP_SPIcontrol:
     WL_NO_SSID_AVAIL      = const(1)
     WL_SCAN_COMPLETED     = const(2)
     WL_CONNECTED          = const(3)
+
+    SOCKET_CLOSED      = const(0)
+    SOCKET_LISTEN      = const(1)
+    SOCKET_SYN_SENT    = const(2)
+    SOCKET_SYN_RCVD    = const(3)
+    SOCKET_ESTABLISHED = const(4)
+    SOCKET_FIN_WAIT_1  = const(5)
+    SOCKET_FIN_WAIT_2  = const(6)
+    SOCKET_CLOSE_WAIT  = const(7)
+    SOCKET_CLOSING     = const(8)
+    SOCKET_LAST_ACK    = const(9)
+    SOCKET_TIME_WAIT   = const(10)
+
+    TCP_MODE = const(0)
 
     def __init__(self, spi, cs_pin, ready_pin, reset_pin, gpio0_pin, *, debug=False):
         self._debug = debug
@@ -96,7 +121,7 @@ class ESP_SPIcontrol:
         self.wait_for_slave_ready()
         self.spi_slave_select()
 
-    def send_command(self, cmd, params=None):
+    def send_command(self, cmd, params=None, *, param_len_16=False):
         if not params:
             params = []
         packet = []
@@ -105,8 +130,12 @@ class ESP_SPIcontrol:
         packet.append(len(params))
 
         # handle parameters here
-        for param in params:
-            packet.append(len(param))
+        for i, param in enumerate(params):
+            if self._debug:
+                print("sending param #%d is %d bytes long" % (i, len(param)))
+            if param_len_16:
+                packet.append((len(param) >> 8) & 0xFF)
+            packet.append(len(param) & 0xFF)
             packet += (param)
 
         packet.append(END_CMD)
@@ -167,8 +196,8 @@ class ESP_SPIcontrol:
         self.slave_deselect()
         return responses
 
-    def send_command_get_response(self, cmd, params=None, *, reply_params=1):
-        self.send_command(cmd, params)
+    def send_command_get_response(self, cmd, params=None, *, reply_params=1, param_len_16=False):
+        self.send_command(cmd, params, param_len_16=param_len_16)
         return self.wait_response_cmd(cmd, reply_params)
 
     @property
@@ -275,7 +304,13 @@ class ESP_SPIcontrol:
     def pretty_ip(self, ip):
         return "%d.%d.%d.%d" % (ip[0], ip[1], ip[2], ip[3])
 
+    def unpretty_ip(self, ip):
+        octets = [int(x) for x in ip.split('.')]
+        return bytes(octets)
+
     def get_host_by_name(self, hostname):
+        if self._debug:
+            print("*** Get host by name")
         if isinstance(hostname, str):
             hostname = bytes(hostname, 'utf-8')
         resp = self.send_command_get_response(REQ_HOST_BY_NAME_CMD, [hostname])
@@ -285,10 +320,57 @@ class ESP_SPIcontrol:
         return resp[0]
 
     def ping(self, dest, ttl=250):
-        self._debug=True
         if isinstance(dest, str):          # convert to IP address
             dest = self.get_host_by_name(dest)
         # ttl must be between 0 and 255
         ttl = max(0, min(ttl, 255))
         resp = self.send_command_get_response(PING_CMD, [dest, [ttl]])
         return struct.unpack('<H', resp[0])[0]
+
+    def get_socket(self):
+        if self._debug:
+            print("*** Get socket")
+        resp = self.send_command_get_response(GET_SOCKET_CMD)
+        resp = resp[0][0]
+        if resp == 255:
+            raise RuntimeError("No sockets available")
+        return resp
+
+    def start_client(self, dest, ip, port, socket_num, conn_mode=TCP_MODE):
+        if self._debug:
+            print("*** Start Client")
+        port_param = struct.pack('>H', port)
+        resp = self.send_command_get_response(START_CLIENT_TCP_CMD,
+                                              [ip, port_param,
+                                               [socket_num], [conn_mode]])
+        if resp[0][0] != 1:
+            raise RuntimeError("Could not connect to remote server")
+
+    def socket_status(self, socket_num):
+        resp = self.send_command_get_response(GET_CLIENT_STATE_TCP_CMD, [[socket_num]])
+        return resp[0][0]
+
+    def socket_connected(self, socket_num):
+        return self.socket_status(socket_num) == SOCKET_ESTABLISHED
+
+    def socket_write(self, socket_num, buffer):
+        resp = self.send_command_get_response(SEND_DATA_TCP_CMD,
+                                              [[socket_num], buffer],
+                                              param_len_16=True)
+        print(resp)
+
+    def socket_connect(self, dest, port):
+        if self._debug:
+            print("*** Socket connect")
+        if isinstance(dest, str):          # convert to IP address
+            dest = self.get_host_by_name(dest)
+        self.sock_num = self.get_socket()
+        print("Socket #%d" % self.sock_num)
+
+        self.start_client(dest, dest, port, self.sock_num)
+        times = time.monotonic()
+        while (time.monotonic() - times) < 3:  # wait 3 seconds
+            if self.socket_connected(self.sock_num):
+                return
+            time.sleep(0.01)
+        raise RuntimeError("Failed to establish connection")
