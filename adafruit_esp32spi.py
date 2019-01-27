@@ -22,6 +22,7 @@ class ESP_SPIcontrol:
     REQ_HOST_BY_NAME_CMD  = const(0x34)
     GET_HOST_BY_NAME_CMD  = const(0x35)
     START_SCAN_NETWORKS   = const(0x36)
+    PING_CMD			  = const(0x3E)
 
     GET_FW_VERSION_CMD    = const(0x37)
 
@@ -54,7 +55,6 @@ class ESP_SPIcontrol:
         self._reset.direction = Direction.OUTPUT
         self._gpio0.direction = Direction.OUTPUT
 
-        print("Nina reset")
         self._gpio0.value = True  # not bootload mode
         self._cs.value = True
         self._reset.value = False
@@ -278,9 +278,17 @@ class ESP_SPIcontrol:
     def get_host_by_name(self, hostname):
         if isinstance(hostname, str):
             hostname = bytes(hostname, 'utf-8')
-        self._debug = True
         resp = self.send_command_get_response(REQ_HOST_BY_NAME_CMD, [hostname])
         if resp[0][0] != 1:
             raise RuntimeError("Failed to request hostname")
         resp = self.send_command_get_response(GET_HOST_BY_NAME_CMD)
         return resp[0]
+
+    def ping(self, dest, ttl=250):
+        self._debug=True
+        if isinstance(dest, str):          # convert to IP address
+            dest = self.get_host_by_name(dest)
+        # ttl must be between 0 and 255
+        ttl = max(0, min(ttl, 255))
+        resp = self.send_command_get_response(PING_CMD, [dest, [ttl]])
+        return struct.unpack('<H', resp[0])[0]
