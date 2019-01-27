@@ -342,9 +342,9 @@ class ESP_SPIcontrol:
             raise RuntimeError("No sockets available")
         return resp
 
-    def start_client(self, dest, ip, port, socket_num, conn_mode=TCP_MODE):
+    def socket_open(self, dest, ip, port, socket_num, conn_mode=TCP_MODE):
         if self._debug:
-            print("*** Start Client")
+            print("*** Open socket")
         port_param = struct.pack('>H', port)
         resp = self.send_command_get_response(START_CLIENT_TCP_CMD,
                                               [ip, port_param,
@@ -387,10 +387,15 @@ class ESP_SPIcontrol:
         if self._debug:
             print("Allocated socket #%d" % self.sock_num)
 
-        self.start_client(dest, dest, port, self.sock_num)
+        self.socket_open(dest, dest, port, self.sock_num)
         times = time.monotonic()
         while (time.monotonic() - times) < 3:  # wait 3 seconds
             if self.socket_connected(self.sock_num):
                 return
             time.sleep(0.01)
         raise RuntimeError("Failed to establish connection")
+
+    def socket_close(self, socket_num):
+        resp = self.send_command_get_response(STOP_CLIENT_TCP_CMD, [[socket_num]])
+        if resp[0][0] != 1:
+            raise RuntimeError("Failed to close socket")
