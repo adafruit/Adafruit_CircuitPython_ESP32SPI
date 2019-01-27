@@ -17,15 +17,15 @@ class ESP_SPIcontrol:
     GET_CURR_ENCT_CMD     = const(0x26)
 
     SCAN_NETWORKS         = const(0x27)
-    GET_SOCKET_CMD  = const(0x3F)
-    GET_STATE_TCP_CMD   = const(0x29)
-    DATA_SENT_TCP_CMD	= const(0x2A)
-    AVAIL_DATA_TCP_CMD	= const(0x2B)
-    GET_DATA_TCP_CMD	= const(0x2C)
-    START_CLIENT_TCP_CMD = const(0x2D)
-    STOP_CLIENT_TCP_CMD = const(0x2E)
-    GET_CLIENT_STATE_TCP_CMD  = const(0x2F)
-    DISCONNECT_CMD	 = const(0x30)
+    GET_SOCKET_CMD        = const(0x3F)
+    GET_STATE_TCP_CMD     = const(0x29)
+    DATA_SENT_TCP_CMD	  = const(0x2A)
+    AVAIL_DATA_TCP_CMD	  = const(0x2B)
+    GET_DATA_TCP_CMD	  = const(0x2C)
+    START_CLIENT_TCP_CMD  = const(0x2D)
+    STOP_CLIENT_TCP_CMD   = const(0x2E)
+    GET_CLIENT_STATE_TCP_CMD = const(0x2F)
+    DISCONNECT_CMD	      = const(0x30)
     GET_IDX_RSSI_CMD      = const(0x32)
     GET_IDX_ENCT_CMD      = const(0x33)
     REQ_HOST_BY_NAME_CMD  = const(0x34)
@@ -34,7 +34,8 @@ class ESP_SPIcontrol:
     GET_FW_VERSION_CMD    = const(0x37)
     PING_CMD			  = const(0x3E)
 
-    SEND_DATA_TCP_CMD = const(0x44)
+    SEND_DATA_TCP_CMD     = const(0x44)
+    GET_DATABUF_TCP_CMD   = const(0x45)
 
 
     START_CMD             = const(0xE0)
@@ -172,7 +173,7 @@ class ESP_SPIcontrol:
         if r != desired:
             raise RuntimeError("Expected %02X but got %02X" % (desired, r))
 
-    def wait_response_cmd(self, cmd, num_responses=None):
+    def wait_response_cmd(self, cmd, num_responses=None, *, param_len_16=False):
         self.wait_for_slave_ready()
         self.spi_slave_select()
 
@@ -186,6 +187,9 @@ class ESP_SPIcontrol:
         for num in range(num_responses):
             response = []
             param_len = self.get_param()
+            if param_len_16:
+                param_len <<= 8
+                param_len |= self.get_param()
             if self._debug:
                 print("parameter #%d length is %d" % (num, param_len))
             for j in range(param_len):
@@ -196,9 +200,11 @@ class ESP_SPIcontrol:
         self.slave_deselect()
         return responses
 
-    def send_command_get_response(self, cmd, params=None, *, reply_params=1, param_len_16=False):
-        self.send_command(cmd, params, param_len_16=param_len_16)
-        return self.wait_response_cmd(cmd, reply_params)
+    def send_command_get_response(self, cmd, params=None, *,
+                                  reply_params=1, sent_param_len_16=False,
+                                  recv_param_len_16=False):
+        self.send_command(cmd, params, param_len_16=sent_param_len_16)
+        return self.wait_response_cmd(cmd, reply_params, param_len_16=recv_param_len_16)
 
     @property
     def status(self):
@@ -356,8 +362,21 @@ class ESP_SPIcontrol:
     def socket_write(self, socket_num, buffer):
         resp = self.send_command_get_response(SEND_DATA_TCP_CMD,
                                               [[socket_num], buffer],
-                                              param_len_16=True)
-        print(resp)
+                                              sent_param_len_16=True)
+
+        sent = resp[0][0]
+        if sent != len(buffer):
+            raise RuntimeError("Failed to send %d bytes (sent %d)" % (len(buffer), sent))
+        return sent
+
+    def socket_available(self, socket_num):
+        resp = self.send_command_get_response(AVAIL_DATA_TCP_CMD, [[socket_num]])
+        return struct.unpack('<H', resp[0])[0]
+
+    def socket_read(self, socket_num, size):
+        resp = self.send_command_get_response(GET_DATABUF_TCP_CMD, [[socket_num], [size]],
+                                              sent_param_len_16=True, recv_param_len_16=True)
+        return resp[0]
 
     def socket_connect(self, dest, port):
         if self._debug:
@@ -365,7 +384,8 @@ class ESP_SPIcontrol:
         if isinstance(dest, str):          # convert to IP address
             dest = self.get_host_by_name(dest)
         self.sock_num = self.get_socket()
-        print("Socket #%d" % self.sock_num)
+        if self._debug:
+            print("Allocated socket #%d" % self.sock_num)
 
         self.start_client(dest, dest, port, self.sock_num)
         times = time.monotonic()
