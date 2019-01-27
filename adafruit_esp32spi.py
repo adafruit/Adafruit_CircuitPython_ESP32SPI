@@ -19,6 +19,8 @@ class ESP_SPIcontrol:
     SCAN_NETWORKS         = const(0x27)
     GET_IDX_RSSI_CMD      = const(0x32)
     GET_IDX_ENCT_CMD      = const(0x33)
+    REQ_HOST_BY_NAME_CMD  = const(0x34)
+    GET_HOST_BY_NAME_CMD  = const(0x35)
     START_SCAN_NETWORKS   = const(0x36)
 
     GET_FW_VERSION_CMD    = const(0x37)
@@ -155,7 +157,8 @@ class ESP_SPIcontrol:
         for num in range(num_responses):
             response = []
             param_len = self.get_param()
-            print("parameter #%d length is %d" % (num, param_len))
+            if self._debug:
+                print("parameter #%d length is %d" % (num, param_len))
             for j in range(param_len):
                 response.append(self.get_param())
             responses.append(bytes(response))
@@ -170,25 +173,30 @@ class ESP_SPIcontrol:
 
     @property
     def status(self):
-        print("Connection status")
+        if self._debug:
+            print("Connection status")
         resp = self.send_command_get_response(GET_CONN_STATUS_CMD)
-        print("Status:", resp[0][0])
+        if self._debug:
+            print("Status:", resp[0][0])
         return resp[0][0]   # one byte response
 
     @property
     def firmware_version(self):
-        print("Firmware version")
+        if self._debug:
+            print("Firmware version")
         resp = self.send_command_get_response(GET_FW_VERSION_CMD)
         return resp[0]
 
     @property
     def MAC_address(self):
-        print("MAC address")
+        if self._debug:
+            print("MAC address")
         resp = self.send_command_get_response(GET_MACADDR_CMD, [b'\xFF'])
         return resp[0]
 
     def start_scan_networks(self):
-        print("Start scan")
+        if self._debug:
+            print("Start scan")
         resp = self.send_command_get_response(START_SCAN_NETWORKS)
         if resp[0][0] != 1:
             raise RuntimeError("Failed to start AP scan")
@@ -218,15 +226,12 @@ class ESP_SPIcontrol:
         return APs
 
     def wifi_set_network(self, ssid):
-        print("Set Network")
         resp = self.send_command_get_response(SET_NET_CMD, [ssid])
         if resp[0][0] != 1:
             raise RuntimeError("Failed to set network")
 
     def wifi_set_passphrase(self, ssid, passphrase):
-        print("Set passphrase")
         resp = self.send_command_get_response(SET_PASSPHRASE_CMD, [ssid, passphrase])
-        print(resp)
         if resp[0][0] != 1:
             raise RuntimeError("Failed to set passphrase")
 
@@ -247,11 +252,11 @@ class ESP_SPIcontrol:
 
     @property
     def ip_address(self):
-        raw_ip = self.network_data['ip_addr']
-        return "%d.%d.%d.%d" % (raw_ip[0], raw_ip[1], raw_ip[2], raw_ip[3])
+        return self.network_data['ip_addr']
 
     def connect_AP(self, ssid, password):
-        print("Connect AP")
+        if self._debug:
+            print("Connect to AP")
         if password:
             self.wifi_set_passphrase(ssid, password)
         else:
@@ -266,3 +271,16 @@ class ESP_SPIcontrol:
         if stat == WL_NO_SSID_AVAIL:
             raise RuntimeError("No such ssid", ssid)
         raise RuntimeError("Unknown error 0x%02X" % stat)
+
+    def pretty_ip(self, ip):
+        return "%d.%d.%d.%d" % (ip[0], ip[1], ip[2], ip[3])
+
+    def get_host_by_name(self, hostname):
+        if isinstance(hostname, str):
+            hostname = bytes(hostname, 'utf-8')
+        self._debug = True
+        resp = self.send_command_get_response(REQ_HOST_BY_NAME_CMD, [hostname])
+        if resp[0][0] != 1:
+            raise RuntimeError("Failed to request hostname")
+        resp = self.send_command_get_response(GET_HOST_BY_NAME_CMD)
+        return resp[0]
