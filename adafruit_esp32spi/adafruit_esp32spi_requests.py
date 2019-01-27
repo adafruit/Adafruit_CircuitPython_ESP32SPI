@@ -28,8 +28,8 @@ class Response:
     headers = {}
     encoding = None
 
-    def __init__(self, f):
-        self.raw = f
+    def __init__(self, socket):
+        self.socket = socket
         self.encoding = "utf-8"
         self._cached = None
         self.status_code = None
@@ -37,21 +37,24 @@ class Response:
 
     def close(self):
         """Close, delete and collect the response data"""
-        if self.raw:
-            self.raw.close()
-            del self.raw
+        if self.socket:
+            self.socket.close()
+            del self.socket
         del self._cached
         gc.collect()
 
     @property
     def content(self):
         """The HTTP content direct from the socket, as bytes"""
+        content_length = int(self.headers['content-length'])
+        #print("Content length:", content_length)
         if self._cached is None:
             try:
-                self._cached = self.raw.read()
+                self._cached = self.socket.read(content_length)
             finally:
-                self.raw.close()
-                self.raw = None
+                self.socket.close()
+                self.socket = None
+        #print("Buffer length:", len(self._cached))
         return self._cached
 
     @property
@@ -138,7 +141,7 @@ def request(method, url, data=None, json=None, headers=None, stream=None):
             if not line or line == b"\r\n":
                 break
 
-            #print(line)
+            #print("**line: ", line)
             title, content = line.split(b': ', 1)
             if title and content:
                 title = str(title.lower(), 'utf-8')

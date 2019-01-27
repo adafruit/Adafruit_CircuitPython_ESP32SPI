@@ -61,7 +61,7 @@ class socket:
         avail = _the_interface.socket_available(self._socknum)
         if avail:
             self._buffer += _the_interface.socket_read(self._socknum, avail)
-        if size == 0:   # read as much as we can
+        if size == 0:   # read as much as we can at the moment
             ret = self._buffer
             self._buffer = b''
             return ret

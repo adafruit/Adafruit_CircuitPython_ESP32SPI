@@ -83,6 +83,8 @@ class ESP_SPIcontrol:
         self._reset.direction = Direction.OUTPUT
         self._gpio0.direction = Direction.OUTPUT
 
+        if self._debug:
+            print("Reset ESP32")
         self._gpio0.value = True  # not bootload mode
         self._cs.value = True
         self._reset.value = False
@@ -134,16 +136,14 @@ class ESP_SPIcontrol:
 
         # handle parameters here
         for i, param in enumerate(params):
-            if self._debug:
-                print("sending param #%d is %d bytes long" % (i, len(param)))
+            if self._debug >= 2:
+                print("\tSending param #%d is %d bytes long" % (i, len(param)))
             if param_len_16:
                 packet.append((len(param) >> 8) & 0xFF)
             packet.append(len(param) & 0xFF)
             packet += (param)
 
         packet.append(END_CMD)
-        if self._debug:
-            print("packet len:", len(packet))
         while len(packet) % 4 != 0:
             packet.append(0xFF)
 
@@ -153,16 +153,16 @@ class ESP_SPIcontrol:
             print("Wrote: ", [hex(b) for b in packet])
         self.slave_deselect()
 
-    def get_param(self):
+    def read_byte(self):
         self._spi.readinto(self._pbuf)
-        if self._debug:
-            print("Read param", hex(self._pbuf[0]))
+        if self._debug >= 2:
+            print("\t\tRead:", hex(self._pbuf[0]))
         return self._pbuf[0]
 
     def wait_spi_char(self, desired):
         times = time.monotonic()
         while (time.monotonic() - times) < 0.1:
-            r = self.get_param()
+            r = self.read_byte()
             if r == ERR_CMD:
                 raise RuntimeError("Error response to command")
             if r == desired:
@@ -171,7 +171,7 @@ class ESP_SPIcontrol:
             raise RuntimeError("Timed out waiting for SPI char")
 
     def check_data(self, desired):
-        r = self.get_param()
+        r = self.read_byte()
         if r != desired:
             raise RuntimeError("Expected %02X but got %02X" % (desired, r))
 
@@ -184,22 +184,24 @@ class ESP_SPIcontrol:
         if num_responses is not None:
             self.check_data(num_responses)
         else:
-            num_responses = self.get_param()
+            num_responses = self.read_byte()
         responses = []
         for num in range(num_responses):
             response = []
-            param_len = self.get_param()
+            param_len = self.read_byte()
             if param_len_16:
                 param_len <<= 8
-                param_len |= self.get_param()
-            if self._debug:
-                print("parameter #%d length is %d" % (num, param_len))
+                param_len |= self.read_byte()
+            if self._debug >= 2:
+                print("\tParameter #%d length is %d" % (num, param_len))
             for j in range(param_len):
-                response.append(self.get_param())
+                response.append(self.read_byte())
             responses.append(bytes(response))
         self.check_data(END_CMD)
 
         self.slave_deselect()
+        if self._debug:
+            print("Read: ", responses)
         return responses
 
     def send_command_get_response(self, cmd, params=None, *,
@@ -291,10 +293,22 @@ class ESP_SPIcontrol:
     def ip_address(self):
         return self.network_data['ip_addr']
 
+
+    @property
+    def is_connected(self):
+        return self.status == WL_CONNECTED
+
+    def connect(self, settings):
+        self.connect_AP(settings['ssid'], settings['password'])
+
     def connect_AP(self, ssid, password):
         if self._debug:
-            print("Connect to AP")
+            print("Connect to AP", ssid, password)
+        if isinstance(ssid, str):
+            ssid = bytes(ssid, 'utf-8')
         if password:
+            if isinstance(password, str):
+                password = bytes(password, 'utf-8')
             self.wifi_set_passphrase(ssid, password)
         else:
             self.wifi_set_network(ssid)
@@ -379,9 +393,8 @@ class ESP_SPIcontrol:
             raise RuntimeError("Failed to send %d bytes (sent %d)" % (len(buffer), sent))
 
         resp = self.send_command_get_response(DATA_SENT_TCP_CMD, [[socket_num]])
-        if self._debug:
-            print("** DATA SENT: ",resp)
-        return sent
+        if resp[0][0] != 1:
+            raise RuntimeError("Failed to verify data sent")
 
     def socket_available(self, socket_num):
         resp = self.send_command_get_response(AVAIL_DATA_TCP_CMD, [[socket_num]])
