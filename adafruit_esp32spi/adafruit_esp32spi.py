@@ -3,6 +3,7 @@ import time
 import board
 import busio
 from digitalio import DigitalInOut, Direction, Pull
+from adafruit_bus_device.spi_device import SPIDevice
 from micropython import const
 
 class ESP_SPIcontrol:
@@ -72,17 +73,15 @@ class ESP_SPIcontrol:
         self._buffer = bytearray(10)
         self._pbuf = bytearray(1)  # buffer for param read
 
-        self._spi = spi
+        self._spi_device = SPIDevice(spi, cs_pin, baudrate=4000000)
         self._cs = cs_pin
         self._ready = ready_pin
         self._reset = reset_pin
         self._gpio0 = gpio0_pin
-
         self._cs.direction = Direction.OUTPUT
         self._ready.direction = Direction.INPUT
         self._reset.direction = Direction.OUTPUT
         self._gpio0.direction = Direction.INPUT
-
         self.reset()
 
     def reset(self):
@@ -98,24 +97,6 @@ class ESP_SPIcontrol:
 
         self._gpio0.direction = Direction.INPUT
 
-    def _spi_select(self):
-        while not self._spi.try_lock():
-            pass
-        self._spi.configure(baudrate=100000) # start slow
-        self._cs.value = False # the actual select
-        times = time.monotonic()
-        while (time.monotonic() - times) < 1: # wait up to 1000ms
-            if self._ready.value:  # ok ready to send!
-                return
-        # some failure
-        self._cs.value = True
-        self._spi.unlock()
-        raise RuntimeError("ESP32 timed out on SPI select")
-
-    def _spi_deselect(self):
-        self._cs.value = True
-        self._spi.unlock()
-
     def wait_for_ready(self):
         if self._debug:
             print("Wait for ESP32 ready", end='')
@@ -128,7 +109,6 @@ class ESP_SPIcontrol:
             time.sleep(0.01)
         else:
             raise RuntimeError("ESP32 not responding")
-
         if self._debug:
             print()
 
@@ -155,22 +135,27 @@ class ESP_SPIcontrol:
             packet.append(0xFF)
 
         self.wait_for_ready()
-        self._spi_select()
-        self._spi.write(bytearray(packet))
-        if self._debug:
-            print("Wrote: ", [hex(b) for b in packet])
-        self._spi_deselect()
+        with self._spi_device as spi:
+            times = time.monotonic()
+            while (time.monotonic() - times) < 1: # wait up to 1000ms
+                if self._ready.value:  # ok ready to send!
+                    break
+            else:
+                raise RuntimeError("ESP32 timed out on SPI select")
+            spi.write(bytearray(packet))
+            if self._debug:
+                print("Wrote: ", [hex(b) for b in packet])
 
-    def read_byte(self):
-        self._spi.readinto(self._pbuf)
+    def read_byte(self, spi):
+        spi.readinto(self._pbuf)
         if self._debug >= 2:
             print("\t\tRead:", hex(self._pbuf[0]))
         return self._pbuf[0]
 
-    def wait_spi_char(self, desired):
+    def wait_spi_char(self, spi, desired):
         times = time.monotonic()
         while (time.monotonic() - times) < 0.1:
-            r = self.read_byte()
+            r = self.read_byte(spi)
             if r == ERR_CMD:
                 raise RuntimeError("Error response to command")
             if r == desired:
@@ -178,36 +163,42 @@ class ESP_SPIcontrol:
         else:
             raise RuntimeError("Timed out waiting for SPI char")
 
-    def check_data(self, desired):
-        r = self.read_byte()
+    def check_data(self, spi, desired):
+        r = self.read_byte(spi)
         if r != desired:
             raise RuntimeError("Expected %02X but got %02X" % (desired, r))
 
     def wait_response_cmd(self, cmd, num_responses=None, *, param_len_16=False):
         self.wait_for_ready()
-        self._spi_select()
 
-        self.wait_spi_char(START_CMD)
-        self.check_data(cmd | REPLY_FLAG)
-        if num_responses is not None:
-            self.check_data(num_responses)
-        else:
-            num_responses = self.read_byte()
         responses = []
-        for num in range(num_responses):
-            response = []
-            param_len = self.read_byte()
-            if param_len_16:
-                param_len <<= 8
-                param_len |= self.read_byte()
-            if self._debug >= 2:
-                print("\tParameter #%d length is %d" % (num, param_len))
-            for j in range(param_len):
-                response.append(self.read_byte())
-            responses.append(bytes(response))
-        self.check_data(END_CMD)
+        with self._spi_device as spi:
+            times = time.monotonic()
+            while (time.monotonic() - times) < 1: # wait up to 1000ms
+                if self._ready.value:  # ok ready to send!
+                    break
+            else:
+                raise RuntimeError("ESP32 timed out on SPI select")
 
-        self._spi_deselect()
+            self.wait_spi_char(spi, START_CMD)
+            self.check_data(spi, cmd | REPLY_FLAG)
+            if num_responses is not None:
+                self.check_data(spi, num_responses)
+            else:
+                num_responses = self.read_byte(spi)
+            for num in range(num_responses):
+                response = []
+                param_len = self.read_byte(spi)
+                if param_len_16:
+                    param_len <<= 8
+                    param_len |= self.read_byte(spi)
+                if self._debug >= 2:
+                    print("\tParameter #%d length is %d" % (num, param_len))
+                for j in range(param_len):
+                    response.append(self.read_byte(spi))
+                responses.append(bytes(response))
+            self.check_data(spi, END_CMD)
+
         if self._debug:
             print("Read: ", responses)
         return responses
