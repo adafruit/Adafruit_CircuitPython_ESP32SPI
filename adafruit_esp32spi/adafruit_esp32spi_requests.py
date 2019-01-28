@@ -46,7 +46,11 @@ class Response:
     @property
     def content(self):
         """The HTTP content direct from the socket, as bytes"""
-        content_length = int(self.headers['content-length'])
+        #print(self.headers)
+        try:
+            content_length = int(self.headers['content-length'])
+        except KeyError:
+            content_length = 0
         #print("Content length:", content_length)
         if self._cached is None:
             try:

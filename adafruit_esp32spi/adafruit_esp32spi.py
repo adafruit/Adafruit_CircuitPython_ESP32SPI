@@ -98,7 +98,7 @@ class ESP_SPIcontrol:
 
         self._gpio0.direction = Direction.INPUT
 
-    def spi_slave_select(self):
+    def _spi_select(self):
         while not self._spi.try_lock():
             pass
         self._spi.configure(baudrate=100000) # start slow
@@ -112,26 +112,20 @@ class ESP_SPIcontrol:
         self._spi.unlock()
         raise RuntimeError("ESP32 timed out on SPI select")
 
-    def slave_deselect(self):
+    def _spi_deselect(self):
         self._cs.value = True
         self._spi.unlock()
 
-    def slave_ready(self):
-        return self._ready.value == False
-
-    def wait_for_slave_ready(self):
+    def wait_for_ready(self):
         if self._debug:
-            print("Wait for slave ready", end='')
-        while not self.slave_ready():
+            print("Wait for ESP32 ready", end='')
+        while self._ready.value == True:
             if self._debug:
                 print('.', end='')
             time.sleep(0.01)
         if self._debug:
             print()
 
-    def wait_for_slave_select(self):
-        self.wait_for_slave_ready()
-        self.spi_slave_select()
 
     def send_command(self, cmd, params=None, *, param_len_16=False):
         if not params:
@@ -154,11 +148,12 @@ class ESP_SPIcontrol:
         while len(packet) % 4 != 0:
             packet.append(0xFF)
 
-        self.wait_for_slave_select()
+        self.wait_for_ready()
+        self._spi_select()
         self._spi.write(bytearray(packet))
         if self._debug:
             print("Wrote: ", [hex(b) for b in packet])
-        self.slave_deselect()
+        self._spi_deselect()
 
     def read_byte(self):
         self._spi.readinto(self._pbuf)
@@ -183,8 +178,8 @@ class ESP_SPIcontrol:
             raise RuntimeError("Expected %02X but got %02X" % (desired, r))
 
     def wait_response_cmd(self, cmd, num_responses=None, *, param_len_16=False):
-        self.wait_for_slave_ready()
-        self.spi_slave_select()
+        self.wait_for_ready()
+        self._spi_select()
 
         self.wait_spi_char(START_CMD)
         self.check_data(cmd | REPLY_FLAG)
@@ -206,7 +201,7 @@ class ESP_SPIcontrol:
             responses.append(bytes(response))
         self.check_data(END_CMD)
 
-        self.slave_deselect()
+        self._spi_deselect()
         if self._debug:
             print("Read: ", responses)
         return responses
