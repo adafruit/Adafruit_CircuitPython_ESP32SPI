@@ -105,7 +105,7 @@ class ESP_SPIcontrol:
         self._cs.value = False # the actual select
         times = time.monotonic()
         while (time.monotonic() - times) < 1: # wait up to 1000ms
-            if self._ready.value:
+            if self._ready.value:  # ok ready to send!
                 return
         # some failure
         self._cs.value = True
@@ -119,10 +119,16 @@ class ESP_SPIcontrol:
     def wait_for_ready(self):
         if self._debug:
             print("Wait for ESP32 ready", end='')
-        while self._ready.value == True:
+        times = time.monotonic()
+        while (time.monotonic() - times) < 10:  # wait up to 10 seconds
+            if self._ready.value == False: # we're ready!
+                break
             if self._debug:
                 print('.', end='')
             time.sleep(0.01)
+        else:
+            raise RuntimeError("ESP32 not responding")
+
         if self._debug:
             print()
 
