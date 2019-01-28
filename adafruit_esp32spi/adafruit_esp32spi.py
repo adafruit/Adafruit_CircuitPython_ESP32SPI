@@ -304,7 +304,11 @@ class ESP_SPIcontrol:
 
     @property
     def is_connected(self):
-        return self.status == WL_CONNECTED
+        try:
+            return self.status == WL_CONNECTED
+        except RuntimeError:
+            self.reset()
+            return False
 
     def connect(self, settings):
         self.connect_AP(settings['ssid'], settings['password'])
