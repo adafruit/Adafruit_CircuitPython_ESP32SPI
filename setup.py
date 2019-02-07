@@ -60,5 +60,5 @@ setup(
     # simple. Or you can use find_packages().
     # TODO: IF LIBRARY FILES ARE A PACKAGE FOLDER,
     #       CHANGE `py_modules=['...']` TO `packages=['...']`
-    py_modules=['adafruit_esp32spi'],
+    packages=['adafruit_esp32spi/adafruit_esp32spi.py', 'adafruit_esp32spi/adafruit_esp32spi_requests.py', 'adafruit_esp32spi/adafruit_socket.py'],
 )
