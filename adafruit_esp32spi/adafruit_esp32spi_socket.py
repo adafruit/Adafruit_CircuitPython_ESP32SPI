@@ -82,7 +82,7 @@ class socket:
         """Attempt to return as many bytes as we can up to but not including '\r\n'"""
         while b'\r\n' not in self._buffer:
             # there's no line already in there, read some more
-            avail = min(_the_interface.socket_available(self._socknum), 4000)
+            avail = min(_the_interface.socket_available(self._socknum), 1500)
             if avail:
                 self._buffer += _the_interface.socket_read(self._socknum, avail)
         firstline, self._buffer = self._buffer.split(b'\r\n', 1)
@@ -92,15 +92,18 @@ class socket:
         """Read up to 'size' bytes from the socket, this may be buffered internally!
         If 'size' isnt specified, return everything in the buffer."""
         if size == 0:   # read as much as we can at the moment
-            avail = min(_the_interface.socket_available(self._socknum), 4000)
-            if avail:
-                self._buffer += _the_interface.socket_read(self._socknum, avail)
+            while True:
+                avail = min(_the_interface.socket_available(self._socknum), 1500)
+                if avail:
+                    self._buffer += _the_interface.socket_read(self._socknum, avail)
+                else:
+                    break
             ret = self._buffer
             self._buffer = b''
             return ret
         stamp = time.monotonic()
         while len(self._buffer) < size:
-            avail = min(_the_interface.socket_available(self._socknum), 4000)
+            avail = min(_the_interface.socket_available(self._socknum), 1500)
             if avail:
                 stamp = time.monotonic()
                 self._buffer += _the_interface.socket_read(self._socknum, min(size, avail))
