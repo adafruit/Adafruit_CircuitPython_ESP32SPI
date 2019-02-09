@@ -515,7 +515,8 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
     def socket_read(self, socket_num, size):
         """Read up to 'size' bytes from the socket number. Returns a bytearray"""
         if self._debug:
-            print("Reading %d bytes from socket with status %d" % (size, self.socket_status(socket_num)))
+            print("Reading %d bytes from socket with status %d" %
+                  (size, self.socket_status(socket_num)))
         resp = self._send_command_get_response(_GET_DATABUF_TCP_CMD,
                                                [[socket_num], [size & 0xFF, (size >> 8) & 0xFF]],
                                                sent_param_len_16=True, recv_param_len_16=True)
