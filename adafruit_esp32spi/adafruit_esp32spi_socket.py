@@ -114,6 +114,8 @@ class socket:
         return ret
 
     def settimeout(self, value):
+        """Set the reading timeout for sockets before we return with fewer
+        or no data on read(). If set to 0 we are fully blocking"""
         self._timeout = value
 
     def close(self):

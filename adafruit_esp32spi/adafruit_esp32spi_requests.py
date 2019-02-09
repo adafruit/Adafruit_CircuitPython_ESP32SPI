@@ -107,12 +107,14 @@ class Response:
         return ujson.loads(self.content)
 
     def iter_content(self, chunk_size=1, decode_unicode=False):
+        """An iterator that will stream data by only reading 'chunk_size'
+        bytes and yielding them, when we can't buffer the whole datastream"""
         if decode_unicode:
             raise NotImplementedError("Unicode not supported")
 
         while True:
             chunk = self.socket.read(chunk_size)
-            if chunk and len(chunk) > 0:
+            if chunk:
                 yield chunk
             else:
                 return
