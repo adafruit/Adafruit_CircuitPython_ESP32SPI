@@ -447,7 +447,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
 
     def get_socket(self):
         """Request a socket from the ESP32, will allocate and return a number that
-        can then be passed to the other socket_ commands"""
+        can then be passed to the other socket commands"""
         if self._debug:
             print("*** Get socket")
         resp = self._send_command_get_response(_GET_SOCKET_CMD)
