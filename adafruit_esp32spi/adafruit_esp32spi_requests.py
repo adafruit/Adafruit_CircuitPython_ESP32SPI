@@ -86,6 +86,8 @@ def request(method, url, data=None, json=None, headers=None, stream=None):
 
     try:
         proto, dummy, host, path = url.split("/", 3)
+        # replace spaces in path
+        path = path.replace(" ", "%20")
     except ValueError:
         proto, dummy, host = url.split("/", 2)
         path = ""
