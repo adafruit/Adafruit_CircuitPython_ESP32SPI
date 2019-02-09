@@ -24,7 +24,7 @@
 `adafruit_esp32spi_socket`
 ================================================================================
 
-A 'socket' compatible interface thru the ESP SPI command set
+A socket compatible interface thru the ESP SPI command set
 
 * Author(s): ladyada
 """
