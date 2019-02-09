@@ -200,7 +200,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
                     break
             else:
                 raise RuntimeError("ESP32 timed out on SPI select")
-            spi.write(bytearray(packet))
+            spi.write(bytearray(packet))  # pylint: disable=no-member
             if self._debug:
                 print("Wrote: ", [hex(b) for b in packet])
 
