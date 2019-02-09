@@ -67,6 +67,7 @@ class Response:
         self._cached = None
         self.status_code = None
         self.reason = None
+        self._read_so_far = 0
 
     def close(self):
         """Close, delete and collect the response data"""
@@ -105,13 +106,25 @@ class Response:
         import ujson
         return ujson.loads(self.content)
 
+    def iter_content(self, chunk_size=1, decode_unicode=False):
+        if decode_unicode:
+            raise NotImplementedError("Unicode not supported")
+
+        while True:
+            chunk = self.socket.read(chunk_size)
+            if chunk and len(chunk) > 0:
+                yield chunk
+            else:
+                return
 
 # pylint: disable=too-many-branches, too-many-statements, unused-argument, too-many-arguments, too-many-locals
-def request(method, url, data=None, json=None, headers=None, stream=None):
+def request(method, url, data=None, json=None, headers=None, stream=False):
     """Perform an HTTP request to the given url which we will parse to determine
     whether to use SSL ('https://') or not. We can also send some provided 'data'
     or a json dictionary which we will stringify. 'headers' is optional HTTP headers
-    sent along. 'stream' is unused in this implementation"""
+    sent along. 'stream' will determine if we buffer everything, or whether to only
+    read only when requested
+    """
     global _the_interface   # pylint: disable=global-statement, invalid-name
 
     if not headers:
@@ -138,6 +151,8 @@ def request(method, url, data=None, json=None, headers=None, stream=None):
     addr_info = socket.getaddrinfo(host, port, 0, socket.SOCK_STREAM)[0]
     sock = socket.socket(addr_info[0], addr_info[1], addr_info[2])
     resp = Response(sock)  # our response
+
+    sock.settimeout(1)     # 1 second timeout
 
     try:
         if proto == "https:":

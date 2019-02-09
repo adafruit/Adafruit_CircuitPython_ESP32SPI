@@ -128,7 +128,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         self._buffer = bytearray(10)
         self._pbuf = bytearray(1)  # buffer for param read
 
-        self._spi_device = SPIDevice(spi, cs_pin, baudrate=4000000)
+        self._spi_device = SPIDevice(spi, cs_pin, baudrate=8000000)
         self._cs = cs_pin
         self._ready = ready_pin
         self._reset = reset_pin
@@ -163,7 +163,6 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
                 break
             if self._debug:
                 print('.', end='')
-            time.sleep(0.01)
         else:
             raise RuntimeError("ESP32 not responding")
         if self._debug:
@@ -261,7 +260,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
             self._check_data(spi, _END_CMD)
 
         if self._debug:
-            print("Read: ", responses)
+            print("Read %d: " % len(responses[0]), responses)
         return responses
 
     def _send_command_get_response(self, cmd, params=None, *,
@@ -508,11 +507,17 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
     def socket_available(self, socket_num):
         """Determine how many bytes are waiting to be read on the socket"""
         resp = self._send_command_get_response(_AVAIL_DATA_TCP_CMD, [[socket_num]])
-        return struct.unpack('<H', resp[0])[0]
+        reply = struct.unpack('<H', resp[0])[0]
+        if self._debug:
+            print("%d bytes available" % reply)
+        return reply
 
     def socket_read(self, socket_num, size):
         """Read up to 'size' bytes from the socket number. Returns a bytearray"""
-        resp = self._send_command_get_response(_GET_DATABUF_TCP_CMD, [[socket_num], [size]],
+        if self._debug:
+            print("Reading %d bytes from socket with status %d" % (size, self.socket_status(socket_num)))
+        resp = self._send_command_get_response(_GET_DATABUF_TCP_CMD,
+                                               [[socket_num], [size & 0xFF, (size >> 8) & 0xFF]],
                                                sent_param_len_16=True, recv_param_len_16=True)
         return resp[0]
 

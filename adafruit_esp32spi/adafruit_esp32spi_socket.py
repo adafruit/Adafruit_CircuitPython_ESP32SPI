@@ -30,7 +30,7 @@ A socket compatible interface thru the ESP SPI command set
 """
 
 
-
+import time
 from micropython import const
 
 _the_interface = None   # pylint: disable=invalid-name
@@ -63,6 +63,7 @@ class socket:
             raise RuntimeError("Only SOCK_STREAM type supported")
         self._buffer = b''
         self._socknum = _the_interface.get_socket()
+        self.settimeout(0)
 
     def connect(self, address, conntype=None):
         """Connect the socket to the 'address' (which can be 32bit packed IP or
@@ -81,7 +82,7 @@ class socket:
         """Attempt to return as many bytes as we can up to but not including '\r\n'"""
         while b'\r\n' not in self._buffer:
             # there's no line already in there, read some more
-            avail = _the_interface.socket_available(self._socknum)
+            avail = min(_the_interface.socket_available(self._socknum), 4000)
             if avail:
                 self._buffer += _the_interface.socket_read(self._socknum, avail)
         firstline, self._buffer = self._buffer.split(b'\r\n', 1)
@@ -90,20 +91,27 @@ class socket:
     def read(self, size=0):
         """Read up to 'size' bytes from the socket, this may be buffered internally!
         If 'size' isnt specified, return everything in the buffer."""
-        avail = _the_interface.socket_available(self._socknum)
-        if avail:
-            self._buffer += _the_interface.socket_read(self._socknum, avail)
         if size == 0:   # read as much as we can at the moment
+            avail = min(_the_interface.socket_available(self._socknum), 4000)
+            if avail:
+                self._buffer += _the_interface.socket_read(self._socknum, avail)
             ret = self._buffer
             self._buffer = b''
             return ret
+        stamp = time.monotonic()
         while len(self._buffer) < size:
-            avail = _the_interface.socket_available(self._socknum)
+            avail = min(_the_interface.socket_available(self._socknum), 4000)
             if avail:
-                self._buffer += _the_interface.socket_read(self._socknum, avail)
+                stamp = time.monotonic()
+                self._buffer += _the_interface.socket_read(self._socknum, min(size, avail))
+            if time.monotonic() - stamp > self._timeout:
+                break
         ret = self._buffer[:size]
         self._buffer = self._buffer[size:]
         return ret
+
+    def settimeout(self, value):
+        self._timeout = value
 
     def close(self):
         """Close the socket, after reading whatever remains"""
