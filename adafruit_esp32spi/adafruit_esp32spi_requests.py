@@ -61,8 +61,8 @@ class Response:
     headers = {}
     encoding = None
 
-    def __init__(self, socket):
-        self.socket = socket
+    def __init__(self, sock):
+        self.socket = sock
         self.encoding = "utf-8"
         self._cached = None
         self.status_code = None
