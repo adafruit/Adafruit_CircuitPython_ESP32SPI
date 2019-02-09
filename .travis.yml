@@ -42,7 +42,7 @@ install:
   - pip install --force-reinstall pylint==1.9.2
 
 script:
-  - pylint adafruit_esp32spi.py
+  - pylint adafruit_esp32spi/*.py
   - ([[ ! -d "examples" ]] || pylint --disable=missing-docstring,invalid-name,bad-whitespace examples/*.py)
   - circuitpython-build-bundles --filename_prefix adafruit-circuitpython-esp32spi --library_location .
   - cd docs && sphinx-build -E -W -b html . _build/html && cd ..
