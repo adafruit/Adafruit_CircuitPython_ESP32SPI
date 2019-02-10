@@ -85,7 +85,7 @@ class Response:
             content_length = int(self.headers['content-length'])
         except KeyError:
             content_length = 0
-        print("Content length:", content_length)
+        #print("Content length:", content_length)
         if self._cached is None:
             try:
                 self._cached = self.socket.read(content_length)

@@ -82,10 +82,10 @@ class socket:
 
     def readline(self):
         """Attempt to return as many bytes as we can up to but not including '\r\n'"""
-        print("Socket readline")
+        #print("Socket readline")
         while b'\r\n' not in self._buffer:
             # there's no line already in there, read some more
-            avail = min(_the_interface.socket_available(self._socknum), 1500)
+            avail = min(_the_interface.socket_available(self._socknum), 4000)
             if avail:
                 self._buffer += _the_interface.socket_read(self._socknum, avail)
         firstline, self._buffer = self._buffer.split(b'\r\n', 1)
@@ -95,10 +95,10 @@ class socket:
     def read(self, size=0):
         """Read up to 'size' bytes from the socket, this may be buffered internally!
         If 'size' isnt specified, return everything in the buffer."""
-        print("Socket read", size)
+        #print("Socket read", size)
         if size == 0:   # read as much as we can at the moment
             while True:
-                avail = min(_the_interface.socket_available(self._socknum), 1500)
+                avail = min(_the_interface.socket_available(self._socknum), 4000)
                 if avail:
                     self._buffer += _the_interface.socket_read(self._socknum, avail)
                 else:
@@ -114,7 +114,7 @@ class socket:
         received = []
         while to_read > 0:
             #print("Bytes to read:", to_read)
-            avail = min(_the_interface.socket_available(self._socknum), 1500)
+            avail = min(_the_interface.socket_available(self._socknum), 4000)
             if avail:
                 stamp = time.monotonic()
                 recv = _the_interface.socket_read(self._socknum, min(to_read, avail))
@@ -123,7 +123,7 @@ class socket:
                 gc.collect()
             if time.monotonic() - stamp > self._timeout:
                 break
-        print(received)
+        #print(received)
         self._buffer += b''.join(received)
 
         ret = None
