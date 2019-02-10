@@ -31,6 +31,7 @@ A socket compatible interface thru the ESP SPI command set
 
 
 import time
+import gc
 from micropython import const
 
 _the_interface = None   # pylint: disable=invalid-name
@@ -77,20 +78,24 @@ class socket:
     def write(self, data):         # pylint: disable=no-self-use
         """Send some data to the socket"""
         _the_interface.socket_write(self._socknum, data)
+        gc.collect()
 
     def readline(self):
         """Attempt to return as many bytes as we can up to but not including '\r\n'"""
+        print("Socket readline")
         while b'\r\n' not in self._buffer:
             # there's no line already in there, read some more
             avail = min(_the_interface.socket_available(self._socknum), 1500)
             if avail:
                 self._buffer += _the_interface.socket_read(self._socknum, avail)
         firstline, self._buffer = self._buffer.split(b'\r\n', 1)
+        gc.collect()
         return firstline
 
     def read(self, size=0):
         """Read up to 'size' bytes from the socket, this may be buffered internally!
         If 'size' isnt specified, return everything in the buffer."""
+        print("Socket read", size)
         if size == 0:   # read as much as we can at the moment
             while True:
                 avail = min(_the_interface.socket_available(self._socknum), 1500)
@@ -98,24 +103,40 @@ class socket:
                     self._buffer += _the_interface.socket_read(self._socknum, avail)
                 else:
                     break
+            gc.collect()
             ret = self._buffer
             self._buffer = b''
+            gc.collect()
             return ret
         stamp = time.monotonic()
-        while len(self._buffer) < size:
+
+        to_read = size - len(self._buffer)
+        received = []
+        while to_read > 0:
+            #print("Bytes to read:", to_read)
             avail = min(_the_interface.socket_available(self._socknum), 1500)
             if avail:
                 stamp = time.monotonic()
-                self._buffer += _the_interface.socket_read(self._socknum, min(size, avail))
+                recv = _the_interface.socket_read(self._socknum, min(to_read, avail))
+                received.append(recv)
+                to_read -= len(recv)
+                gc.collect()
             if time.monotonic() - stamp > self._timeout:
                 break
-        ret = self._buffer[:size]
-        self._buffer = self._buffer[size:]
+        print(received)
+        self._buffer += b''.join(received)
+
+        ret = None
+        if len(self._buffer) == size:
+            ret = self._buffer
+            self._buffer = b''
+        else:
+            ret = self._buffer[:size]
+            self._buffer = self._buffer[size:]
+        gc.collect()
         return ret
 
     def settimeout(self, value):
-        """Set the reading timeout for sockets before we return with fewer
-        or no data on read(). If set to 0 we are fully blocking"""
         self._timeout = value
 
     def close(self):

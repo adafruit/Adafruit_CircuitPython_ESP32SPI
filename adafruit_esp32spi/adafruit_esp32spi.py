@@ -127,6 +127,8 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         self._debug = debug
         self._buffer = bytearray(10)
         self._pbuf = bytearray(1)  # buffer for param read
+        self._sendbuf = bytearray(256)  # buffer for command sending
+        self._socknum_ll = [[0]]      # pre-made list of list of socket #
 
         self._spi_device = SPIDevice(spi, cs_pin, baudrate=8000000)
         self._cs = cs_pin
@@ -155,41 +157,57 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
 
     def _wait_for_ready(self):
         """Wait until the ready pin goes low"""
-        if self._debug:
+        if self._debug >= 3:
             print("Wait for ESP32 ready", end='')
         times = time.monotonic()
         while (time.monotonic() - times) < 10:  # wait up to 10 seconds
             if not self._ready.value: # we're ready!
                 break
-            if self._debug:
+            if self._debug >= 3:
                 print('.', end='')
+                time.sleep(0.05)
         else:
             raise RuntimeError("ESP32 not responding")
-        if self._debug:
+        if self._debug >= 3:
             print()
 
 
     def _send_command(self, cmd, params=None, *, param_len_16=False):
         """Send over a command with a list of parameters"""
+
         if not params:
-            params = []
-        packet = []
-        packet.append(_START_CMD)
-        packet.append(cmd & ~_REPLY_FLAG)
-        packet.append(len(params))
+            params = ()
+
+        packet_len = 4 # header + end byte
+        for i, param in enumerate(params):
+            packet_len += len(param)   # parameter
+            packet_len += 1            # size byte
+            if param_len_16:
+                packet_len += 1        # 2 of em here!
+        while packet_len % 4 != 0:
+            packet_len += 1
+        # we may need more space
+        if packet_len > len(self._sendbuf):
+            self._sendbuf = bytearray(packet_len)
+
+        self._sendbuf[0] = _START_CMD
+        self._sendbuf[1] = cmd & ~_REPLY_FLAG
+        self._sendbuf[2] = len(params)
 
         # handle parameters here
+        ptr = 3
         for i, param in enumerate(params):
             if self._debug >= 2:
                 print("\tSending param #%d is %d bytes long" % (i, len(param)))
             if param_len_16:
-                packet.append((len(param) >> 8) & 0xFF)
-            packet.append(len(param) & 0xFF)
-            packet += (param)
-
-        packet.append(_END_CMD)
-        while len(packet) % 4 != 0:
-            packet.append(0xFF)
+                self._sendbuf[ptr] = (len(param) >> 8) & 0xFF
+                ptr += 1
+            self._sendbuf[ptr] = len(param) & 0xFF
+            ptr += 1
+            for i, p in enumerate(param):
+                self._sendbuf[ptr+i] = p
+            ptr += len(param)
+        self._sendbuf[ptr] = _END_CMD
 
         self._wait_for_ready()
         with self._spi_device as spi:
@@ -199,16 +217,24 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
                     break
             else:
                 raise RuntimeError("ESP32 timed out on SPI select")
-            spi.write(bytearray(packet))  # pylint: disable=no-member
-            if self._debug:
-                print("Wrote: ", [hex(b) for b in packet])
+            spi.write(self._sendbuf, start=0, end=packet_len)  # pylint: disable=no-member
+            if self._debug >= 3:
+                print("Wrote: ", [hex(b) for b in self._sendbuf[0:packet_len]])
 
     def _read_byte(self, spi):
         """Read one byte from SPI"""
         spi.readinto(self._pbuf)
-        if self._debug >= 2:
+        if self._debug >= 3:
             print("\t\tRead:", hex(self._pbuf[0]))
         return self._pbuf[0]
+
+    def _read_bytes(self, spi, buffer, start=0, end=None):
+        """Read many bytes from SPI"""
+        if not end:
+            end = len(buffer)
+        spi.readinto(buffer, start=start, end=end)
+        if self._debug >= 3:
+            print("\t\tRead:", [hex(i) for i in buffer])
 
     def _wait_spi_char(self, spi, desired):
         """Read a byte with a time-out, and if we get it, check that its what we expect"""
@@ -247,19 +273,18 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
             else:
                 num_responses = self._read_byte(spi)
             for num in range(num_responses):
-                response = []
                 param_len = self._read_byte(spi)
                 if param_len_16:
                     param_len <<= 8
                     param_len |= self._read_byte(spi)
                 if self._debug >= 2:
                     print("\tParameter #%d length is %d" % (num, param_len))
-                for _ in range(param_len):
-                    response.append(self._read_byte(spi))
-                responses.append(bytes(response))
+                response = bytearray(param_len)
+                self._read_bytes(spi, response)
+                responses.append(response)
             self._check_data(spi, _END_CMD)
 
-        if self._debug:
+        if self._debug >= 2:
             print("Read %d: " % len(responses[0]), responses)
         return responses
 
@@ -280,7 +305,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
             print("Connection status")
         resp = self._send_command_get_response(_GET_CONN_STATUS_CMD)
         if self._debug:
-            print("Status:", resp[0][0])
+            print("Conn status:", resp[0][0])
         return resp[0][0]   # one byte response
 
     @property
@@ -317,9 +342,9 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         APs = []                         # pylint: disable=invalid-name
         for i, name in enumerate(names):
             a_p = {'ssid': name}
-            rssi = self._send_command_get_response(_GET_IDX_RSSI_CMD, [[i]])[0]
+            rssi = self._send_command_get_response(_GET_IDX_RSSI_CMD, ((i,),))[0]
             a_p['rssi'] = struct.unpack('<i', rssi)[0]
-            encr = self._send_command_get_response(_GET_IDX_ENCT_CMD, [[i]])[0]
+            encr = self._send_command_get_response(_GET_IDX_ENCT_CMD, ((i,),))[0]
             a_p['encryption'] = encr[0]
             APs.append(a_p)
         return APs
@@ -428,7 +453,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
             print("*** Get host by name")
         if isinstance(hostname, str):
             hostname = bytes(hostname, 'utf-8')
-        resp = self._send_command_get_response(_REQ_HOST_BY_NAME_CMD, [hostname])
+        resp = self._send_command_get_response(_REQ_HOST_BY_NAME_CMD, (hostname,))
         if resp[0][0] != 1:
             raise RuntimeError("Failed to request hostname")
         resp = self._send_command_get_response(_GET_HOST_BY_NAME_CMD)
@@ -441,7 +466,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
             dest = self.get_host_by_name(dest)
         # ttl must be between 0 and 255
         ttl = max(0, min(ttl, 255))
-        resp = self._send_command_get_response(_PING_CMD, [dest, [ttl]])
+        resp = self._send_command_get_response(_PING_CMD, (dest, (ttl)))
         return struct.unpack('<H', resp[0])[0]
 
     def get_socket(self):
@@ -462,17 +487,18 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         using the ESP32's internal reference number. By default we use
         'conn_mode' TCP_MODE but can also use UDP_MODE or TLS_MODE
         (dest must be hostname for TLS_MODE!)"""
+        self._socknum_ll[0][0] = socket_num
         if self._debug:
             print("*** Open socket")
         port_param = struct.pack('>H', port)
         if isinstance(dest, str):          # use the 5 arg version
             dest = bytes(dest, 'utf-8')
             resp = self._send_command_get_response(_START_CLIENT_TCP_CMD,
-                                                   [dest, b'\x00\x00\x00\x00',
-                                                    port_param, [socket_num], [conn_mode]])
+                                                   (dest, b'\x00\x00\x00\x00',
+                                                    port_param, self._socknum_ll[0], (conn_mode,)))
         else:                              # ip address, use 4 arg vesion
             resp = self._send_command_get_response(_START_CLIENT_TCP_CMD,
-                                                   [dest, port_param, [socket_num], [conn_mode]])
+                                                   (dest, port_param, self._socknum_ll[0], (conn_mode,)))
         if resp[0][0] != 1:
             raise RuntimeError("Could not connect to remote server")
 
@@ -481,7 +507,8 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         SOCKET_SYN_SENT, SOCKET_SYN_RCVD, SOCKET_ESTABLISHED, SOCKET_FIN_WAIT_1,
         SOCKET_FIN_WAIT_2, SOCKET_CLOSE_WAIT, SOCKET_CLOSING, SOCKET_LAST_ACK, or
         SOCKET_TIME_WAIT"""
-        resp = self._send_command_get_response(_GET_CLIENT_STATE_TCP_CMD, [[socket_num]])
+        self._socknum_ll[0][0] = socket_num
+        resp = self._send_command_get_response(_GET_CLIENT_STATE_TCP_CMD, self._socknum_ll)
         return resp[0][0]
 
     def socket_connected(self, socket_num):
@@ -492,35 +519,38 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         """Write the bytearray buffer to a socket"""
         if self._debug:
             print("Writing:", buffer)
+        self._socknum_ll[0][0] = socket_num
         resp = self._send_command_get_response(_SEND_DATA_TCP_CMD,
-                                               [[socket_num], buffer],
+                                               (self._socknum_ll[0], buffer),
                                                sent_param_len_16=True)
 
         sent = resp[0][0]
         if sent != len(buffer):
             raise RuntimeError("Failed to send %d bytes (sent %d)" % (len(buffer), sent))
 
-        resp = self._send_command_get_response(_DATA_SENT_TCP_CMD, [[socket_num]])
+        resp = self._send_command_get_response(_DATA_SENT_TCP_CMD, self._socknum_ll)
         if resp[0][0] != 1:
             raise RuntimeError("Failed to verify data sent")
 
     def socket_available(self, socket_num):
         """Determine how many bytes are waiting to be read on the socket"""
-        resp = self._send_command_get_response(_AVAIL_DATA_TCP_CMD, [[socket_num]])
+        self._socknum_ll[0][0] = socket_num
+        resp = self._send_command_get_response(_AVAIL_DATA_TCP_CMD, self._socknum_ll)
         reply = struct.unpack('<H', resp[0])[0]
         if self._debug:
-            print("%d bytes available" % reply)
+            print("ESPSocket: %d bytes available" % reply)
         return reply
 
     def socket_read(self, socket_num, size):
         """Read up to 'size' bytes from the socket number. Returns a bytearray"""
         if self._debug:
-            print("Reading %d bytes from socket with status %d" %
+            print("Reading %d bytes from ESP socket with status %d" %
                   (size, self.socket_status(socket_num)))
+        self._socknum_ll[0][0] = socket_num
         resp = self._send_command_get_response(_GET_DATABUF_TCP_CMD,
-                                               [[socket_num], [size & 0xFF, (size >> 8) & 0xFF]],
+                                               (self._socknum_ll[0], (size & 0xFF, (size >> 8) & 0xFF)),
                                                sent_param_len_16=True, recv_param_len_16=True)
-        return resp[0]
+        return bytes(resp[0])
 
     def socket_connect(self, socket_num, dest, port, conn_mode=TCP_MODE):
         """Open and verify we connected a socket to a destination IP address or hostname
@@ -540,6 +570,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
 
     def socket_close(self, socket_num):
         """Close a socket using the ESP32's internal reference number"""
-        resp = self._send_command_get_response(_STOP_CLIENT_TCP_CMD, [[socket_num]])
+        self._socknum_ll[0][0] = socket_num
+        resp = self._send_command_get_response(_STOP_CLIENT_TCP_CMD, self._socknum_ll)
         if resp[0][0] != 1:
             raise RuntimeError("Failed to close socket")
