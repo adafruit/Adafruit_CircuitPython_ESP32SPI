@@ -174,10 +174,9 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         if self._debug >= 3:
             print()
 
-
+    # pylint: disable=too-many-branches
     def _send_command(self, cmd, params=None, *, param_len_16=False):
         """Send over a command with a list of parameters"""
-
         if not params:
             params = ()
 
@@ -207,8 +206,8 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
                 ptr += 1
             self._sendbuf[ptr] = len(param) & 0xFF
             ptr += 1
-            for i, p in enumerate(param):
-                self._sendbuf[ptr+i] = p
+            for j, par in enumerate(param):
+                self._sendbuf[ptr+j] = par
             ptr += len(param)
         self._sendbuf[ptr] = _END_CMD
 
@@ -223,6 +222,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
             spi.write(self._sendbuf, start=0, end=packet_len)  # pylint: disable=no-member
             if self._debug >= 3:
                 print("Wrote: ", [hex(b) for b in self._sendbuf[0:packet_len]])
+    # pylint: disable=too-many-branches
 
     def _read_byte(self, spi):
         """Read one byte from SPI"""
@@ -498,10 +498,14 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
             dest = bytes(dest, 'utf-8')
             resp = self._send_command_get_response(_START_CLIENT_TCP_CMD,
                                                    (dest, b'\x00\x00\x00\x00',
-                                                    port_param, self._socknum_ll[0], (conn_mode,)))
+                                                    port_param,
+                                                    self._socknum_ll[0],
+                                                    (conn_mode,)))
         else:                              # ip address, use 4 arg vesion
             resp = self._send_command_get_response(_START_CLIENT_TCP_CMD,
-                                                   (dest, port_param, self._socknum_ll[0], (conn_mode,)))
+                                                   (dest, port_param,
+                                                    self._socknum_ll[0],
+                                                    (conn_mode,)))
         if resp[0][0] != 1:
             raise RuntimeError("Could not connect to remote server")
 
@@ -551,8 +555,10 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
                   (size, self.socket_status(socket_num)))
         self._socknum_ll[0][0] = socket_num
         resp = self._send_command_get_response(_GET_DATABUF_TCP_CMD,
-                                               (self._socknum_ll[0], (size & 0xFF, (size >> 8) & 0xFF)),
-                                               sent_param_len_16=True, recv_param_len_16=True)
+                                               (self._socknum_ll[0],
+                                                (size & 0xFF, (size >> 8) & 0xFF)),
+                                               sent_param_len_16=True,
+                                               recv_param_len_16=True)
         return bytes(resp[0])
 
     def socket_connect(self, socket_num, dest, port, conn_mode=TCP_MODE):
