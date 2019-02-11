@@ -1,0 +1,48 @@
+# This is a common .travis.yml for generating library release zip files for
+# CircuitPython library releases using circuitpython-build-tools.
+# See https://github.com/adafruit/circuitpython-build-tools for detailed setup
+# instructions.
+
+dist: xenial
+language: python
+python:
+  - "3.6"
+
+cache:
+  pip: true
+
+# TODO: if deployment to PyPi is desired, change 'DEPLOY_PYPI' to "true",
+#       or remove the env block entirely and remove the condition in the
+#       deploy block.
+env:
+  - DEPLOY_PYPI="false"
+
+deploy:
+  - provider: releases
+    api_key: "$GITHUB_TOKEN"
+    file_glob: true
+    file: "$TRAVIS_BUILD_DIR/bundles/*"
+    skip_cleanup: true
+    overwrite: true
+    on:
+      tags: true
+  # TODO: Use 'travis encrypt --com -r adafruit/<repo slug>' to generate
+  #       the encrypted password for adafruit-travis. Paste result below.
+  - provider: pypi
+    user: adafruit-travis
+    password:
+      secure: #-- PASTE ENCRYPTED PASSWORD HERE --#
+    on:
+      tags: true
+      condition: $DEPLOY_PYPI = "true"
+
+install:
+  - pip install -r requirements.txt
+  - pip install circuitpython-build-tools Sphinx sphinx-rtd-theme
+  - pip install --force-reinstall pylint==1.9.2
+
+script:
+  - pylint adafruit_esp32spi/*.py
+  - ([[ ! -d "examples" ]] || pylint --disable=missing-docstring,invalid-name,bad-whitespace examples/*.py)
+  - circuitpython-build-bundles --filename_prefix adafruit-circuitpython-esp32spi --library_location .
+  - cd docs && sphinx-build -E -W -b html . _build/html && cd ..
