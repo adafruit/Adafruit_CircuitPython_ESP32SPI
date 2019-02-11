@@ -10,12 +10,17 @@ print("ESP32 SPI webclient test")
 TEXT_URL = "http://wifitest.adafruit.com/testwifi/index.html"
 JSON_URL = "http://api.coindesk.com/v1/bpi/currentprice/USD.json"
 
-esp32_cs = DigitalInOut(board.ESP_CS)
-esp32_ready = DigitalInOut(board.ESP_BUSY)
-esp32_gpio0 = DigitalInOut(board.ESP_GPIO0)
-esp32_reset = DigitalInOut(board.ESP_RESET)
+#esp32_cs = DigitalInOut(board.ESP_CS)
+#esp32_ready = DigitalInOut(board.ESP_BUSY)
+#esp32_reset = DigitalInOut(board.ESP_RESET)
+
+import microcontroller
+esp32_cs = DigitalInOut(microcontroller.pin.PB14)
+esp32_ready = DigitalInOut(microcontroller.pin.PB16)
+esp32_reset = DigitalInOut(microcontroller.pin.PB17)
+
 spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
-esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset, esp32_gpio0)
+esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset)
 
 requests.set_interface(esp)
 
@@ -23,10 +28,11 @@ if esp.status == adafruit_esp32spi.WL_IDLE_STATUS:
     print("ESP32 found and in idle mode")
 print("Firmware vers.", esp.firmware_version)
 print("MAC addr:", [hex(i) for i in esp.MAC_address])
-print("APs: ", esp.scan_networks())
+for ap in esp.scan_networks():
+    print("\t%s\t\tRSSI: %d" % (str(ap['ssid'], 'utf-8'), ap['rssi']))
 print("Connecting to AP...")
 esp.connect_AP(b'adafruit', b'ffffffff')
-print("Connected to", esp.ssid, "RSSI", esp.rssi)
+print("Connected to", str(esp.ssid, 'utf-8'), "\tRSSI:", esp.rssi)
 print("My IP address is", esp.pretty_ip(esp.ip_address))
 print("IP lookup adafruit.com: %s" % esp.pretty_ip(esp.get_host_by_name("adafruit.com")))
 print("Ping google.com: %d ms" % esp.ping("google.com"))
@@ -34,12 +40,17 @@ print("Ping google.com: %d ms" % esp.ping("google.com"))
 #esp._debug = True
 print("Fetching text from", TEXT_URL)
 r = requests.get(TEXT_URL)
+print('-'*40)
 print(r.text)
+print('-'*40)
 r.close()
 
+print()
 print("Fetching json from", JSON_URL)
 r = requests.get(JSON_URL)
+print('-'*40)
 print(r.json())
+print('-'*40)
 r.close()
 
 print("Done!")

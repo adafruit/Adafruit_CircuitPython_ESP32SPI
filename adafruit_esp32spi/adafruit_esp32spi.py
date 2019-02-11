@@ -123,7 +123,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
     TLS_MODE = const(2)
 
     # pylint: disable=too-many-arguments
-    def __init__(self, spi, cs_pin, ready_pin, reset_pin, gpio0_pin, *, debug=False):
+    def __init__(self, spi, cs_pin, ready_pin, reset_pin, gpio0_pin=None, *, debug=False):
         self._debug = debug
         self._buffer = bytearray(10)
         self._pbuf = bytearray(1)  # buffer for param read
@@ -138,22 +138,25 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         self._cs.direction = Direction.OUTPUT
         self._ready.direction = Direction.INPUT
         self._reset.direction = Direction.OUTPUT
-        self._gpio0.direction = Direction.INPUT
+        if self._gpio0:
+            self._gpio0.direction = Direction.INPUT
         self.reset()
     # pylint: enable=too-many-arguments
 
     def reset(self):
         """Hard reset the ESP32 using the reset pin"""
-        self._gpio0.direction = Direction.OUTPUT
         if self._debug:
             print("Reset ESP32")
-        self._gpio0.value = True  # not bootload mode
+        if self._gpio0:
+            self._gpio0.direction = Direction.OUTPUT
+            self._gpio0.value = True  # not bootload mode
         self._cs.value = True
         self._reset.value = False
         time.sleep(0.01)    # reset
         self._reset.value = True
         time.sleep(0.75)    # wait for it to boot up
-        self._gpio0.direction = Direction.INPUT
+        if self._gpio0:
+            self._gpio0.direction = Direction.INPUT
 
     def _wait_for_ready(self):
         """Wait until the ready pin goes low"""
@@ -338,7 +341,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         'ssid', 'rssi' and 'encryption' entries, one for each AP found"""
         self._send_command(_SCAN_NETWORKS)
         names = self._wait_response_cmd(_SCAN_NETWORKS)
-        print("SSID names:", names)
+        #print("SSID names:", names)
         APs = []                         # pylint: disable=invalid-name
         for i, name in enumerate(names):
             a_p = {'ssid': name}
@@ -466,7 +469,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
             dest = self.get_host_by_name(dest)
         # ttl must be between 0 and 255
         ttl = max(0, min(ttl, 255))
-        resp = self._send_command_get_response(_PING_CMD, (dest, (ttl)))
+        resp = self._send_command_get_response(_PING_CMD, (dest, (ttl,)))
         return struct.unpack('<H', resp[0])[0]
 
     def get_socket(self):
