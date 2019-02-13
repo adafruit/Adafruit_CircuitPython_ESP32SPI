@@ -13,7 +13,7 @@ import adafruit_fancyled.adafruit_fancyled as fancy
 
 # Get wifi details and more from a settings.py file
 try:
-    from settings import settings
+    from esp32spi_settings import settings
 except ImportError:
     print("WiFi settings are kept in settings.py, please add them there!")
     raise
