@@ -50,44 +50,61 @@ class ESPSPI_WiFiManager:
         self.neo_status(0)
 
     def connect(self):
+        """
+        Attempt to connect to WiFi using the current settings
+        """
         if self.debug:
             if self._esp.status == adafruit_esp32spi.WL_IDLE_STATUS:
                 print("ESP32 found and in idle mode")
             print("Firmware vers.", self._esp.firmware_version)
             print("MAC addr:", [hex(i) for i in self._esp.MAC_address])
-            for ap in self._esp.scan_networks():
-                print("\t%s\t\tRSSI: %d" % (str(ap['ssid'], 'utf-8'), ap['rssi']))
+            for access_point in self._esp.scan_networks():
+                print("\t%s\t\tRSSI: %d" % (str(access_point['ssid'], 'utf-8'), access_point['rssi']))
         while not self._esp.is_connected:
             try:
                 if self.debug:
                     print("Connecting to AP...")
                 self.neo_status((100, 0, 0))
-                self._esp.connect_AP(bytes(self.ssid,'utf-8'), bytes(self.password,'utf-8'))
+                self._esp.connect_AP(bytes(self.ssid, 'utf-8'), bytes(self.password, 'utf-8'))
                 self.neo_status((0, 100, 0))
-            except (ValueError, RuntimeError) as e:
+            except (ValueError, RuntimeError) as error:
                 if self.debug:
-                    print("Failed to connect, retrying\n", e)
+                    print("Failed to connect, retrying\n", error)
                 continue
 
     def get(self, url, **kw):
+        """
+        Pass the Get request to requests and update Status NeoPixel
+        """
         self.neo_status((100, 100, 0))
         return_val = requests.get(url, **kw)
         self.neo_status((0, 0, 100))
         return return_val
 
     def post(self, url, **kw):
+        """
+        Pass the Post request to requests and update Status NeoPixel
+        """
         self.neo_status((100, 100, 0))
         return_val = requests.post(url, **kw)
         self.neo_status((0, 0, 100))
         return return_val
 
     def ping(self, host):
+        """
+        Pass the Ping request to requests and update Status NeoPixel
+        """
+        self.neo_status((100, 100, 0))
         #Blink the LED Green
         #Send Stuff to Requests
         #stop Blinking LED
         #Return Result
+        self.neo_status((0, 0, 100))
         return None
 
     def neo_status(self, value):
+        """
+        Change Status NeoPixel if it was defined
+        """
         if self.neopix:
             self.neopix.fill(value)
