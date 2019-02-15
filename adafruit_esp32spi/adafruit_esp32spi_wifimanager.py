@@ -77,8 +77,7 @@ class ESPSPI_WiFiManager:
                 self._esp.connect_AP(bytes(self.ssid, 'utf-8'), bytes(self.password, 'utf-8'))
                 self.neo_status((0, 100, 0))
             except (ValueError, RuntimeError) as error:
-                if self.debug:
-                    print("Failed to connect, retrying\n", error)
+                print("Failed to connect, retrying\n", error)
                 continue
 
     def get(self, url, **kw):
