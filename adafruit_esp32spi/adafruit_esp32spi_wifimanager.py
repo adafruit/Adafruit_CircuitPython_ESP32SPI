@@ -43,7 +43,8 @@ class ESPSPI_WiFiManager:
         """
         :param ESP_SPIcontrol esp: The ESP object we are using
         :param dict settings: The WiFi and Adafruit IO Settings (See examples)
-        :param pin status_neopixel: (optional) The pin for the neopixel - Usually board.NEOPIXEL (default=None)
+        :param status_neopixel: (Pptional) The neopixel pin - Usually board.NEOPIXEL (default=None)
+        :type status_neopixel: Pin
         """
         # Read the settings
         self._esp = esp
