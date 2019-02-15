@@ -26,11 +26,11 @@
 
 WiFi Manager for making ESP32 SPI as WiFi much easier
 
-* Author(s): Melissa LeBlanc-Williams
+* Author(s): Melissa LeBlanc-Williams, ladyada
 """
 
 import neopixel
-from adafruit_esp32spi import adafruit_esp32spi
+import adafruit_esp32spi
 import adafruit_esp32spi.adafruit_esp32spi_requests as requests
 
 class ESPSPI_WiFiManager:
@@ -59,8 +59,8 @@ class ESPSPI_WiFiManager:
                 print("ESP32 found and in idle mode")
             print("Firmware vers.", self._esp.firmware_version)
             print("MAC addr:", [hex(i) for i in self._esp.MAC_address])
-            for access_point in self._esp.scan_networks():
-                print("\t%s\t\tRSSI: %d" % (str(access_point['ssid'], 'utf-8'), access_point['rssi']))
+            for access_pt in self._esp.scan_networks():
+                print("\t%s\t\tRSSI: %d" % (str(access_pt['ssid'], 'utf-8'), access_pt['rssi']))
         while not self._esp.is_connected:
             try:
                 if self.debug:
