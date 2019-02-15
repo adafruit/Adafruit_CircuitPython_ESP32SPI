@@ -9,7 +9,7 @@ Ensure your device works with this simple test.
 
 
 Other Examples
-------------
+---------------
 
 .. literalinclude:: ../examples/esp32spi_cheerlights.py
     :caption: examples/esp32spi_cheerlights.py
