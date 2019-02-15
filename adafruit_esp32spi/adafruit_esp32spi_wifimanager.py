@@ -40,6 +40,11 @@ class ESPSPI_WiFiManager:
     A class to help manage the Wifi connection
     """
     def __init__(self, esp, settings, status_neopixel=None):
+        """
+        :param ESP_SPIcontrol esp: The ESP object we are using
+        :param dict settings: The WiFi and Adafruit IO Settings (See examples)
+        :param pin status_neopixel: (optional) The pin for the neopixel - Usually board.NEOPIXEL (default=None)
+        """
         # Read the settings
         self._esp = esp
         self.debug = False
@@ -78,6 +83,14 @@ class ESPSPI_WiFiManager:
     def get(self, url, **kw):
         """
         Pass the Get request to requests and update Status NeoPixel
+
+        :param str url: The URL to retrieve data from
+        :param dict data: (Optional) Form data to submit
+        :param dict json: (Optional) JSON data to submit. (Data must be None)
+        :param dict header: (Optional) Header data to include
+        :param bool stream: (Optional) Whether to stream the Response
+        :return: The response from the request
+        :rtype: Response
         """
         if not self._esp.is_connected:
             self.connect()
@@ -89,6 +102,14 @@ class ESPSPI_WiFiManager:
     def post(self, url, **kw):
         """
         Pass the Post request to requests and update Status NeoPixel
+
+        :param str url: The URL to post data to
+        :param dict data: (Optional) Form data to submit
+        :param dict json: (Optional) JSON data to submit. (Data must be None)
+        :param dict header: (Optional) Header data to include
+        :param bool stream: (Optional) Whether to stream the Response
+        :return: The response from the request
+        :rtype: Response
         """
         if not self._esp.is_connected:
             self.connect()
@@ -100,6 +121,11 @@ class ESPSPI_WiFiManager:
     def ping(self, host, ttl=250):
         """
         Pass the Ping request to the ESP32, update Status NeoPixel, return response time
+
+        :param str host: The hostname or IP address to ping
+        :param int ttl: (Optional) The Time To Live in milliseconds for the packet (default=250)
+        :return: The response time in milliseconds
+        :rtype: int
         """
         if not self._esp.is_connected:
             self.connect()
@@ -111,6 +137,9 @@ class ESPSPI_WiFiManager:
     def neo_status(self, value):
         """
         Change Status NeoPixel if it was defined
+
+        :param value: The value to set the Board's Status NeoPixel to
+        :type value: int or 3-value tuple
         """
         if self.neopix:
             self.neopix.fill(value)
