@@ -34,8 +34,6 @@ pixels.fill(0)
 
 # we'll save the value in question
 last_value = value = None
-the_time = None
-times = 0
 
 while True:
     try:
@@ -62,6 +60,5 @@ while True:
 
         pixels.fill(gamma_corrected)
         last_value = value
-    times += 1
-    r = None
+    response = None
     time.sleep(60)
