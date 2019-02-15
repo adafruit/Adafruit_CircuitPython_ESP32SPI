@@ -29,6 +29,8 @@ WiFi Manager for making ESP32 SPI as WiFi much easier
 * Author(s): Melissa LeBlanc-Williams, ladyada
 """
 
+# pylint: disable=no-name-in-module
+
 import neopixel
 import adafruit_esp32spi
 import adafruit_esp32spi.adafruit_esp32spi_requests as requests
