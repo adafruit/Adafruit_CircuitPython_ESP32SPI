@@ -30,6 +30,7 @@ WiFi Manager for making ESP32 SPI as WiFi much easier
 """
 
 import neopixel
+from adafruit_esp32spi import adafruit_esp32spi
 import adafruit_esp32spi.adafruit_esp32spi_requests as requests
 
 class ESPSPI_WiFiManager:
@@ -76,31 +77,34 @@ class ESPSPI_WiFiManager:
         """
         Pass the Get request to requests and update Status NeoPixel
         """
+        if not self._esp.is_connected:
+            self.connect()
         self.neo_status((100, 100, 0))
         return_val = requests.get(url, **kw)
-        self.neo_status((0, 0, 100))
+        self.neo_status(0)
         return return_val
 
     def post(self, url, **kw):
         """
         Pass the Post request to requests and update Status NeoPixel
         """
+        if not self._esp.is_connected:
+            self.connect()
         self.neo_status((100, 100, 0))
         return_val = requests.post(url, **kw)
-        self.neo_status((0, 0, 100))
+        self.neo_status(0)
         return return_val
 
-    def ping(self, host):
+    def ping(self, host, ttl=250):
         """
-        Pass the Ping request to requests and update Status NeoPixel
+        Pass the Ping request to the ESP32, update Status NeoPixel, return response time
         """
+        if not self._esp.is_connected:
+            self.connect()
         self.neo_status((100, 100, 0))
-        #Blink the LED Green
-        #Send Stuff to Requests
-        #stop Blinking LED
-        #Return Result
-        self.neo_status((0, 0, 100))
-        return None
+        response_time = self._esp.ping(host, ttl=ttl)
+        self.neo_status(0)
+        return response_time
 
     def neo_status(self, value):
         """
