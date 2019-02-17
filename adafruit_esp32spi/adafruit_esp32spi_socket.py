@@ -139,6 +139,7 @@ class socket:
         return ret
 
     def settimeout(self, value):
+        """Set the read timeout for sockets, if value is 0 it will block"""
         self._timeout = value
 
     def close(self):
