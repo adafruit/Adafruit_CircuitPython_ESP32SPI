@@ -39,11 +39,11 @@ class ESPSPI_WiFiManager:
     """
     A class to help manage the Wifi connection
     """
-    def __init__(self, esp, settings, attempts=1, status_neopixel=None):
+    def __init__(self, esp, settings, status_neopixel=None, attempts=1):
         """
         :param ESP_SPIcontrol esp: The ESP object we are using
         :param dict settings: The WiFi and Adafruit IO Settings (See examples)
-        :param attempts: (Optional) Failed attempts before resetting the ESP32 (default=3)
+        :param int attempts: (Optional) Failed attempts before resetting the ESP32 (default=3)
         :param status_neopixel: (Optional) The neopixel pin - Usually board.NEOPIXEL (default=None)
         :type status_neopixel: Pin
         """
