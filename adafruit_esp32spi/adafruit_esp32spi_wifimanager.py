@@ -39,11 +39,12 @@ class ESPSPI_WiFiManager:
     """
     A class to help manage the Wifi connection
     """
-    def __init__(self, esp, settings, status_neopixel=None):
+    def __init__(self, esp, settings, attempts=3, status_neopixel=None):
         """
         :param ESP_SPIcontrol esp: The ESP object we are using
         :param dict settings: The WiFi and Adafruit IO Settings (See examples)
-        :param status_neopixel: (Pptional) The neopixel pin - Usually board.NEOPIXEL (default=None)
+        :param attempts: (Optional) Failed attempts before resetting the ESP32 (default=3)
+        :param status_neopixel: (Optional) The neopixel pin - Usually board.NEOPIXEL (default=None)
         :type status_neopixel: Pin
         """
         # Read the settings
@@ -51,6 +52,7 @@ class ESPSPI_WiFiManager:
         self.debug = False
         self.ssid = settings['ssid']
         self.password = settings['password']
+        self.attempts = 3
         requests.set_interface(self._esp)
         if status_neopixel:
             self.neopix = neopixel.NeoPixel(status_neopixel, 1, brightness=0.2)
@@ -69,15 +71,22 @@ class ESPSPI_WiFiManager:
             print("MAC addr:", [hex(i) for i in self._esp.MAC_address])
             for access_pt in self._esp.scan_networks():
                 print("\t%s\t\tRSSI: %d" % (str(access_pt['ssid'], 'utf-8'), access_pt['rssi']))
+        failure_count = 0
         while not self._esp.is_connected:
             try:
                 if self.debug:
                     print("Connecting to AP...")
                 self.neo_status((100, 0, 0))
                 self._esp.connect_AP(bytes(self.ssid, 'utf-8'), bytes(self.password, 'utf-8'))
+                failure_count = 0
                 self.neo_status((0, 100, 0))
             except (ValueError, RuntimeError) as error:
                 print("Failed to connect, retrying\n", error)
+                failure_count += 1
+                if failure_count >= self.attempts:
+                    failure_count = 0
+                    self._esp.reset()
+                    print("Resetting ESP32\n", error)
                 continue
 
     def get(self, url, **kw):
