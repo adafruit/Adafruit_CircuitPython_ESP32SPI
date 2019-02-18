@@ -132,7 +132,16 @@ class ESPSPI_WiFiManager:
         if not self._esp.is_connected:
             self.connect()
         self.neo_status((100, 100, 0))
-        return_val = requests.post(url, **kw)
+        attempt_count = 0
+        while attempt_count < self.attempts:
+            try:
+                attempt_count += 1
+                return_val = requests.post(url, **kw)
+            except(ValueError, RuntimeError) as error:
+                if attempt_count >= self.attempts:
+                    attempt_count = 0
+                    self._esp.reset()
+                    print("Resetting ESP32\n", error)
         self.neo_status(0)
         return return_val
 
