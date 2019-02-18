@@ -39,7 +39,7 @@ class ESPSPI_WiFiManager:
     """
     A class to help manage the Wifi connection
     """
-    def __init__(self, esp, settings, attempts=3, status_neopixel=None):
+    def __init__(self, esp, settings, attempts=1, status_neopixel=None):
         """
         :param ESP_SPIcontrol esp: The ESP object we are using
         :param dict settings: The WiFi and Adafruit IO Settings (See examples)
@@ -52,7 +52,7 @@ class ESPSPI_WiFiManager:
         self.debug = False
         self.ssid = settings['ssid']
         self.password = settings['password']
-        self.attempts = 3
+        self.attempts = attempts
         requests.set_interface(self._esp)
         if status_neopixel:
             self.neopix = neopixel.NeoPixel(status_neopixel, 1, brightness=0.2)
