@@ -39,11 +39,12 @@ class ESPSPI_WiFiManager:
     """
     A class to help manage the Wifi connection
     """
-    def __init__(self, esp, settings, status_neopixel=None):
+    def __init__(self, esp, settings, status_neopixel=None, attempts=2):
         """
         :param ESP_SPIcontrol esp: The ESP object we are using
         :param dict settings: The WiFi and Adafruit IO Settings (See examples)
-        :param status_neopixel: (Pptional) The neopixel pin - Usually board.NEOPIXEL (default=None)
+        :param int attempts: (Optional) Failed attempts before resetting the ESP32 (default=2)
+        :param status_neopixel: (Optional) The neopixel pin - Usually board.NEOPIXEL (default=None)
         :type status_neopixel: Pin
         """
         # Read the settings
@@ -51,12 +52,21 @@ class ESPSPI_WiFiManager:
         self.debug = False
         self.ssid = settings['ssid']
         self.password = settings['password']
+        self.attempts = attempts
         requests.set_interface(self._esp)
         if status_neopixel:
             self.neopix = neopixel.NeoPixel(status_neopixel, 1, brightness=0.2)
         else:
             self.neopix = None
         self.neo_status(0)
+
+    def reset(self):
+        """
+        Perform a hard reset on the ESP32
+        """
+        if self.debug:
+            print("Resetting ESP32")
+        self._esp.reset()
 
     def connect(self):
         """
@@ -69,15 +79,21 @@ class ESPSPI_WiFiManager:
             print("MAC addr:", [hex(i) for i in self._esp.MAC_address])
             for access_pt in self._esp.scan_networks():
                 print("\t%s\t\tRSSI: %d" % (str(access_pt['ssid'], 'utf-8'), access_pt['rssi']))
+        failure_count = 0
         while not self._esp.is_connected:
             try:
                 if self.debug:
                     print("Connecting to AP...")
                 self.neo_status((100, 0, 0))
                 self._esp.connect_AP(bytes(self.ssid, 'utf-8'), bytes(self.password, 'utf-8'))
+                failure_count = 0
                 self.neo_status((0, 100, 0))
             except (ValueError, RuntimeError) as error:
                 print("Failed to connect, retrying\n", error)
+                failure_count += 1
+                if failure_count >= self.attempts:
+                    failure_count = 0
+                    self.reset()
                 continue
 
     def get(self, url, **kw):
@@ -94,7 +110,7 @@ class ESPSPI_WiFiManager:
         """
         if not self._esp.is_connected:
             self.connect()
-        self.neo_status((100, 100, 0))
+        self.neo_status((0, 0, 100))
         return_val = requests.get(url, **kw)
         self.neo_status(0)
         return return_val
@@ -113,9 +129,8 @@ class ESPSPI_WiFiManager:
         """
         if not self._esp.is_connected:
             self.connect()
-        self.neo_status((100, 100, 0))
+        self.neo_status((0, 0, 100))
         return_val = requests.post(url, **kw)
-        self.neo_status(0)
         return return_val
 
     def put(self, url, **kw):
@@ -132,7 +147,7 @@ class ESPSPI_WiFiManager:
         """
         if not self._esp.is_connected:
             self.connect()
-        self.neo_status((100, 100, 0))
+        self.neo_status((0, 0, 100))
         return_val = requests.put(url, **kw)
         self.neo_status(0)
         return return_val
@@ -151,7 +166,7 @@ class ESPSPI_WiFiManager:
         """
         if not self._esp.is_connected:
             self.connect()
-        self.neo_status((100, 100, 0))
+        self.neo_status((0, 0, 100))
         return_val = requests.patch(url, **kw)
         self.neo_status(0)
         return return_val
@@ -170,7 +185,7 @@ class ESPSPI_WiFiManager:
         """
         if not self._esp.is_connected:
             self.connect()
-        self.neo_status((100, 100, 0))
+        self.neo_status((0, 0, 100))
         return_val = requests.delete(url, **kw)
         self.neo_status(0)
         return return_val
@@ -186,7 +201,7 @@ class ESPSPI_WiFiManager:
         """
         if not self._esp.is_connected:
             self.connect()
-        self.neo_status((100, 100, 0))
+        self.neo_status((0, 0, 100))
         response_time = self._esp.ping(host, ttl=ttl)
         self.neo_status(0)
         return response_time
