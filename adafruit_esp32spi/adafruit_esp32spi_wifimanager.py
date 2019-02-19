@@ -110,7 +110,7 @@ class ESPSPI_WiFiManager:
         """
         if not self._esp.is_connected:
             self.connect()
-        self.neo_status((100, 100, 0))
+        self.neo_status((0, 0, 100))
         return_val = requests.get(url, **kw)
         self.neo_status(0)
         return return_val
@@ -129,7 +129,7 @@ class ESPSPI_WiFiManager:
         """
         if not self._esp.is_connected:
             self.connect()
-        self.neo_status((100, 100, 0))
+        self.neo_status((0, 0, 100))
         return_val = requests.post(url, **kw)
         return return_val
 
@@ -147,7 +147,7 @@ class ESPSPI_WiFiManager:
         """
         if not self._esp.is_connected:
             self.connect()
-        self.neo_status((100, 100, 0))
+        self.neo_status((0, 0, 100))
         return_val = requests.put(url, **kw)
         self.neo_status(0)
         return return_val
@@ -166,7 +166,7 @@ class ESPSPI_WiFiManager:
         """
         if not self._esp.is_connected:
             self.connect()
-        self.neo_status((100, 100, 0))
+        self.neo_status((0, 0, 100))
         return_val = requests.patch(url, **kw)
         self.neo_status(0)
         return return_val
@@ -185,7 +185,7 @@ class ESPSPI_WiFiManager:
         """
         if not self._esp.is_connected:
             self.connect()
-        self.neo_status((100, 100, 0))
+        self.neo_status((0, 0, 100))
         return_val = requests.delete(url, **kw)
         self.neo_status(0)
         return return_val
@@ -201,7 +201,7 @@ class ESPSPI_WiFiManager:
         """
         if not self._esp.is_connected:
             self.connect()
-        self.neo_status((100, 100, 0))
+        self.neo_status((0, 0, 100))
         response_time = self._esp.ping(host, ttl=ttl)
         self.neo_status(0)
         return response_time
