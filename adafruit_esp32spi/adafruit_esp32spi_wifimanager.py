@@ -118,6 +118,63 @@ class ESPSPI_WiFiManager:
         self.neo_status(0)
         return return_val
 
+    def put(self, url, **kw):
+        """
+        Pass the put request to requests and update Status NeoPixel
+
+        :param str url: The URL to PUT data to
+        :param dict data: (Optional) Form data to submit
+        :param dict json: (Optional) JSON data to submit. (Data must be None)
+        :param dict header: (Optional) Header data to include
+        :param bool stream: (Optional) Whether to stream the Response
+        :return: The response from the request
+        :rtype: Response
+        """
+        if not self._esp.is_connected:
+            self.connect()
+        self.neo_status((100, 100, 0))
+        return_val = requests.put(url, **kw)
+        self.neo_status(0)
+        return return_val
+
+    def patch(self, url, **kw):
+        """
+        Pass the patch request to requests and update Status NeoPixel
+
+        :param str url: The URL to PUT data to
+        :param dict data: (Optional) Form data to submit
+        :param dict json: (Optional) JSON data to submit. (Data must be None)
+        :param dict header: (Optional) Header data to include
+        :param bool stream: (Optional) Whether to stream the Response
+        :return: The response from the request
+        :rtype: Response
+        """
+        if not self._esp.is_connected:
+            self.connect()
+        self.neo_status((100, 100, 0))
+        return_val = requests.patch(url, **kw)
+        self.neo_status(0)
+        return return_val
+
+    def delete(self, url, **kw):
+        """
+        Pass the delete request to requests and update Status NeoPixel
+
+        :param str url: The URL to PUT data to
+        :param dict data: (Optional) Form data to submit
+        :param dict json: (Optional) JSON data to submit. (Data must be None)
+        :param dict header: (Optional) Header data to include
+        :param bool stream: (Optional) Whether to stream the Response
+        :return: The response from the request
+        :rtype: Response
+        """
+        if not self._esp.is_connected:
+            self.connect()
+        self.neo_status((100, 100, 0))
+        return_val = requests.delete(url, **kw)
+        self.neo_status(0)
+        return return_val
+
     def ping(self, host, ttl=250):
         """
         Pass the Ping request to the ESP32, update Status NeoPixel, return response time
