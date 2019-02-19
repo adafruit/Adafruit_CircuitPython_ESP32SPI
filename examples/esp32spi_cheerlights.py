@@ -47,6 +47,7 @@ while True:
         response.close()
     except (ValueError, RuntimeError) as e:
         print("Failed to get data, retrying\n", e)
+        wifi.reset()
         continue
 
     if not value:

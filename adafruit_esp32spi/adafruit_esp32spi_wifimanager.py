@@ -39,11 +39,11 @@ class ESPSPI_WiFiManager:
     """
     A class to help manage the Wifi connection
     """
-    def __init__(self, esp, settings, status_neopixel=None, attempts=1):
+    def __init__(self, esp, settings, status_neopixel=None, attempts=2):
         """
         :param ESP_SPIcontrol esp: The ESP object we are using
         :param dict settings: The WiFi and Adafruit IO Settings (See examples)
-        :param int attempts: (Optional) Failed attempts before resetting the ESP32 (default=1)
+        :param int attempts: (Optional) Failed attempts before resetting the ESP32 (default=2)
         :param status_neopixel: (Optional) The neopixel pin - Usually board.NEOPIXEL (default=None)
         :type status_neopixel: Pin
         """
@@ -59,6 +59,14 @@ class ESPSPI_WiFiManager:
         else:
             self.neopix = None
         self.neo_status(0)
+
+    def reset(self):
+        """
+        Perform a hard reset on the ESP32
+        """
+        if self.debug:
+            print("Resetting ESP32\n", error)
+        self._esp.reset()
 
     def connect(self):
         """
@@ -85,8 +93,7 @@ class ESPSPI_WiFiManager:
                 failure_count += 1
                 if failure_count >= self.attempts:
                     failure_count = 0
-                    self._esp.reset()
-                    print("Resetting ESP32\n", error)
+                    self.reset()
                 continue
 
     def get(self, url, **kw):
@@ -104,16 +111,7 @@ class ESPSPI_WiFiManager:
         if not self._esp.is_connected:
             self.connect()
         self.neo_status((100, 100, 0))
-        attempt_count = 0
-        while attempt_count < self.attempts:
-            try:
-                attempt_count += 1
-                return_val = requests.get(url, **kw)
-            except(ValueError, RuntimeError) as error:
-                if attempt_count >= self.attempts:
-                    attempt_count = 0
-                    self._esp.reset()
-                    print("Resetting ESP32\n", error)
+        return_val = requests.get(url, **kw)
         self.neo_status(0)
         return return_val
 
@@ -132,17 +130,7 @@ class ESPSPI_WiFiManager:
         if not self._esp.is_connected:
             self.connect()
         self.neo_status((100, 100, 0))
-        attempt_count = 0
-        while attempt_count < self.attempts:
-            try:
-                attempt_count += 1
-                return_val = requests.post(url, **kw)
-            except(ValueError, RuntimeError) as error:
-                if attempt_count >= self.attempts:
-                    attempt_count = 0
-                    self._esp.reset()
-                    print("Resetting ESP32\n", error)
-        self.neo_status(0)
+        return_val = requests.post(url, **kw)
         return return_val
 
     def put(self, url, **kw):

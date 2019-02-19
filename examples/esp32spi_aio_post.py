@@ -38,6 +38,7 @@ while True:
         print("OK")
     except (ValueError, RuntimeError) as e:
         print("Failed to get data, retrying\n", e)
+        wifi.reset()
         continue
     response = None
     time.sleep(15)
