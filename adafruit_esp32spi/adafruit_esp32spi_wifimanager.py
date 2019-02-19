@@ -65,7 +65,7 @@ class ESPSPI_WiFiManager:
         Perform a hard reset on the ESP32
         """
         if self.debug:
-            print("Resetting ESP32\n", error)
+            print("Resetting ESP32")
         self._esp.reset()
 
     def connect(self):
