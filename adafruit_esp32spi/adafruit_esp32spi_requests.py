@@ -103,8 +103,11 @@ class Response:
 
     def json(self):
         """The HTTP content, parsed into a json dictionary"""
-        import ujson
-        return ujson.loads(self.content)
+        try:
+            import json as json_module
+        except ImportError:
+            import ujson as json_module
+        return json_module.loads(self.content)
 
     def iter_content(self, chunk_size=1, decode_unicode=False):
         """An iterator that will stream data by only reading 'chunk_size'
@@ -176,8 +179,11 @@ def request(method, url, data=None, json=None, headers=None, stream=False):
             sock.write(b"\r\n")
         if json is not None:
             assert data is None
-            import ujson
-            data = ujson.dumps(json)
+            try:
+                import json as json_module
+            except ImportError:
+                import ujson as json_module
+            data = json_module.dumps(json)
             sock.write(b"Content-Type: application/json\r\n")
         if data:
             sock.write(b"Content-Length: %d\r\n" % len(data))
