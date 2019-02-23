@@ -23,6 +23,7 @@ esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset)
 wifi = adafruit_esp32spi_wifimanager.ESPSPI_WiFiManager(esp, secrets, board.NEOPIXEL)
 
 counter = 0
+
 while True:
     try:
         print("Posting data...", end='')
@@ -31,7 +32,8 @@ while True:
         payload = {'value':data}
         response = wifi.post(
             "https://io.adafruit.com/api/v2/"+secrets['aio_username']+"/feeds/"+feed+"/data",
-            json=payload,headers={bytes("X-AIO-KEY","utf-8"):bytes(secrets['aio_key'],"utf-8")})
+            json=payload,
+            headers={bytes("X-AIO-KEY", "utf-8"):bytes(secrets['aio_key'], "utf-8")})
         print(response.json())
         response.close()
         counter = counter + 1

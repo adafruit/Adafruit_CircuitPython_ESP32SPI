@@ -40,7 +40,7 @@ while True:
         print("Fetching json from", DATA_SOURCE)
         response = wifi.get(DATA_SOURCE)
         print(response.json())
-        value=response.json()
+        value = response.json()
         for key in DATA_LOCATION:
             value = value[key]
             print(value)
@@ -53,7 +53,7 @@ while True:
     if not value:
         continue
     if last_value != value:
-        color = int(value[1:],16)
+        color = int(value[1:], 16)
         red = color >> 16 & 0xFF
         green = color >> 8 & 0xFF
         blue = color& 0xFF

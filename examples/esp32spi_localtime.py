@@ -2,7 +2,6 @@ import time
 import board
 import busio
 from digitalio import DigitalInOut
-import microcontroller
 from adafruit_esp32spi import adafruit_esp32spi
 from adafruit_esp32spi import adafruit_esp32spi_wifimanager
 import rtc
