@@ -410,10 +410,10 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
             self.reset()
             return False
 
-    def connect(self, settings):
-        """Connect to an access point using a settings dictionary
+    def connect(self, secrets):
+        """Connect to an access point using a secrets dictionary
         that contains a 'ssid' and 'password' entry"""
-        self.connect_AP(settings['ssid'], settings['password'])
+        self.connect_AP(secrets['ssid'], secrets['password'])
 
     def connect_AP(self, ssid, password): # pylint: disable=invalid-name
         """Connect to an access point with given name and password.
