@@ -43,6 +43,8 @@ def set_interface(iface):
 SOCK_STREAM = const(1)
 AF_INET = const(2)
 
+MAX_PACKET = const(4000)
+
 # pylint: disable=too-many-arguments, unused-argument
 def getaddrinfo(host, port, family=0, socktype=0, proto=0, flags=0):
     """Given a hostname and a port name, return a 'socket.getaddrinfo'
@@ -85,7 +87,7 @@ class socket:
         #print("Socket readline")
         while b'\r\n' not in self._buffer:
             # there's no line already in there, read some more
-            avail = min(_the_interface.socket_available(self._socknum), 4000)
+            avail = min(_the_interface.socket_available(self._socknum), MAX_PACKET)
             if avail:
                 self._buffer += _the_interface.socket_read(self._socknum, avail)
         firstline, self._buffer = self._buffer.split(b'\r\n', 1)
@@ -98,7 +100,7 @@ class socket:
         #print("Socket read", size)
         if size == 0:   # read as much as we can at the moment
             while True:
-                avail = min(_the_interface.socket_available(self._socknum), 4000)
+                avail = min(_the_interface.socket_available(self._socknum), MAX_PACKET)
                 if avail:
                     self._buffer += _the_interface.socket_read(self._socknum, avail)
                 else:
@@ -114,7 +116,7 @@ class socket:
         received = []
         while to_read > 0:
             #print("Bytes to read:", to_read)
-            avail = min(_the_interface.socket_available(self._socknum), 4000)
+            avail = min(_the_interface.socket_available(self._socknum), MAX_PACKET)
             if avail:
                 stamp = time.monotonic()
                 recv = _the_interface.socket_read(self._socknum, min(to_read, avail))
@@ -137,8 +139,7 @@ class socket:
         return ret
 
     def settimeout(self, value):
-        """Set the receiving timeout, in seconds. If set to zero, we
-        fully block until data is ready"""
+        """Set the read timeout for sockets, if value is 0 it will block"""
         self._timeout = value
 
     def close(self):

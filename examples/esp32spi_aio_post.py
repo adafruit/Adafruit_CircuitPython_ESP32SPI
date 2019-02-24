@@ -8,11 +8,11 @@ from adafruit_esp32spi import adafruit_esp32spi_wifimanager
 
 print("ESP32 SPI webclient test")
 
-# Get wifi details and more from a settings.py file
+# Get wifi details and more from a secrets.py file
 try:
-    from esp32spi_settings import settings
+    from secrets import secrets
 except ImportError:
-    print("WiFi settings are kept in esp32spi_settings.py, please add them there!")
+    print("WiFi secrets are kept in secrets.py, please add them there!")
     raise
 
 esp32_cs = DigitalInOut(board.D9)
@@ -20,9 +20,10 @@ esp32_ready = DigitalInOut(board.D10)
 esp32_reset = DigitalInOut(board.D5)
 spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
 esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset)
-wifi = adafruit_esp32spi_wifimanager.ESPSPI_WiFiManager(esp, settings, board.NEOPIXEL)
+wifi = adafruit_esp32spi_wifimanager.ESPSPI_WiFiManager(esp, secrets, board.NEOPIXEL)
 
 counter = 0
+
 while True:
     try:
         print("Posting data...", end='')
@@ -30,8 +31,9 @@ while True:
         feed = 'test'
         payload = {'value':data}
         response = wifi.post(
-            "https://io.adafruit.com/api/v2/"+settings['aio_username']+"/feeds/"+feed+"/data",
-            json=payload,headers={bytes("X-AIO-KEY","utf-8"):bytes(settings['aio_key'],"utf-8")})
+            "https://io.adafruit.com/api/v2/"+secrets['aio_username']+"/feeds/"+feed+"/data",
+            json=payload,
+            headers={bytes("X-AIO-KEY", "utf-8"):bytes(secrets['aio_key'], "utf-8")})
         print(response.json())
         response.close()
         counter = counter + 1

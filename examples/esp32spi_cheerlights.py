@@ -9,11 +9,11 @@ from adafruit_esp32spi import adafruit_esp32spi_wifimanager
 import neopixel
 import adafruit_fancyled.adafruit_fancyled as fancy
 
-# Get wifi details and more from a settings.py file
+# Get wifi details and more from a secrets.py file
 try:
-    from esp32spi_settings import settings
+    from secrets import secrets
 except ImportError:
-    print("WiFi settings are kept in esp32spi_settings.py, please add them there!")
+    print("WiFi secrets are kept in secrets.py, please add them there!")
     raise
 
 print("ESP32 SPI webclient test")
@@ -26,7 +26,7 @@ esp32_ready = DigitalInOut(board.D10)
 esp32_reset = DigitalInOut(board.D5)
 spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
 esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset)
-wifi = adafruit_esp32spi_wifimanager.ESPSPI_WiFiManager(esp, settings, board.NEOPIXEL)
+wifi = adafruit_esp32spi_wifimanager.ESPSPI_WiFiManager(esp, secrets, board.NEOPIXEL)
 
 # neopixels
 pixels = neopixel.NeoPixel(board.A1, 16, brightness=0.3)
@@ -40,7 +40,7 @@ while True:
         print("Fetching json from", DATA_SOURCE)
         response = wifi.get(DATA_SOURCE)
         print(response.json())
-        value=response.json()
+        value = response.json()
         for key in DATA_LOCATION:
             value = value[key]
             print(value)
@@ -53,7 +53,7 @@ while True:
     if not value:
         continue
     if last_value != value:
-        color = int(value[1:],16)
+        color = int(value[1:], 16)
         red = color >> 16 & 0xFF
         green = color >> 8 & 0xFF
         blue = color& 0xFF
