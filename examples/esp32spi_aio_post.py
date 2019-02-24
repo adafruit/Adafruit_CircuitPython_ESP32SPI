@@ -10,7 +10,7 @@ print("ESP32 SPI webclient test")
 
 # Get wifi details and more from a secrets.py file
 try:
-    from esp32spi_secrets import secrets
+    from secrets import secrets
 except ImportError:
     print("WiFi secrets are kept in secrets.py, please add them there!")
     raise
