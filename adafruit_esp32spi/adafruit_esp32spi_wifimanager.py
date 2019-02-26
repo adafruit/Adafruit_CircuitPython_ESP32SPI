@@ -211,3 +211,11 @@ class ESPSPI_WiFiManager:
         """
         if self.statuspix:
             self.statuspix.fill(value)
+
+    def signal_strength(self):
+        """
+        Returns receiving signal strength indicator in dBm
+        """
+        if not self._esp.is_connected:
+            self.connect()
+        return self._esp.rssi()
