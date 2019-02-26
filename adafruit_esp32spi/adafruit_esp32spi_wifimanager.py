@@ -38,13 +38,13 @@ class ESPSPI_WiFiManager:
     """
     A class to help manage the Wifi connection
     """
-    def __init__(self, esp, secrets, status_pixel=None, attempts=2):
+    def __init__(self, esp, secrets, status_pixel, attempts=2):
         """
         :param ESP_SPIcontrol esp: The ESP object we are using
         :param dict secrets: The WiFi and Adafruit IO secrets dict (See examples)
-        :param int attempts: (Optional) Failed attempts before resetting the ESP32 (default=2)
-        :param status_pixel: (Optional) The pixel pin - Usually board.NEOPIXEL (default=None)
+        :param status_pixel: (Optional) The pixel device - Usually a NeoPixel or DotStar (default=None)
         :type status_pixel: NeoPixel or DotStar
+        :param int attempts: (Optional) Failed attempts before resetting the ESP32 (default=2)
         """
         # Read the settings
         self._esp = esp
