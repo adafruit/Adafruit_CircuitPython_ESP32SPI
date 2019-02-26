@@ -42,7 +42,7 @@ class ESPSPI_WiFiManager:
         """
         :param ESP_SPIcontrol esp: The ESP object we are using
         :param dict secrets: The WiFi and Adafruit IO secrets dict (See examples)
-        :param status_pixel: (Optional) The pixel device - Usually a NeoPixel or DotStar (default=None)
+        :param status_pixel: (Optional) The pixel device - A NeoPixel or DotStar (default=None)
         :type status_pixel: NeoPixel or DotStar
         :param int attempts: (Optional) Failed attempts before resetting the ESP32 (default=2)
         """
