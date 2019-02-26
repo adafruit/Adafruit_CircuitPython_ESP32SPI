@@ -202,6 +202,16 @@ class ESPSPI_WiFiManager:
         self.pixel_status(0)
         return response_time
 
+    def ip_address(self):
+        """
+        Returns a formatted local IP address, update status pixel.
+        """
+        if not self._esp.is_connected:
+            self.connect()
+        self.pixel_status((0, 0, 100))
+        self.pixel_status(0)
+        return self._esp.pretty_ip(self._esp.ip_address)
+
     def pixel_status(self, value):
         """
         Change Status NeoPixel if it was defined
