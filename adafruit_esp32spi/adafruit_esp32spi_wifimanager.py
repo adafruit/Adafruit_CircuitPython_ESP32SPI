@@ -31,7 +31,6 @@ WiFi Manager for making ESP32 SPI as WiFi much easier
 
 # pylint: disable=no-name-in-module
 
-import neopixel
 import adafruit_esp32spi
 import adafruit_esp32spi.adafruit_esp32spi_requests as requests
 
@@ -39,13 +38,13 @@ class ESPSPI_WiFiManager:
     """
     A class to help manage the Wifi connection
     """
-    def __init__(self, esp, secrets, status_neopixel=None, attempts=2):
+    def __init__(self, esp, secrets, status_pixel, attempts=2):
         """
         :param ESP_SPIcontrol esp: The ESP object we are using
         :param dict secrets: The WiFi and Adafruit IO secrets dict (See examples)
+        :param status_pixel: (Optional) The pixel device - A NeoPixel or DotStar (default=None)
+        :type status_pixel: NeoPixel or DotStar
         :param int attempts: (Optional) Failed attempts before resetting the ESP32 (default=2)
-        :param status_neopixel: (Optional) The neopixel pin - Usually board.NEOPIXEL (default=None)
-        :type status_neopixel: Pin
         """
         # Read the settings
         self._esp = esp
@@ -54,11 +53,8 @@ class ESPSPI_WiFiManager:
         self.password = secrets['password']
         self.attempts = attempts
         requests.set_interface(self._esp)
-        if status_neopixel:
-            self.neopix = neopixel.NeoPixel(status_neopixel, 1, brightness=0.2)
-        else:
-            self.neopix = None
-        self.neo_status(0)
+        self.statuspix = status_pixel
+        self.pixel_status(0)
 
     def reset(self):
         """
@@ -84,10 +80,10 @@ class ESPSPI_WiFiManager:
             try:
                 if self.debug:
                     print("Connecting to AP...")
-                self.neo_status((100, 0, 0))
+                self.pixel_status((100, 0, 0))
                 self._esp.connect_AP(bytes(self.ssid, 'utf-8'), bytes(self.password, 'utf-8'))
                 failure_count = 0
-                self.neo_status((0, 100, 0))
+                self.pixel_status((0, 100, 0))
             except (ValueError, RuntimeError) as error:
                 print("Failed to connect, retrying\n", error)
                 failure_count += 1
@@ -110,9 +106,9 @@ class ESPSPI_WiFiManager:
         """
         if not self._esp.is_connected:
             self.connect()
-        self.neo_status((0, 0, 100))
+        self.pixel_status((0, 0, 100))
         return_val = requests.get(url, **kw)
-        self.neo_status(0)
+        self.pixel_status(0)
         return return_val
 
     def post(self, url, **kw):
@@ -129,7 +125,7 @@ class ESPSPI_WiFiManager:
         """
         if not self._esp.is_connected:
             self.connect()
-        self.neo_status((0, 0, 100))
+        self.pixel_status((0, 0, 100))
         return_val = requests.post(url, **kw)
         return return_val
 
@@ -147,9 +143,9 @@ class ESPSPI_WiFiManager:
         """
         if not self._esp.is_connected:
             self.connect()
-        self.neo_status((0, 0, 100))
+        self.pixel_status((0, 0, 100))
         return_val = requests.put(url, **kw)
-        self.neo_status(0)
+        self.pixel_status(0)
         return return_val
 
     def patch(self, url, **kw):
@@ -166,9 +162,9 @@ class ESPSPI_WiFiManager:
         """
         if not self._esp.is_connected:
             self.connect()
-        self.neo_status((0, 0, 100))
+        self.pixel_status((0, 0, 100))
         return_val = requests.patch(url, **kw)
-        self.neo_status(0)
+        self.pixel_status(0)
         return return_val
 
     def delete(self, url, **kw):
@@ -185,9 +181,9 @@ class ESPSPI_WiFiManager:
         """
         if not self._esp.is_connected:
             self.connect()
-        self.neo_status((0, 0, 100))
+        self.pixel_status((0, 0, 100))
         return_val = requests.delete(url, **kw)
-        self.neo_status(0)
+        self.pixel_status(0)
         return return_val
 
     def ping(self, host, ttl=250):
@@ -201,17 +197,17 @@ class ESPSPI_WiFiManager:
         """
         if not self._esp.is_connected:
             self.connect()
-        self.neo_status((0, 0, 100))
+        self.pixel_status((0, 0, 100))
         response_time = self._esp.ping(host, ttl=ttl)
-        self.neo_status(0)
+        self.pixel_status(0)
         return response_time
 
-    def neo_status(self, value):
+    def pixel_status(self, value):
         """
         Change Status NeoPixel if it was defined
 
         :param value: The value to set the Board's Status NeoPixel to
         :type value: int or 3-value tuple
         """
-        if self.neopix:
-            self.neopix.fill(value)
+        if self.statuspix:
+            self.statuspix.fill(value)
