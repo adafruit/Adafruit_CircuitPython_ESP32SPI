@@ -94,7 +94,7 @@ class ESPSPI_WiFiManager:
 
     def get(self, url, **kw):
         """
-        Pass the Get request to requests and update Status NeoPixel
+        Pass the Get request to requests and update status pixel
 
         :param str url: The URL to retrieve data from
         :param dict data: (Optional) Form data to submit
@@ -113,7 +113,7 @@ class ESPSPI_WiFiManager:
 
     def post(self, url, **kw):
         """
-        Pass the Post request to requests and update Status NeoPixel
+        Pass the Post request to requests and update status pixel
 
         :param str url: The URL to post data to
         :param dict data: (Optional) Form data to submit
@@ -131,7 +131,7 @@ class ESPSPI_WiFiManager:
 
     def put(self, url, **kw):
         """
-        Pass the put request to requests and update Status NeoPixel
+        Pass the put request to requests and update status pixel
 
         :param str url: The URL to PUT data to
         :param dict data: (Optional) Form data to submit
@@ -150,7 +150,7 @@ class ESPSPI_WiFiManager:
 
     def patch(self, url, **kw):
         """
-        Pass the patch request to requests and update Status NeoPixel
+        Pass the patch request to requests and update status pixel
 
         :param str url: The URL to PUT data to
         :param dict data: (Optional) Form data to submit
@@ -169,7 +169,7 @@ class ESPSPI_WiFiManager:
 
     def delete(self, url, **kw):
         """
-        Pass the delete request to requests and update Status NeoPixel
+        Pass the delete request to requests and update status pixel
 
         :param str url: The URL to PUT data to
         :param dict data: (Optional) Form data to submit
@@ -188,7 +188,7 @@ class ESPSPI_WiFiManager:
 
     def ping(self, host, ttl=250):
         """
-        Pass the Ping request to the ESP32, update Status NeoPixel, return response time
+        Pass the Ping request to the ESP32, update status pixel, return response time
 
         :param str host: The hostname or IP address to ping
         :param int ttl: (Optional) The Time To Live in milliseconds for the packet (default=250)
@@ -206,7 +206,7 @@ class ESPSPI_WiFiManager:
         """
         Change Status NeoPixel if it was defined
 
-        :param value: The value to set the Board's Status NeoPixel to
+        :param value: The value to set the Board's status pixel to
         :type value: int or 3-value tuple
         """
         if self.statuspix:
