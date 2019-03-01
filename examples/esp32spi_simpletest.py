@@ -28,7 +28,12 @@ for ap in esp.scan_networks():
     print("\t%s\t\tRSSI: %d" % (str(ap['ssid'], 'utf-8'), ap['rssi']))
 
 print("Connecting to AP...")
-esp.connect_AP(b'MY_SSID_NAME', b'MY_SSID_PASSWORD')
+while not esp.is_connected:
+    try:
+        esp.connect_AP(b'MY_SSID_NAME', b'MY_SSID_PASSWORD')
+    except RuntimeError as e:
+        print("could not connect to AP, retrying: ",e)
+        continue
 print("Connected to", str(esp.ssid, 'utf-8'), "\tRSSI:", esp.rssi)
 print("My IP address is", esp.pretty_ip(esp.ip_address))
 print("IP lookup adafruit.com: %s" % esp.pretty_ip(esp.get_host_by_name("adafruit.com")))
