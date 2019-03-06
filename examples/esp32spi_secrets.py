@@ -4,7 +4,7 @@
 secrets = {
     'ssid' : 'yourssid',
     'password' : 'yourpassword',
-    'timezone' : -5, # this is offset from UTC
+    'timezone' : "America/New_York", # Check http://worldtimeapi.org/timezones
     'aio_username' : 'youraiousername',
     'aio_key' : 'youraiokey',
 }
