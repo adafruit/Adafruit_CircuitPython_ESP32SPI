@@ -58,7 +58,6 @@ def set_interface(iface):
 
 class Response:
     """The response from a request, contains all the headers/content"""
-    headers = {}
     encoding = None
 
     def __init__(self, sock):
@@ -68,6 +67,7 @@ class Response:
         self.status_code = None
         self.reason = None
         self._read_so_far = 0
+        self.headers = {}
 
     def close(self):
         """Close, delete and collect the response data"""
