@@ -173,9 +173,9 @@ def request(method, url, data=None, json=None, headers=None, stream=False):
             sock.write(b"User-Agent: Adafruit CircuitPython\r\n")
         # Iterate over keys to avoid tuple alloc
         for k in headers:
-            sock.write(k)
+            sock.write(k.encode())
             sock.write(b": ")
-            sock.write(headers[k])
+            sock.write(headers[k].encode())
             sock.write(b"\r\n")
         if json is not None:
             assert data is None
