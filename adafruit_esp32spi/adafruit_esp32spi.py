@@ -527,12 +527,11 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         if self._debug:
             print("Writing:", buffer)
         self._socknum_ll[0][0] = socket_num
-        chunk_size = 64
         sent = 0
-        for chunk in range((len(buffer) // chunk_size)+1):
-            chunk_buffer = buffer[(chunk*chunk_size):((chunk+1)*chunk_size)]
+        for chunk in range((len(buffer) // 64)+1):
             resp = self._send_command_get_response(_SEND_DATA_TCP_CMD,
-                                                   (self._socknum_ll[0], chunk_buffer),
+                                                   (self._socknum_ll[0],
+                                                    memoryview(buffer)[(chunk*64):((chunk+1)*64)]),
                                                    sent_param_len_16=True)
             sent += resp[0][0]
 
