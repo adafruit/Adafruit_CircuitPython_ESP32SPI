@@ -15,9 +15,19 @@ except ImportError:
     print("WiFi secrets are kept in secrets.py, please add them there!")
     raise
 
+# for externally connected ESP32
 esp32_cs = DigitalInOut(board.D9)
 esp32_ready = DigitalInOut(board.D10)
 esp32_reset = DigitalInOut(board.D5)
+
+# For PyPortal use
+"""
+esp32_cs = DigitalInOut(board.ESP_CS)
+esp32_ready = DigitalInOut(board.ESP_BUSY)
+esp32_reset = DigitalInOut(board.ESP_RESET)
+"""
+
+
 spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
 esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset)
 """Use below for Most Boards"""
@@ -37,7 +47,7 @@ while True:
         response = wifi.post(
             "https://io.adafruit.com/api/v2/"+secrets['aio_username']+"/feeds/"+feed+"/data",
             json=payload,
-            headers={bytes("X-AIO-KEY", "utf-8"):bytes(secrets['aio_key'], "utf-8")})
+            headers={"X-AIO-KEY":secrets['aio_key']})
         print(response.json())
         response.close()
         counter = counter + 1
