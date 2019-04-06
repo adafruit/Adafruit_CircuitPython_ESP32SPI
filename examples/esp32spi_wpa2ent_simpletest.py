@@ -53,7 +53,8 @@ print("MAC addr:", [hex(i) for i in esp.MAC_address])
 
 # WPA2 Enterprise support was added in fw ver 1.3.0. Check that the ESP32
 # is running at least that version, otherwise, bail out
-assert version_compare(firmware_version, "1.3.0") >= 0, "Inforrect ESP32 firmware version detected. v1.3.0 or greater required"
+assert version_compare(firmware_version, "1.3.0") >= 0, (
+    "Incorrect ESP32 firmware version; >= 1.3.0 required.")
 
 # Set up the SSID you would like to connect to
 # Note that we need to call wifi_set_network prior
