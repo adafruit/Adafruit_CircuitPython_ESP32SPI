@@ -1,3 +1,12 @@
+# Example code implementing WPA2 Enterprise mode
+#
+# This code requires firmware version 1.3.0, or newer, running
+# on the ESP32 WiFi co-processor. The latest firmware, and wiring
+# info if you are using something other than a PyPortal, can be found
+# in the Adafruit Learning System:
+# https://learn.adafruit.com/adding-a-wifi-co-processor-to-circuitpython-esp8266-esp32/firmware-files#esp32-only-spi-firmware-3-8
+
+import re
 import time
 import board
 import busio
@@ -5,6 +14,14 @@ from digitalio import DigitalInOut
 
 from adafruit_esp32spi import adafruit_esp32spi
 import adafruit_esp32spi.adafruit_esp32spi_requests as requests
+
+# Version number comparison code. Credit to gnud on stackoverflow
+# (https://stackoverflow.com/a/1714190), swapping out cmp() to
+# support Python 3.x and thus, CircuitPython
+def version_compare(version1, version2):
+    def normalize(v):
+        return [int(x) for x in re.sub(r'(\.0+)*$','', v).split(".")]
+    return (normalize(version1) > normalize(version2)) - (normalize(version1) < normalize(version2))
 
 print("ESP32 SPI WPA2 Enterprise test")
 
@@ -14,9 +31,7 @@ esp32_ready = DigitalInOut(board.ESP_BUSY)
 esp32_reset = DigitalInOut(board.ESP_RESET)
 
 # For a board that doesn't have the ESP pin definitions, use this block and
-# set the pins as needed.  To connect your board to an ESP32 HUZZAH, here
-# are the pin-outs on the HUZZAH32:
-# https://learn.adafruit.com/adding-a-wifi-co-processor-to-circuitpython-esp8266-esp32/firmware-files#esp32-only-spi-firmware-3-8
+# set the pins as needed.
 #esp32_cs = DigitalInOut(board.D8)
 #esp32_ready = DigitalInOut(board.D5)
 #esp32_reset = DigitalInOut(board.D7)
@@ -28,10 +43,21 @@ requests.set_interface(esp)
 
 if esp.status == adafruit_esp32spi.WL_IDLE_STATUS:
     print("ESP32 found and in idle mode")
-print("Firmware vers.", esp.firmware_version)
+
+# Get the ESP32 fw version number, remove trailing byte off the returned bytearray
+# and then convert it to a string for prettier printing and later comparison
+firmware_version = ''.join([chr(b) for b in esp.firmware_version[:-1]])
+print("Firmware vers.", firmware_version)
+
 print("MAC addr:", [hex(i) for i in esp.MAC_address])
 
+# WPA2 Enterprise support was added in fw ver 1.3.0. Check that the ESP32
+# is running at least that version, otherwise, bail out
+assert version_compare(firmware_version, "1.3.0") >= 0, "Inforrect ESP32 firmware version detected. v1.3.0 or greater required"
+
 # Set up the SSID you would like to connect to
+# Note that we need to call wifi_set_network prior
+# to calling wifi_set_enable.
 esp.wifi_set_network(b'YOUR_SSID_HERE')
 
 # If your WPA2 Enterprise network requires an anonymous
