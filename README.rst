@@ -13,7 +13,10 @@ Introduction
     :target: https://travis-ci.com/adafruit/Adafruit_CircuitPython_ESP32SPI
     :alt: Build Status
 
-CircuitPython driver library for using ESP32 as WiFi  co-processor using SPI
+CircuitPython driver library for using ESP32 as WiFi co-processor using SPI.
+The companion firmware `is available on GitHub
+<https://github.com/adafruit/nina-fw>`_. Please be sure to check the example code for
+any specific firmware version dependencies that may exist.
 
 
 Dependencies

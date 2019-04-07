@@ -82,6 +82,10 @@ _PING_CMD			   = const(0x3E)
 
 _SEND_DATA_TCP_CMD     = const(0x44)
 _GET_DATABUF_TCP_CMD   = const(0x45)
+_SET_ENT_IDENT_CMD     = const(0x4A)
+_SET_ENT_UNAME_CMD     = const(0x4B)
+_SET_ENT_PASSWD_CMD    = const(0x4C)
+_SET_ENT_ENABLE_CMD    = const(0x4F)
 
 _START_CMD             = const(0xE0)
 _END_CMD               = const(0xEE)
@@ -375,6 +379,30 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         resp = self._send_command_get_response(_SET_PASSPHRASE_CMD, [ssid, passphrase])
         if resp[0][0] != 1:
             raise RuntimeError("Failed to set passphrase")
+
+    def wifi_set_entidentity(self, ident):
+        """Sets the WPA2 Enterprise anonymous identity"""
+        resp = self._send_command_get_response(_SET_ENT_IDENT_CMD, [ident])
+        if resp[0][0] != 1:
+            raise RuntimeError("Failed to set enterprise anonymous identity")
+
+    def wifi_set_entusername(self, username):
+        """Sets the desired WPA2 Enterprise username"""
+        resp = self._send_command_get_response(_SET_ENT_UNAME_CMD, [username])
+        if resp[0][0] != 1:
+            raise RuntimeError("Failed to set enterprise username")
+
+    def wifi_set_entpassword(self, password):
+        """Sets the desired WPA2 Enterprise password"""
+        resp = self._send_command_get_response(_SET_ENT_PASSWD_CMD, [password])
+        if resp[0][0] != 1:
+            raise RuntimeError("Failed to set enterprise password")
+
+    def wifi_set_entenable(self):
+        """Enables WPA2 Enterprise mode"""
+        resp = self._send_command_get_response(_SET_ENT_ENABLE_CMD)
+        if resp[0][0] != 1:
+            raise RuntimeError("Failed to enable enterprise mode")
 
     @property
     def ssid(self):
