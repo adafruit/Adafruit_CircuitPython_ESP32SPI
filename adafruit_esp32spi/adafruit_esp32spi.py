@@ -54,6 +54,7 @@ __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI.git"
 # pylint: disable=bad-whitespace
 _SET_NET_CMD           = const(0x10)
 _SET_PASSPHRASE_CMD    = const(0x11)
+_SET_DEBUG_CMD         = const(0x1A)
 
 _GET_CONN_STATUS_CMD   = const(0x20)
 _GET_IPADDR_CMD        = const(0x21)
@@ -611,3 +612,10 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         resp = self._send_command_get_response(_STOP_CLIENT_TCP_CMD, self._socknum_ll)
         if resp[0][0] != 1:
             raise RuntimeError("Failed to close socket")
+
+    def set_esp_debug(self, enabled):
+        """Enable/disable debug mode on the ESP32. Debug messages will be
+        written to the ESP32's UART."""
+        resp = self._send_command_get_response(_SET_DEBUG_CMD, ((bool(enabled),),))
+        if resp[0][0] != 1:
+            raise RuntimeError("Failed to set debug mode")
