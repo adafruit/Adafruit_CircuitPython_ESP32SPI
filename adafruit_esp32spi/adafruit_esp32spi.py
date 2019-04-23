@@ -638,7 +638,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         else:
             pin_mode = mode
         resp = self._send_command_get_response(_SET_PIN_MODE_CMD,
-                                               ((pin,),(pin_mode,)))
+                                               ((pin,), (pin_mode,)))
         if resp[0][0] != 1:
             raise RuntimeError("Failed to set pin mode")
 
@@ -650,7 +650,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         :param bool value: Value for the pin.
         """
         resp = self._send_command_get_response(_SET_DIGITAL_WRITE_CMD,
-                                               ((pin,),(value,)))
+                                               ((pin,), (value,)))
         if resp[0][0] != 1:
             raise RuntimeError("Failed to write to pin")
 
@@ -663,6 +663,6 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         """
         value = int(255 * analog_value)
         resp = self._send_command_get_response(_SET_ANALOG_WRITE_CMD,
-                                               ((pin,),(value,)))
+                                               ((pin,), (value,)))
         if resp[0][0] != 1:
             raise RuntimeError("Failed to write to pin")
