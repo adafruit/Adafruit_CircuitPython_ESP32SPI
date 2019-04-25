@@ -17,11 +17,9 @@ esp32_ready = DigitalInOut(board.ESP_BUSY)
 esp32_reset = DigitalInOut(board.ESP_RESET)
 
 # If you have an externally connected ESP32:
-"""
-esp32_cs = DigitalInOut(board.D9)
-esp32_ready = DigitalInOut(board.D10)
-esp32_reset = DigitalInOut(board.D5)
-"""
+# esp32_cs = DigitalInOut(board.D9)
+# esp32_ready = DigitalInOut(board.D10)
+# esp32_reset = DigitalInOut(board.D5)
 
 spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
 esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset)
