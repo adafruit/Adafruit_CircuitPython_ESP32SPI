@@ -54,6 +54,7 @@ __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI.git"
 # pylint: disable=bad-whitespace
 _SET_NET_CMD           = const(0x10)
 _SET_PASSPHRASE_CMD    = const(0x11)
+_SET_DEBUG_CMD         = const(0x1A)
 
 _GET_CONN_STATUS_CMD   = const(0x20)
 _GET_IPADDR_CMD        = const(0x21)
@@ -86,6 +87,10 @@ _SET_ENT_IDENT_CMD     = const(0x4A)
 _SET_ENT_UNAME_CMD     = const(0x4B)
 _SET_ENT_PASSWD_CMD    = const(0x4C)
 _SET_ENT_ENABLE_CMD    = const(0x4F)
+
+_SET_PIN_MODE_CMD      = const(0x50)
+_SET_DIGITAL_WRITE_CMD = const(0x51)
+_SET_ANALOG_WRITE_CMD  = const(0x52)
 
 _START_CMD             = const(0xE0)
 _END_CMD               = const(0xEE)
@@ -611,3 +616,53 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         resp = self._send_command_get_response(_STOP_CLIENT_TCP_CMD, self._socknum_ll)
         if resp[0][0] != 1:
             raise RuntimeError("Failed to close socket")
+
+    def set_esp_debug(self, enabled):
+        """Enable/disable debug mode on the ESP32. Debug messages will be
+        written to the ESP32's UART."""
+        resp = self._send_command_get_response(_SET_DEBUG_CMD, ((bool(enabled),),))
+        if resp[0][0] != 1:
+            raise RuntimeError("Failed to set debug mode")
+
+    def set_pin_mode(self, pin, mode):
+        """
+        Set the io mode for a GPIO pin.
+
+        :param int pin: ESP32 GPIO pin to set.
+        :param value: direction for pin, digitalio.Direction or integer (0=input, 1=output).
+        """
+        if mode == Direction.OUTPUT:
+            pin_mode = 1
+        elif mode == Direction.INPUT:
+            pin_mode = 0
+        else:
+            pin_mode = mode
+        resp = self._send_command_get_response(_SET_PIN_MODE_CMD,
+                                               ((pin,), (pin_mode,)))
+        if resp[0][0] != 1:
+            raise RuntimeError("Failed to set pin mode")
+
+    def set_digital_write(self, pin, value):
+        """
+        Set the digital output value of pin.
+
+        :param int pin: ESP32 GPIO pin to write to.
+        :param bool value: Value for the pin.
+        """
+        resp = self._send_command_get_response(_SET_DIGITAL_WRITE_CMD,
+                                               ((pin,), (value,)))
+        if resp[0][0] != 1:
+            raise RuntimeError("Failed to write to pin")
+
+    def set_analog_write(self, pin, analog_value):
+        """
+        Set the analog output value of pin, using PWM.
+
+        :param int pin: ESP32 GPIO pin to write to.
+        :param float value: 0=off 1.0=full on
+        """
+        value = int(255 * analog_value)
+        resp = self._send_command_get_response(_SET_ANALOG_WRITE_CMD,
+                                               ((pin,), (value,)))
+        if resp[0][0] != 1:
+            raise RuntimeError("Failed to write to pin")
