@@ -69,6 +69,12 @@ class Response:
         self._read_so_far = 0
         self.headers = {}
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+
     def close(self):
         """Close, delete and collect the response data"""
         if self.socket:
@@ -216,7 +222,7 @@ def request(method, url, data=None, json=None, headers=None, stream=False):
             elif line.startswith(b"Location:") and not 200 <= status <= 299:
                 raise NotImplementedError("Redirects not yet supported")
 
-    except OSError:
+    except:
         sock.close()
         raise
 

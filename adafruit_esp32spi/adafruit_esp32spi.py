@@ -66,20 +66,20 @@ _GET_CURR_ENCT_CMD     = const(0x26)
 _SCAN_NETWORKS         = const(0x27)
 _GET_SOCKET_CMD        = const(0x3F)
 _GET_STATE_TCP_CMD     = const(0x29)
-_DATA_SENT_TCP_CMD	   = const(0x2A)
-_AVAIL_DATA_TCP_CMD	   = const(0x2B)
-_GET_DATA_TCP_CMD	   = const(0x2C)
+_DATA_SENT_TCP_CMD     = const(0x2A)
+_AVAIL_DATA_TCP_CMD    = const(0x2B)
+_GET_DATA_TCP_CMD      = const(0x2C)
 _START_CLIENT_TCP_CMD  = const(0x2D)
 _STOP_CLIENT_TCP_CMD   = const(0x2E)
 _GET_CLIENT_STATE_TCP_CMD = const(0x2F)
-_DISCONNECT_CMD	       = const(0x30)
+_DISCONNECT_CMD        = const(0x30)
 _GET_IDX_RSSI_CMD      = const(0x32)
 _GET_IDX_ENCT_CMD      = const(0x33)
 _REQ_HOST_BY_NAME_CMD  = const(0x34)
 _GET_HOST_BY_NAME_CMD  = const(0x35)
 _START_SCAN_NETWORKS   = const(0x36)
 _GET_FW_VERSION_CMD    = const(0x37)
-_PING_CMD			   = const(0x3E)
+_PING_CMD              = const(0x3E)
 
 _SEND_DATA_TCP_CMD     = const(0x44)
 _GET_DATABUF_TCP_CMD   = const(0x45)
@@ -612,6 +612,8 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
 
     def socket_close(self, socket_num):
         """Close a socket using the ESP32's internal reference number"""
+        if self._debug:
+            print("*** Closing socket #%d" % socket_num)
         self._socknum_ll[0][0] = socket_num
         resp = self._send_command_get_response(_STOP_CLIENT_TCP_CMD, self._socknum_ll)
         if resp[0][0] != 1:
