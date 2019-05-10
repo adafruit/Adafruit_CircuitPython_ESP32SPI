@@ -126,14 +126,25 @@ WL_AP_FAILED          = const(9)
 
 class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
     """A class that will talk to an ESP32 module programmed with special firmware
-    that lets it act as a fast an efficient WiFi co-processor"""
+    that lets it act as a fast an efficient WiFi co-processor
+
+    :param busio.SPI spi_bus: The SPI bus the ESP32 is connected to.
+    :param digitalio.DigitalInOut cs_pin: The SPI CS pin.
+    :param digitalio.DigitalInOut ready_pin: The ready pin.
+    :param digitalio.DigitalInOut reset_pin: The reset pin.
+    :param digitalio.DigitalInOut gpio0_pin: (optional) Pin connected to GPIO 0.
+    :param int timeout: (optional) Command response timeout duration in seconds (default = 10).
+    :param int debug: (optional) Enable debug output (3 = maximum debug)
+    """
     TCP_MODE = const(0)
     UDP_MODE = const(1)
     TLS_MODE = const(2)
 
     # pylint: disable=too-many-arguments
-    def __init__(self, spi, cs_pin, ready_pin, reset_pin, gpio0_pin=None, *, debug=False):
+    def __init__(self, spi, cs_pin, ready_pin, reset_pin, gpio0_pin=None, *,
+                 timeout=10, debug=False):
         self._debug = debug
+        self._timeout = timeout
         self._buffer = bytearray(10)
         self._pbuf = bytearray(1)  # buffer for param read
         self._sendbuf = bytearray(256)  # buffer for command sending
@@ -172,7 +183,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         if self._debug >= 3:
             print("Wait for ESP32 ready", end='')
         times = time.monotonic()
-        while (time.monotonic() - times) < 10:  # wait up to 10 seconds
+        while (time.monotonic() - times) < self._timeout:
             if not self._ready.value: # we're ready!
                 break
             if self._debug >= 3:
@@ -519,10 +530,13 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         return resp
 
     def socket_open(self, socket_num, dest, port, conn_mode=TCP_MODE):
-        """Open a socket to a destination IP address or hostname
-        using the ESP32's internal reference number. By default we use
-        'conn_mode' TCP_MODE but can also use UDP_MODE or TLS_MODE
-        (dest must be hostname for TLS_MODE!)"""
+        """Open a socket to a destination IP address or hostname.
+
+        :param int socket_num: ESP32's internal reference number. See :meth:`get_socket`
+        :param str dest: Destination host or IP address. Must be hostname for TLS_MODE.
+        :param int port: Port to connect to.
+        :param int conn_mode: connection type(TCP_MODE, UDP_MODE, TLS_MODE), default TCP_MODE.
+        """
         self._socknum_ll[0][0] = socket_num
         if self._debug:
             print("*** Open socket")
@@ -595,10 +609,10 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         return bytes(resp[0])
 
     def socket_connect(self, socket_num, dest, port, conn_mode=TCP_MODE):
-        """Open and verify we connected a socket to a destination IP address or hostname
-        using the ESP32's internal reference number. By default we use
-        'conn_mode' TCP_MODE but can also use UDP_MODE or TLS_MODE (dest must
-        be hostname for TLS_MODE!)"""
+        """
+        Open and verify we connected a socket to a destination IP address or hostname.
+        See :meth:`socket_open`.
+        """
         if self._debug:
             print("*** Socket connect mode", conn_mode)
 
