@@ -73,6 +73,8 @@ class socket:
         a hostname string). 'conntype' is an extra that may indicate SSL or not,
         depending on the underlying interface"""
         host, port = address
+        if conntype is None:
+            conntype = _the_interface.TCP_MODE
         if not _the_interface.socket_connect(self._socknum, host, port, conn_mode=conntype):
             raise RuntimeError("Failed to connect to host", host)
         self._buffer = b''
@@ -123,7 +125,7 @@ class socket:
                 received.append(recv)
                 to_read -= len(recv)
                 gc.collect()
-            if time.monotonic() - stamp > self._timeout:
+            if self._timeout > 0 and time.monotonic() - stamp > self._timeout:
                 break
         #print(received)
         self._buffer += b''.join(received)
