@@ -91,7 +91,7 @@ class socket:
             avail = min(_the_interface.socket_available(self._socknum), MAX_PACKET)
             if avail:
                 self._buffer += _the_interface.socket_read(self._socknum, avail)
-            elif time.monotonic() - stamp > self._timeout:
+            elif self._timeout > 0 and time.monotonic() - stamp > self._timeout:
                 self.close()  # Make sure to close socket so that we don't exhaust sockets.
                 raise RuntimeError("Didn't receive full response, failing out")
         firstline, self._buffer = self._buffer.split(b'\r\n', 1)
