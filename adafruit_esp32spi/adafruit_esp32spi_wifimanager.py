@@ -31,25 +31,18 @@ WiFi Manager for making ESP32 SPI as WiFi much easier
 
 # pylint: disable=no-name-in-module
 
+from micropython import const
 from adafruit_esp32spi import adafruit_esp32spi
 import adafruit_esp32spi.adafruit_esp32spi_requests as requests
-
-class WiFiConnType: # pylint: disable=too-few-public-methods
-    """An enum-like class representing the different types of WiFi connections
-    that can be made. The values can be referenced like ``WiFiConnType.normal``.
-    Possible values are
-    - ``ThermocoupleType.normal``
-    - ``ThermocoupleType.enterprise``
-    """
-    # pylint: disable=invalid-name
-    normal = 1
-    enterprise = 2
 
 class ESPSPI_WiFiManager:
     """
     A class to help manage the Wifi connection
     """
-    def __init__(self, esp, secrets, status_pixel=None, attempts=2, wificonntype=WiFiConnType.normal):
+    NORMAL = const(1)
+    ENTERPRISE = const(2)
+
+    def __init__(self, esp, secrets, status_pixel=None, attempts=2, connection_type=NORMAL):
         """
         :param ESP_SPIcontrol esp: The ESP object we are using
         :param dict secrets: The WiFi and Adafruit IO secrets dict (See examples)
@@ -68,9 +61,9 @@ class ESPSPI_WiFiManager:
         self.ent_ssid = secrets['ent_ssid']
         self.ent_ident = secrets['ent_ident']
         self.ent_user = secrets['ent_user']
-        self.ent_passwd = secrets['ent_passwd']
+        self.ent_password = secrets['ent_password']
         self.attempts = attempts
-        self.wificonntype = wificonntype
+        self._connection_type = connection_type
         requests.set_interface(self._esp)
         self.statuspix = status_pixel
         self.pixel_status(0)
@@ -95,7 +88,7 @@ class ESPSPI_WiFiManager:
             for access_pt in self._esp.scan_networks():
                 print("\t%s\t\tRSSI: %d" % (str(access_pt['ssid'], 'utf-8'), access_pt['rssi']))
         failure_count = 0
-        if self.wificonntype == WiFiConnType.normal:
+        if self._connection_type == ESPSPI_WiFiManager.NORMAL:
             while not self._esp.is_connected:
                 try:
                     if self.debug:
@@ -111,11 +104,11 @@ class ESPSPI_WiFiManager:
                         failure_count = 0
                         self.reset()
                     continue
-        elif self.wificonntype == WiFiConnType.enterprise:
+        elif self._connection_type == ESPSPI_WiFiManager.ENTERPRISE:
             self._esp.wifi_set_network(bytes(self.ent_ssid, 'utf-8'))
             self._esp.wifi_set_entidentity(bytes(self.ent_ident, 'utf-8'))
             self._esp.wifi_set_entusername(bytes(self.ent_user, 'utf-8'))
-            self._esp.wifi_set_entpassword(bytes(self.ent_passwd, 'utf-8'))
+            self._esp.wifi_set_entpassword(bytes(self.ent_password, 'utf-8'))
             self._esp.wifi_set_entenable()
             while not self._esp.is_connected:
                 try:
@@ -132,8 +125,7 @@ class ESPSPI_WiFiManager:
                         self.reset()
                     continue
         else:
-            print("Invalid connection type! Exiting...")
-            exit(1)
+            raise TypeError("Invalid WiFi connection type specified")
 
     def get(self, url, **kw):
         """
