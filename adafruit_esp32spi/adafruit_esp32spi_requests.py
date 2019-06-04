@@ -129,7 +129,7 @@ class Response:
                 return
 
 # pylint: disable=too-many-branches, too-many-statements, unused-argument, too-many-arguments, too-many-locals
-def request(method, url, data=None, json=None, headers=None, stream=False):
+def request(method, url, data=None, json=None, headers=None, stream=False, timeout=1):
     """Perform an HTTP request to the given url which we will parse to determine
     whether to use SSL ('https://') or not. We can also send some provided 'data'
     or a json dictionary which we will stringify. 'headers' is optional HTTP headers
@@ -163,7 +163,7 @@ def request(method, url, data=None, json=None, headers=None, stream=False):
     sock = socket.socket(addr_info[0], addr_info[1], addr_info[2])
     resp = Response(sock)  # our response
 
-    sock.settimeout(1)     # 1 second timeout
+    sock.settimeout(timeout)  # socket read timeout
 
     try:
         if proto == "https:":
