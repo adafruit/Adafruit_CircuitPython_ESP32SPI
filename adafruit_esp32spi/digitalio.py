@@ -94,7 +94,7 @@ class Pin:
     def __repr__(self):
         return str(self.pin_id)
 
-@staticmethod
+# pylint: disable = too-few-public-methods
 class DriveMode():
     """DriveMode Enum."""
     PUSH_PULL = None
@@ -102,7 +102,7 @@ class DriveMode():
 DriveMode.PUSH_PULL = DriveMode()
 DriveMode.OPEN_DRAIN = DriveMode()
 
-@staticmethod
+
 class Direction():
     """DriveMode Enum."""
     INPUT = None
@@ -118,6 +118,7 @@ class DigitalInOut():
     :param int pin: Valid ESP32 GPIO Pin, predefined in ESP32_GPIO_PINS.
     """
     _pin = None
+    #pylint: disable = attribute-defined-outside-init
     def __init__(self, esp, pin):
         self._esp = esp
         self._pin = Pin(pin, self._esp)
@@ -138,9 +139,9 @@ class DigitalInOut():
         :param bool value: Default mode to set upon switching.
         :param DriveMode drive_mode: Drive mode for the output.
         """
-        self.direction = Direction.OUTPUT
-        self.value = value
+        self._direction = Direction.OUTPUT
         self._drive_mode = drive_mode
+        self.value = value
 
     def switch_to_input(self, pull=None):
         """Sets the pull and then switch to read in digital values.
@@ -189,7 +190,7 @@ class DigitalInOut():
     def drive_mode(self):
         """Returns pin drive mode."""
         if self.direction is Direction.OUTPUT:
-            return self.__drive_mode
+            return self._drive_mode
         raise AttributeError("Not an output")
 
     @drive_mode.setter
@@ -200,6 +201,6 @@ class DigitalInOut():
         """
         self.__drive_mode = mode
         if mode is DriveMode.OPEN_DRAIN:
-            self._pin.init(mode=Pin.OPEN_DRAIN)
+            raise NotImplementedError('Drive mode %s not implemented in ESP32SPI.'%mode)
         elif mode is DriveMode.PUSH_PULL:
             self._pin.init(mode=Pin.OUT)
