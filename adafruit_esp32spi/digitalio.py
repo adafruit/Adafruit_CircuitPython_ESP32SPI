@@ -28,6 +28,7 @@ DigitalIO for ESP32 over SPI.
 """
 from micropython import const
 
+# Enums
 class DriveMode():
     PUSH_PULL = None
     OPEN_DRAIN = None
@@ -41,16 +42,6 @@ class Direction:
 
 Direction.INPUT = Direction()
 Direction.OUTPUT = Direction()
-
-class Pull:
-    UP = None
-    DOWN = None
-
-Pull.UP = Pull()
-Pull.DOWN = Pull()
-
-# ESP32-WROOM GPIO Pins
-
 
 class Pin:
     IN = const(0x00)
@@ -67,7 +58,6 @@ class Pin:
                             21, 22, 23, 25,
                             26, 27, 32, 33])
 
-
     def __init__(self, esp_pin, esp):
         if esp_pin in self.ESP32_GPIO_PINS:
             self.id = esp_pin
@@ -75,10 +65,9 @@ class Pin:
             raise AttributeError("Pin %d is not a valid ESP32 GPIO Pin."%esp_pin)
         self._esp = esp
 
-    def init(self, mode=IN, pull=None):
+    def init(self, mode=IN):
         """Initalizes a pre-defined pin.
-        :param mode: Pin mode (IN, OUT, LOW, HIGH)
-        :param pull: Pull value (PULL_NONE, PULL_UP, PULL_DOWN)
+        :param mode: Pin mode (IN, OUT, LOW, HIGH).
         """
         print('pin init')
         if mode != None:
@@ -90,8 +79,6 @@ class Pin:
                 self._esp.set_pin_mode(self.id, 1)
             else:
                 raise RuntimeError("Invalid mode defined")
-        if pull != None:
-                raise RuntimeError("ESP32 does not have pull-up resistors defined.")
 
     def value(self, val=None):
         """Sets ESP32 Pin GPIO output mode.
@@ -107,13 +94,13 @@ class Pin:
             else:
                 raise RuntimeError("Invalid value for pin")
         else:
-            raise AttributeError("ESP32SPI does not allow for a digital input.")
+            raise NotImplementedError("digitalRead not currently implemented in esp32spi")
 
     def __repr__(self):
         return str(self.id)
 
-
 class DigitalInOut():
+
     """Mock DigitalIO CircuitPython API Implementation for ESP32SPI.
     Provides access to ESP_SPIcontrol methods.
     """
@@ -143,7 +130,6 @@ class DigitalInOut():
             self.drive_mode = DriveMode.PUSH_PULL
         elif dir is Direction.INPUT:
             self._pin.init(mode=Pin.IN)
-            self.pull = None
         else:
             raise AttributeError("Not a Direction")
 
@@ -157,3 +143,18 @@ class DigitalInOut():
             self._pin.value(1 if val else 0)
         else:
             raise AttributeError("Not an output")
+
+    @property
+    def drive_mode(self):
+        if self.direction is Direction.OUTPUT:
+            return self.__drive_mode
+        else:
+            raise AttributeError("Not an output")
+
+    @drive_mode.setter
+    def drive_mode(self, mode):
+        self.__drive_mode = mode
+        if mode is DriveMode.OPEN_DRAIN:
+            self._pin.init(mode=Pin.OPEN_DRAIN)
+        elif mode is DriveMode.PUSH_PULL:
+            self._pin.init(mode=Pin.OUT)
