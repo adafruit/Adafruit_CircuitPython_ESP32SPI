@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2019 Brent Rubell for Adafruit
+# Copyright (c) 2019 Brent Rubell for Adafruit Industries
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -29,19 +29,6 @@ DigitalIO for ESP32 over SPI.
 from micropython import const
 
 class Pin:
-    IN = const(0x00)
-    OUT = const(0x01)
-    LOW = const(0x00)
-    HIGH = const(0x01)
-    _value = LOW
-    _mode = IN
-    id = None
-
-    ESP32_GPIO_PINS = set([0, 1, 2, 4, 5,
-                            12, 13, 14, 15,
-                            16, 17, 18, 19,
-                            21, 22, 23, 25,
-                            26, 27, 32, 33])
     """
     Implementation of CircuitPython API Pin Handling
     for ESP32SPI.
@@ -52,9 +39,24 @@ class Pin:
     NOTE: This class does not currently implement reading digital pins
     or the use of internal pull-up resistors.
     """
+     #pylint: disable=invalid-name
+    IN = const(0x00)
+    OUT = const(0x01)
+    LOW = const(0x00)
+    HIGH = const(0x01)
+    _value = LOW
+    _mode = IN
+    pin_id = None
+
+    ESP32_GPIO_PINS = set([0, 1, 2, 4, 5,
+                           12, 13, 14, 15,
+                           16, 17, 18, 19,
+                           21, 22, 23, 25,
+                           26, 27, 32, 33])
+
     def __init__(self, esp_pin, esp):
         if esp_pin in self.ESP32_GPIO_PINS:
-            self.id = esp_pin
+            self.pin_id = esp_pin
         else:
             raise AttributeError("Pin %d is not a valid ESP32 GPIO Pin."%esp_pin)
         self._esp = esp
@@ -63,13 +65,13 @@ class Pin:
         """Initalizes a pre-defined pin.
         :param mode: Pin mode (IN, OUT, LOW, HIGH). Defaults to IN.
         """
-        if mode != None:
+        if mode is not None:
             if mode == self.IN:
                 self._mode = self.IN
-                self._esp.set_pin_mode(self.id, 0)
+                self._esp.set_pin_mode(self.pin_id, 0)
             elif mode == self.OUT:
                 self._mode = self.OUT
-                self._esp.set_pin_mode(self.id, 1)
+                self._esp.set_pin_mode(self.pin_id, 1)
             else:
                 raise RuntimeError("Invalid mode defined")
 
@@ -77,30 +79,32 @@ class Pin:
         """Sets ESP32 Pin GPIO output mode.
         :param val: Pin output level (LOW, HIGH)
         """
-        if val != None:
+        if val is not None:
             if val == self.LOW:
                 self._value = val
-                self._esp.set_digital_write(self.id, 0)
+                self._esp.set_digital_write(self.pin_id, 0)
             elif val == self.HIGH:
                 self._value = val
-                self._esp.set_digital_write(self.id, 1)
+                self._esp.set_digital_write(self.pin_id, 1)
             else:
                 raise RuntimeError("Invalid value for pin")
         else:
             raise NotImplementedError("digitalRead not currently implemented in esp32spi")
 
     def __repr__(self):
-        return str(self.id)
+        return str(self.pin_id)
 
-
+@staticmethod
 class DriveMode():
+    """DriveMode Enum."""
     PUSH_PULL = None
     OPEN_DRAIN = None
 DriveMode.PUSH_PULL = DriveMode()
 DriveMode.OPEN_DRAIN = DriveMode()
 
-
+@staticmethod
 class Direction():
+    """DriveMode Enum."""
     INPUT = None
     OUTPUT = None
 Direction.INPUT = Direction()
@@ -119,13 +123,17 @@ class DigitalInOut():
         self._pin = Pin(pin, self._esp)
         self.direction = Direction.INPUT
 
-    def __exit__(self):
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exception_type, exception_value, traceback):
         self.deinit()
 
     def deinit(self):
+        """De-initializes the pin object."""
         self._pin = None
 
-    def switch_to_output(self, value=False, drive_mode= DriveMode.PUSH_PULL):
+    def switch_to_output(self, value=False, drive_mode=DriveMode.PUSH_PULL):
         """Set the drive mode and value and then switch to writing out digital values.
         :param bool value: Default mode to set upon switching.
         :param DriveMode drive_mode: Drive mode for the output.
@@ -133,7 +141,7 @@ class DigitalInOut():
         self.direction = Direction.OUTPUT
         self.value = value
         self._drive_mode = drive_mode
-    
+
     def switch_to_input(self, pull=None):
         """Sets the pull and then switch to read in digital values.
         :param Pull pull: Pull configuration for the input.
@@ -146,16 +154,16 @@ class DigitalInOut():
         return self.__direction
 
     @direction.setter
-    def direction(self, dir):
+    def direction(self, pin_dir):
         """Sets the direction of the pin.
         :param Direction dir: Pin direction (Direction.OUTPUT or Direction.INPUT)
         """
-        self.__direction = dir
-        if dir is Direction.OUTPUT:
+        self.__direction = pin_dir
+        if pin_dir is Direction.OUTPUT:
             self._pin.init(mode=Pin.OUT)
             self.value = False
             self.drive_mode = DriveMode.PUSH_PULL
-        elif dir is Direction.INPUT:
+        elif pin_dir is Direction.INPUT:
             self._pin.init(mode=Pin.IN)
         else:
             raise AttributeError("Not a Direction")
@@ -182,8 +190,7 @@ class DigitalInOut():
         """Returns pin drive mode."""
         if self.direction is Direction.OUTPUT:
             return self.__drive_mode
-        else:
-            raise AttributeError("Not an output")
+        raise AttributeError("Not an output")
 
     @drive_mode.setter
     def drive_mode(self, mode):
