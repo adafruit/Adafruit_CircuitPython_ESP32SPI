@@ -49,19 +49,32 @@ class Pull:
 Pull.UP = Pull()
 Pull.DOWN = Pull()
 
+# ESP32-WROOM GPIO Pins
+
+
 class Pin:
     IN = const(0x00)
     OUT = const(0x01)
     LOW = const(0x00)
     HIGH = const(0x01)
     id = None
-    _value = LOW 
+    _value = LOW
     _mode = IN
 
-    def __init__(self, esp_pin_number, esp):
-        self.id = esp_pin_number
+    ESP32_GPIO_PINS = set([0, 1, 2, 4, 5,
+                            12, 13, 14, 15,
+                            16, 17, 18, 19,
+                            21, 22, 23, 25,
+                            26, 27, 32, 33])
+
+
+    def __init__(self, esp_pin, esp):
+        if esp_pin in self.ESP32_GPIO_PINS:
+            self.id = esp_pin
+        else:
+            raise AttributeError("Pin %d is not a valid ESP32 GPIO Pin."%esp_pin)
         self._esp = esp
-    
+
     def init(self, mode=IN, pull=None):
         """Initalizes a pre-defined pin.
         :param mode: Pin mode (IN, OUT, LOW, HIGH)
@@ -79,7 +92,7 @@ class Pin:
                 raise RuntimeError("Invalid mode defined")
         if pull != None:
                 raise RuntimeError("ESP32 does not have pull-up resistors defined.")
-    
+
     def value(self, val=None):
         """Sets ESP32 Pin GPIO output mode.
         :param val: Output level (LOW, HIGH)
