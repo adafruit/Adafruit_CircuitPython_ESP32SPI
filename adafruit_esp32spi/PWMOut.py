@@ -28,11 +28,6 @@ PWMOut CircuitPython API for ESP32SPI.
 """
 
 class PWMOut():
-    ESP32_PWM_PINS = set([0, 1, 2, 4, 5,
-                        12, 13, 14, 15,
-                        16, 17, 18, 19,
-                        21, 22, 23, 25,
-                        26, 27, 32, 33])
     """
     Implementation of CircuitPython PWMOut for ESP32SPI.
 
@@ -42,11 +37,16 @@ class PWMOut():
     :param int frequency: The target frequency in Hertz (32-bit).
     :param bool variable_frequency: True if the frequency will change over time.
     """
+    ESP32_PWM_PINS = set([0, 1, 2, 4, 5,
+                          12, 13, 14, 15,
+                          16, 17, 18, 19,
+                          21, 22, 23, 25,
+                          26, 27, 32, 33])
     def __init__(self, esp, pwm_pin, *, frequency=500, duty_cycle=0, variable_frequency=False):
         if pwm_pin in self.ESP32_PWM_PINS:
             self._pwm_pin = pwm_pin
         else:
-            raise AttributeError("Pin %d is not a valid ESP32 GPIO Pin."%esp_pin)
+            raise AttributeError("Pin %d is not a valid ESP32 GPIO Pin."%pwm_pin)
         self._esp = esp
         self._duty_cycle = duty_cycle
         self._freq = frequency
@@ -54,7 +54,7 @@ class PWMOut():
 
     def __enter__(self):
         return self
-    
+
     def __exit__(self, exc_type, exc_value, exc_traceback):
         self.deinit()
 
@@ -63,7 +63,7 @@ class PWMOut():
         self._duty_cycle = 0
         self._freq = 0
         self._pwm_pin = None
-    
+
     def _is_deinited(self):
         if self._pwm_pin is None:
             raise ValueError("PWMOut Object has been deinitialized and can no longer "
@@ -75,7 +75,7 @@ class PWMOut():
         ratio from 0.0 to 1.0."""
         self._is_deinited()
         return self._duty_cycle
-    
+
     @duty_cycle.setter
     def duty_cycle(self, duty_cycle):
         """Sets the PWMOut duty cycle.
@@ -85,7 +85,7 @@ class PWMOut():
         self._is_deinited()
         if not isinstance(duty_cycle, (int, float)):
             raise TypeError("Invalid duty_cycle, should be int or float.")
-        
+
         duty_cycle /= 65535.0
         if not 0.0 <= duty_cycle <= 1.0:
             raise ValueError("Invalid duty_cycle, should be between 0.0 and 1.0")
@@ -96,7 +96,7 @@ class PWMOut():
         """Returns the PWMOut object's frequency value."""
         self._is_deinited()
         raise NotImplementedError("PWMOut Frequency not implemented in ESP32SPI")
-    
+
     @frequency.setter
     def frequency(self, freq):
         """Sets the PWMOut object's frequency value.
@@ -105,5 +105,3 @@ class PWMOut():
         """
         self._is_deinited()
         raise NotImplementedError("PWMOut Frequency not implemented in ESP32SPI")
-    
-
