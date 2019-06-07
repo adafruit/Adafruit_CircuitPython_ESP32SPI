@@ -95,7 +95,7 @@ class PWMOut():
     def frequency(self):
         """Returns the PWMOut object's frequency value."""
         self._is_deinited()
-        raise NotImplementedError("PWMOut Frequency not implemented in ESP32SPI")
+        return self._freq
 
     @frequency.setter
     def frequency(self, freq):
