@@ -55,9 +55,6 @@ class ESPSPI_WiFiManager:
         self.attempts = attempts
         requests.set_interface(self._esp)
         self.statuspix = status_pixel
-        self._is_rgb_led = False
-        if hasattr(self.statuspix, 'color'):
-            self._is_rgb_led = True
         self.pixel_status(0)
 
     def reset(self):
@@ -218,15 +215,16 @@ class ESPSPI_WiFiManager:
 
     def pixel_status(self, value):
         """
-        Change Status NeoPixel/Dotstar/RGBLED if it was defined
+        Change Status Pixel if it was defined
 
         :param value: The value to set the Board's status LED to
         :type value: int or 3-value tuple
         """
-        if self.statuspix and not self._is_rgb_led:
-            self.statuspix.fill(value)
-        else:
-            self.statuspix.color = value
+        if self.statuspix:
+            if hasattr(self.statuspix, 'color'):
+                self.statuspix.color = value
+            else:
+                self.statuspix.fill(value)
 
     def signal_strength(self):
         """
