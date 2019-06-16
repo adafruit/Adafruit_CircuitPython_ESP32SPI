@@ -15,15 +15,17 @@ except ImportError:
     print("WiFi secrets are kept in secrets.py, please add them there!")
     raise
 
-# If you are using a board with pre-defined ESP32 Pins:
-esp32_cs = DigitalInOut(board.ESP_CS)
-esp32_ready = DigitalInOut(board.ESP_BUSY)
-esp32_reset = DigitalInOut(board.ESP_RESET)
-
-# If you have an externally connected ESP32:
-# esp32_cs = DigitalInOut(board.D9)
-# esp32_ready = DigitalInOut(board.D10)
-# esp32_reset = DigitalInOut(board.D5)
+# ESP32 setup
+# If your board does define the three pins listed below,
+# you can set the correct pins in the second block
+try:
+    esp32_cs = DigitalInOut(board.ESP_CS)
+    esp32_ready = DigitalInOut(board.ESP_BUSY)
+    esp32_reset = DigitalInOut(board.ESP_RESET)
+except AttributeError:
+    esp32_cs = DigitalInOut(board.D9)
+    esp32_ready = DigitalInOut(board.D10)
+    esp32_reset = DigitalInOut(board.D5)
 
 spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
 esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset)
