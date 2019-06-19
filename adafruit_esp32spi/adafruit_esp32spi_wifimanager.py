@@ -112,6 +112,7 @@ class ESPSPI_WiFiManager:
         """
         Attempt a regular style WiFi connection
         """
+        failure_count = 0
         while not self._esp.is_connected:
             try:
                 if self.debug:
@@ -132,6 +133,7 @@ class ESPSPI_WiFiManager:
         """
         Attempt an enterprise style WiFi connection
         """
+        failure_count = 0
         self._esp.wifi_set_network(bytes(self.ent_ssid, 'utf-8'))
         self._esp.wifi_set_entidentity(bytes(self.ent_ident, 'utf-8'))
         self._esp.wifi_set_entusername(bytes(self.ent_user, 'utf-8'))
