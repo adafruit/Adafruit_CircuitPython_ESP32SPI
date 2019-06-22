@@ -92,6 +92,8 @@ _SET_PIN_MODE_CMD      = const(0x50)
 _SET_DIGITAL_WRITE_CMD = const(0x51)
 _SET_ANALOG_WRITE_CMD  = const(0x52)
 
+_POST_MESSAGE_CMD      = const(0x60)
+
 _START_CMD             = const(0xE0)
 _END_CMD               = const(0xEE)
 _ERR_CMD               = const(0xEF)
@@ -668,3 +670,14 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
                                                ((pin,), (value,)))
         if resp[0][0] != 1:
             raise RuntimeError("Failed to write to pin")
+
+    def post_message(self, msg):
+        """
+        Post a JSON encoded message to the cloud
+
+        :param msg a string containing a JSON encoded string
+        """
+        resp = self._send_command_get_response(_POST_MESSAGE_CMD, (msg))
+        if resp[0][0] != 0:
+            raise RuntimeError("Failed to write message")
+
