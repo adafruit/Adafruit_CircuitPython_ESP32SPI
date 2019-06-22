@@ -92,7 +92,8 @@ _SET_PIN_MODE_CMD      = const(0x50)
 _SET_DIGITAL_WRITE_CMD = const(0x51)
 _SET_ANALOG_WRITE_CMD  = const(0x52)
 
-_POST_MESSAGE_CMD      = const(0x60)
+_SET_MESSAGE_TOKEN_CMD = const(0x60)
+_POST_MESSAGE_CMD      = const(0x61)
 
 _START_CMD             = const(0xE0)
 _END_CMD               = const(0xEE)
@@ -670,6 +671,16 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
                                                ((pin,), (value,)))
         if resp[0][0] != 1:
             raise RuntimeError("Failed to write to pin")
+
+    def set_message_token(self, msg):
+        """
+        Sets the SAS token required to connect to the cloud
+
+        :param msg a SAS token
+        """
+        resp = self._send_command_get_response(_SET_MESSAGE_TOKEN_CMD, (msg))
+        if resp[0][0] != 0:
+            raise RuntimeError("Failed to write message")
 
     def post_message(self, msg):
         """
