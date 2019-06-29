@@ -31,8 +31,9 @@ WiFi Manager for making ESP32 SPI as WiFi much easier
 
 # pylint: disable=no-name-in-module
 
-from adafruit_esp32spi import adafruit_esp32spi
 import adafruit_esp32spi.adafruit_esp32spi_requests as requests
+from adafruit_esp32spi import adafruit_esp32spi
+
 
 class ESPSPI_WiFiManager:
     """
@@ -87,6 +88,27 @@ class ESPSPI_WiFiManager:
                 self.pixel_status((0, 100, 0))
             except (ValueError, RuntimeError) as error:
                 print("Failed to connect, retrying\n", error)
+                failure_count += 1
+                if failure_count >= self.attempts:
+                    failure_count = 0
+                    self.reset()
+                continue
+
+    def create_ap(self):
+        """
+        Attempt to initialize in Access Point (AP) mode.
+        Other WiFi devices will be able to connect to the created Access Point
+        """
+        while not self._esp.ap_listening:
+            try:
+                if self.debug:
+                    print("Waiting for AP to be initialized...")
+                self.pixel_status((100,0,0))
+                self._esp.create_AP(bytes.ssid, 'utf-8'), bytes(self.password, 'utf-8')
+                failure_count = 0
+                self.pixel_status((0,100,0))
+            except (ValueError, RuntimeError) as error:
+                print("Failed to create access point\n", error)
                 failure_count += 1
                 if failure_count >= self.attempts:
                     failure_count = 0

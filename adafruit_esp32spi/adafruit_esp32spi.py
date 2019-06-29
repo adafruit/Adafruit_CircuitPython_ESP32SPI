@@ -54,6 +54,8 @@ __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI.git"
 # pylint: disable=bad-whitespace
 _SET_NET_CMD           = const(0x10)
 _SET_PASSPHRASE_CMD    = const(0x11)
+_SET_AP_NET_CMD		   = const(0x18)
+_SET_AP_PASSPHRASE_CMD = const(0x19)
 _SET_DEBUG_CMD         = const(0x1A)
 
 _GET_CONN_STATUS_CMD   = const(0x20)
@@ -409,6 +411,18 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         if resp[0][0] != 1:
             raise RuntimeError("Failed to enable enterprise mode")
 
+    def wifi_set_ap_network(self, ssid, channel):
+        """TODO Docs"""
+        resp = self._send_command_get_response(_SET_AP_NET_CMD, [ssid, channel])
+        if resp[0][0] != 1:
+            raise RuntimeError("Failed to setup AP network")
+    
+    def wifi_set_ap_passphrase(self, ssid, passphrase, channel):
+        """TODO Docs"""
+        resp = self._send_command_get_response(_SET_AP_PASSPHRASE_CMD, [ssid, passphrase, channel])
+        if resp[0][0] != 1:
+            raise RuntimeError("Failed to setup AP network")
+    
     @property
     def ssid(self):
         """The name of the access point we're connected to"""
@@ -443,6 +457,15 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
             self.reset()
             return False
 
+    @property
+    def ap_listening(self):
+        """Whether the ESP32 is in access point mode and is listening for connections"""
+        try:
+            return self.status == WL_AP_LISTENING
+        except RuntimeError:
+            self.reset()
+            return False
+
     def connect(self, secrets):
         """Connect to an access point using a secrets dictionary
         that contains a 'ssid' and 'password' entry"""
@@ -472,6 +495,25 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         if stat == WL_NO_SSID_AVAIL:
             raise RuntimeError("No such ssid", ssid)
         raise RuntimeError("Unknown error 0x%02X" % stat)
+
+    def create_AP(self, ssid, password, channel=1):
+        """Create an access point with the given name and password."""
+        if isinstance(ssid, str):
+            ssid = bytes(ssid, 'utf-8')
+        if password:
+            if isinstance(password, str):
+                password = bytes(password, 'utf-8')
+            self.wifi_set_ap_passphrase(ssid, password, channel)
+        else:
+            self.wifi_set_ap_network(ssid, channel)
+        for _ in range(10): # retries
+            stat = self.status
+            if stat == WL_AP_LISTENING:
+                return stat
+            time.sleep(1)
+        if stat == WL_AP_FAILED:
+            raise RuntimeError("Failed to create AP", ssid)
+        raise RuntimeError("Unknown error 0x%02x" % stat)
 
     def pretty_ip(self, ip): # pylint: disable=no-self-use, invalid-name
         """Converts a bytearray IP address to a dotted-quad string for printing"""
