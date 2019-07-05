@@ -39,7 +39,7 @@ class ESPSPI_WiFiManager:
     """
     A class to help manage the Wifi connection
     """
-    def __init__(self, esp, secrets, status_pixel=None, attempts=2):
+    def __init__(self, esp, secrets, status_pixel=None, attempts=2, debug=False):
         """
         :param ESP_SPIcontrol esp: The ESP object we are using
         :param dict secrets: The WiFi and Adafruit IO secrets dict (See examples)
@@ -50,9 +50,9 @@ class ESPSPI_WiFiManager:
         """
         # Read the settings
         self._esp = esp
-        self.debug = False
+        self.debug = debug
         self.ssid = secrets['ssid']
-        self.password = secrets['password']
+        self.password = secrets.get('password', None)
         self.attempts = attempts
         requests.set_interface(self._esp)
         self.statuspix = status_pixel
@@ -99,12 +99,16 @@ class ESPSPI_WiFiManager:
         Attempt to initialize in Access Point (AP) mode.
         Other WiFi devices will be able to connect to the created Access Point
         """
+        failure_count = 0
         while not self._esp.ap_listening:
             try:
                 if self.debug:
                     print("Waiting for AP to be initialized...")
                 self.pixel_status((100,0,0))
-                self._esp.create_AP(bytes.ssid, 'utf-8'), bytes(self.password, 'utf-8')
+                if(self.password):
+                    self._esp.create_AP(bytes(self.ssid, 'utf-8'), bytes(self.password, 'utf-8'))
+                else:
+                    self._esp.create_AP(bytes(self.ssid, 'utf-8'), None)
                 failure_count = 0
                 self.pixel_status((0,100,0))
             except (ValueError, RuntimeError) as error:
@@ -114,6 +118,7 @@ class ESPSPI_WiFiManager:
                     failure_count = 0
                     self.reset()
                 continue
+        print("Access Point created! Connect to ssid: {}".format(self.ssid))
 
     def get(self, url, **kw):
         """
