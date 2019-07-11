@@ -48,12 +48,12 @@ class ESPSPI_WiFiManager:
         :param int attempts: (Optional) Failed attempts before resetting the ESP32 (default=2)
         """
         # Read the settings
-        self._esp = esp
+        self.esp = esp
         self.debug = False
         self.ssid = secrets['ssid']
         self.password = secrets['password']
         self.attempts = attempts
-        requests.set_interface(self._esp)
+        requests.set_interface(self.esp)
         self.statuspix = status_pixel
         self.pixel_status(0)
 
@@ -63,26 +63,26 @@ class ESPSPI_WiFiManager:
         """
         if self.debug:
             print("Resetting ESP32")
-        self._esp.reset()
+        self.esp.reset()
 
     def connect(self):
         """
         Attempt to connect to WiFi using the current settings
         """
         if self.debug:
-            if self._esp.status == adafruit_esp32spi.WL_IDLE_STATUS:
+            if self.esp.status == adafruit_esp32spi.WL_IDLE_STATUS:
                 print("ESP32 found and in idle mode")
-            print("Firmware vers.", self._esp.firmware_version)
-            print("MAC addr:", [hex(i) for i in self._esp.MAC_address])
-            for access_pt in self._esp.scan_networks():
+            print("Firmware vers.", self.esp.firmware_version)
+            print("MAC addr:", [hex(i) for i in self.esp.MAC_address])
+            for access_pt in self.esp.scan_networks():
                 print("\t%s\t\tRSSI: %d" % (str(access_pt['ssid'], 'utf-8'), access_pt['rssi']))
         failure_count = 0
-        while not self._esp.is_connected:
+        while not self.esp.is_connected:
             try:
                 if self.debug:
                     print("Connecting to AP...")
                 self.pixel_status((100, 0, 0))
-                self._esp.connect_AP(bytes(self.ssid, 'utf-8'), bytes(self.password, 'utf-8'))
+                self.esp.connect_AP(bytes(self.ssid, 'utf-8'), bytes(self.password, 'utf-8'))
                 failure_count = 0
                 self.pixel_status((0, 100, 0))
             except (ValueError, RuntimeError) as error:
@@ -105,7 +105,7 @@ class ESPSPI_WiFiManager:
         :return: The response from the request
         :rtype: Response
         """
-        if not self._esp.is_connected:
+        if not self.esp.is_connected:
             self.connect()
         self.pixel_status((0, 0, 100))
         return_val = requests.get(url, **kw)
@@ -124,7 +124,7 @@ class ESPSPI_WiFiManager:
         :return: The response from the request
         :rtype: Response
         """
-        if not self._esp.is_connected:
+        if not self.esp.is_connected:
             self.connect()
         self.pixel_status((0, 0, 100))
         return_val = requests.post(url, **kw)
@@ -142,7 +142,7 @@ class ESPSPI_WiFiManager:
         :return: The response from the request
         :rtype: Response
         """
-        if not self._esp.is_connected:
+        if not self.esp.is_connected:
             self.connect()
         self.pixel_status((0, 0, 100))
         return_val = requests.put(url, **kw)
@@ -161,7 +161,7 @@ class ESPSPI_WiFiManager:
         :return: The response from the request
         :rtype: Response
         """
-        if not self._esp.is_connected:
+        if not self.esp.is_connected:
             self.connect()
         self.pixel_status((0, 0, 100))
         return_val = requests.patch(url, **kw)
@@ -180,7 +180,7 @@ class ESPSPI_WiFiManager:
         :return: The response from the request
         :rtype: Response
         """
-        if not self._esp.is_connected:
+        if not self.esp.is_connected:
             self.connect()
         self.pixel_status((0, 0, 100))
         return_val = requests.delete(url, **kw)
@@ -196,10 +196,10 @@ class ESPSPI_WiFiManager:
         :return: The response time in milliseconds
         :rtype: int
         """
-        if not self._esp.is_connected:
+        if not self.esp.is_connected:
             self.connect()
         self.pixel_status((0, 0, 100))
-        response_time = self._esp.ping(host, ttl=ttl)
+        response_time = self.esp.ping(host, ttl=ttl)
         self.pixel_status(0)
         return response_time
 
@@ -207,11 +207,11 @@ class ESPSPI_WiFiManager:
         """
         Returns a formatted local IP address, update status pixel.
         """
-        if not self._esp.is_connected:
+        if not self.esp.is_connected:
             self.connect()
         self.pixel_status((0, 0, 100))
         self.pixel_status(0)
-        return self._esp.pretty_ip(self._esp.ip_address)
+        return self.esp.pretty_ip(self.esp.ip_address)
 
     def pixel_status(self, value):
         """
@@ -230,6 +230,6 @@ class ESPSPI_WiFiManager:
         """
         Returns receiving signal strength indicator in dBm
         """
-        if not self._esp.is_connected:
+        if not self.esp.is_connected:
             self.connect()
-        return self._esp.rssi()
+        return self.esp.rssi()
