@@ -412,14 +412,24 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
             raise RuntimeError("Failed to enable enterprise mode")
 
     def wifi_set_ap_network(self, ssid, channel):
-        """TODO Docs"""
+        """
+        Creates an Access point with SSID and Channel
+
+        :param ssid: the SSID of the created Access Point. Must be 8 or more characters
+        :param channel: channel of created Access Point (1 - 14).
+        """
         resp = self._send_command_get_response(_SET_AP_NET_CMD, [ssid, channel])
         if resp[0][0] != 1:
             raise RuntimeError("Failed to setup AP network")
 
     def wifi_set_ap_passphrase(self, ssid, passphrase, channel):
-        """TODO Docs"""
-        """ TODO: Why does this command refuse to work? creating AP w/out password works fine"""
+        """
+        Creates an Access point with SSID, passphrase, and Channel
+
+        :param ssid: the SSID of the created Access Point. Must be 8 or more characters
+        :param passphrase: the password of the created Access Point. Must be 8 or more characters.
+        :param channel: channel of created Access Point (1 - 14).
+        """
         resp = self._send_command_get_response(_SET_AP_PASSPHRASE_CMD, [ssid, passphrase, channel])
         if resp[0][0] != 1:
             raise RuntimeError("Failed to setup AP password")
@@ -497,7 +507,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
             raise RuntimeError("No such ssid", ssid)
         raise RuntimeError("Unknown error 0x%02X" % stat)
 
-    def create_AP(self, ssid, password, channel=b'\x01'):
+    def create_ap(self, ssid, password, channel=b'\x01'):
         """Create an access point with the given name and password."""
         if isinstance(ssid, str):
             ssid = bytes(ssid, 'utf-8')

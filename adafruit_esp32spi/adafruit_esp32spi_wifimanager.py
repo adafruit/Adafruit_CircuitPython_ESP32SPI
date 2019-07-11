@@ -97,6 +97,7 @@ class ESPSPI_WiFiManager:
     def create_ap(self):
         """
         Attempt to initialize in Access Point (AP) mode.
+        Uses SSID and optional passphrase from the current settings
         Other WiFi devices will be able to connect to the created Access Point
         """
         failure_count = 0
@@ -104,13 +105,13 @@ class ESPSPI_WiFiManager:
             try:
                 if self.debug:
                     print("Waiting for AP to be initialized...")
-                self.pixel_status((100,0,0))
-                if(self.password):
-                    self._esp.create_AP(bytes(self.ssid, 'utf-8'), bytes(self.password, 'utf-8'))
+                self.pixel_status((100, 0, 0))
+                if self.password:
+                    self._esp.create_ap(bytes(self.ssid, 'utf-8'), bytes(self.password, 'utf-8'))
                 else:
-                    self._esp.create_AP(bytes(self.ssid, 'utf-8'), None)
+                    self._esp.create_ap(bytes(self.ssid, 'utf-8'), None)
                 failure_count = 0
-                self.pixel_status((0,100,0))
+                self.pixel_status((0, 100, 0))
             except (ValueError, RuntimeError) as error:
                 print("Failed to create access point\n", error)
                 failure_count += 1
