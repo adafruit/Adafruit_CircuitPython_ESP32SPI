@@ -682,11 +682,6 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         if resp[0][0] != 1:
             raise RuntimeError("Could not start server")
 
-    def get_server_state(self, socket_num):
-        self._socknum_ll[0][0] = socket_num
-        resp = self._send_command_get_response(_GET_STATE_TCP_CMD, self._socknum_ll)
-        return resp[0][0]
-
     def set_esp_debug(self, enabled):
         """Enable/disable debug mode on the ESP32. Debug messages will be
         written to the ESP32's UART."""
