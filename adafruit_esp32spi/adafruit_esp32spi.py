@@ -54,7 +54,7 @@ __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI.git"
 # pylint: disable=bad-whitespace
 _SET_NET_CMD           = const(0x10)
 _SET_PASSPHRASE_CMD    = const(0x11)
-_SET_AP_NET_CMD        = const(0x18)
+_SET_AP_NET_CMD		   = const(0x18)
 _SET_AP_PASSPHRASE_CMD = const(0x19)
 _SET_DEBUG_CMD         = const(0x1A)
 
