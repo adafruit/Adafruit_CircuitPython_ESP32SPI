@@ -34,11 +34,22 @@ WiFi Manager for making ESP32 SPI as WiFi much easier
 from adafruit_esp32spi import adafruit_esp32spi
 import adafruit_esp32spi.adafruit_esp32spi_requests as requests
 
+class WiFiConnType: # pylint: disable=too-few-public-methods
+    """An enum-like class representing the different types of WiFi connections
+    that can be made. The values can be referenced like ``WiFiConnType.normal``.
+    Possible values are
+    - ``ThermocoupleType.normal``
+    - ``ThermocoupleType.enterprise``
+    """
+    # pylint: disable=invalid-name
+    normal = 1
+    enterprise = 2
+
 class ESPSPI_WiFiManager:
     """
     A class to help manage the Wifi connection
     """
-    def __init__(self, esp, secrets, status_pixel=None, attempts=2, con_type=1):
+    def __init__(self, esp, secrets, status_pixel=None, attempts=2, wificonntype=WiFiConnType.normal):
         """
         :param ESP_SPIcontrol esp: The ESP object we are using
         :param dict secrets: The WiFi and Adafruit IO secrets dict (See examples)
@@ -46,7 +57,9 @@ class ESPSPI_WiFiManager:
             or RGB LED (default=None)
         :type status_pixel: NeoPixel, DotStar, or RGB LED
         :param int attempts: (Optional) Failed attempts before resetting the ESP32 (default=2)
-        :param int con_type: (Optional) Type of WiFi connection to make: normal=1, WPA2 Enterprise=2
+        :param const con_type: (Optional) Type of WiFi connection: normal=1, WPA2 Enterprise=2
+        :param ~adafruit_esp32spi_wifimanager.WiFiConnType wificonntype: The type of WiFi \
+        connection to make. The default is "normal".
         """
         # Read the settings
         self.esp = esp
@@ -58,8 +71,8 @@ class ESPSPI_WiFiManager:
         self.ent_user = secrets['ent_user']
         self.ent_passwd = secrets['ent_passwd']
         self.attempts = attempts
+        self._connection_type = connection_type
         requests.set_interface(self.esp)
-        self.con_type = con_type
         self.statuspix = status_pixel
         self.pixel_status(0)
 
