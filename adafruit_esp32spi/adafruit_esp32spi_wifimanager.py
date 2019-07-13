@@ -31,6 +31,7 @@ WiFi Manager for making ESP32 SPI as WiFi much easier
 
 # pylint: disable=no-name-in-module
 
+from time import sleep
 from micropython import const
 from adafruit_esp32spi import adafruit_esp32spi
 import adafruit_esp32spi.adafruit_esp32spi_requests as requests
@@ -42,6 +43,7 @@ class ESPSPI_WiFiManager:
     NORMAL = const(1)
     ENTERPRISE = const(2)
 
+# pylint: disable=too-many-arguments
     def __init__(self, esp, secrets, status_pixel=None, attempts=2, connection_type=NORMAL):
         """
         :param ESP_SPIcontrol esp: The ESP object we are using
@@ -59,15 +61,26 @@ class ESPSPI_WiFiManager:
         self.debug = False
         self.ssid = secrets['ssid']
         self.password = secrets['password']
-        self.ent_ssid = secrets['ent_ssid']
-        self.ent_ident = secrets['ent_ident']
-        self.ent_user = secrets['ent_user']
-        self.ent_password = secrets['ent_password']
         self.attempts = attempts
         self._connection_type = connection_type
         requests.set_interface(self.esp)
         self.statuspix = status_pixel
         self.pixel_status(0)
+
+        # Check for WPA2 Enterprise keys in the secrets dictionary and load them if they exist
+        if secrets.get('ent_ssid'):
+            self.ent_ssid = secrets['ent_ssid']
+        else:
+            self.ent_ssid = secrets['ssid']
+        if secrets.get('ent_ident'):
+            self.ent_ident = secrets['ent_ident']
+        else:
+            self.ent_ident = ''
+        if secrets.get('ent_user'):
+            self.ent_user = secrets['ent_user']
+        if secrets.get('ent_password'):
+            self.ent_password = secrets['ent_password']
+# pylint: enable=too-many-arguments
 
     def reset(self):
         """
