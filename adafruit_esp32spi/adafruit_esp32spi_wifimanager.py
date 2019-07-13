@@ -38,7 +38,7 @@ class ESPSPI_WiFiManager:
     """
     A class to help manage the Wifi connection
     """
-    def __init__(self, esp, secrets, status_pixel=None, attempts=2):
+    def __init__(self, esp, secrets, status_pixel=None, attempts=2, con_type=1):
         """
         :param ESP_SPIcontrol esp: The ESP object we are using
         :param dict secrets: The WiFi and Adafruit IO secrets dict (See examples)
@@ -46,14 +46,20 @@ class ESPSPI_WiFiManager:
             or RGB LED (default=None)
         :type status_pixel: NeoPixel, DotStar, or RGB LED
         :param int attempts: (Optional) Failed attempts before resetting the ESP32 (default=2)
+        :param int con_type: (Optional) Type of WiFi connection to make: normal=1, WPA2 Enterprise=2
         """
         # Read the settings
         self.esp = esp
         self.debug = False
         self.ssid = secrets['ssid']
         self.password = secrets['password']
+        self.ent_ssid = secrets['ent_ssid']
+        self.ent_ident = secrets['ent_ident']
+        self.ent_user = secrets['ent_user']
+        self.ent_passwd = secrets['ent_passwd']
         self.attempts = attempts
         requests.set_interface(self.esp)
+        self.con_type = con_type
         self.statuspix = status_pixel
         self.pixel_status(0)
 
@@ -76,6 +82,17 @@ class ESPSPI_WiFiManager:
             print("MAC addr:", [hex(i) for i in self.esp.MAC_address])
             for access_pt in self.esp.scan_networks():
                 print("\t%s\t\tRSSI: %d" % (str(access_pt['ssid'], 'utf-8'), access_pt['rssi']))
+        if self._connection_type == ESPSPI_WiFiManager.NORMAL:
+            self.connect_normal()
+        elif self._connection_type == ESPSPI_WiFiManager.ENTERPRISE:
+            self.connect_enterprise()
+        else:
+            raise TypeError("Invalid WiFi connection type specified")
+
+    def connect_normal(self):
+        """
+        Attempt a regular style WiFi connection
+        """
         failure_count = 0
         while not self.esp.is_connected:
             try:
@@ -85,6 +102,33 @@ class ESPSPI_WiFiManager:
                 self.esp.connect_AP(bytes(self.ssid, 'utf-8'), bytes(self.password, 'utf-8'))
                 failure_count = 0
                 self.pixel_status((0, 100, 0))
+            except (ValueError, RuntimeError) as error:
+                print("Failed to connect, retrying\n", error)
+                failure_count += 1
+                if failure_count >= self.attempts:
+                    failure_count = 0
+                    self.reset()
+                continue
+
+    def connect_enterprise(self):
+        """
+        Attempt an enterprise style WiFi connection
+        """
+        failure_count = 0
+        self.esp.wifi_set_network(bytes(self.ent_ssid, 'utf-8'))
+        self.esp.wifi_set_entidentity(bytes(self.ent_ident, 'utf-8'))
+        self.esp.wifi_set_entusername(bytes(self.ent_user, 'utf-8'))
+        self.esp.wifi_set_entpassword(bytes(self.ent_password, 'utf-8'))
+        self.esp.wifi_set_entenable()
+        while not self.esp.is_connected:
+            try:
+                if self.debug:
+                    print("Waiting for the ESP32 to connect to the WPA2 Enterprise AP...")
+                self.pixel_status((100, 0, 0))
+                sleep(1)
+                failure_count = 0
+                self.pixel_status((0, 100, 0))
+                sleep(1)
             except (ValueError, RuntimeError) as error:
                 print("Failed to connect, retrying\n", error)
                 failure_count += 1
