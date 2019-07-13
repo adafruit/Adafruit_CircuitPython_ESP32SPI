@@ -32,6 +32,7 @@ A socket compatible interface thru the ESP SPI command set
 
 import time
 import gc
+import adafruit_esp32spi as esp
 from micropython import const
 
 _the_interface = None   # pylint: disable=invalid-name
@@ -42,6 +43,7 @@ def set_interface(iface):
 
 SOCK_STREAM = const(1)
 AF_INET = const(2)
+NO_SOCKET_AVAIL = const(255)
 
 MAX_PACKET = const(4000)
 
@@ -59,13 +61,13 @@ def getaddrinfo(host, port, family=0, socktype=0, proto=0, flags=0):
 class socket:
     """A simplified implementation of the Python 'socket' class, for connecting
     through an interface to a remote device"""
-    def __init__(self, family=AF_INET, type=SOCK_STREAM, proto=0, fileno=None):
+    def __init__(self, family=AF_INET, type=SOCK_STREAM, proto=0, fileno=None, socknum=None):
         if family != AF_INET:
             raise RuntimeError("Only AF_INET family supported")
         if type != SOCK_STREAM:
             raise RuntimeError("Only SOCK_STREAM type supported")
         self._buffer = b''
-        self._socknum = _the_interface.get_socket()
+        self._socknum = socknum if socknum else _the_interface.get_socket()
         self.settimeout(0)
 
     def connect(self, address, conntype=None):
@@ -148,11 +150,35 @@ class socket:
         """Set the read timeout for sockets, if value is 0 it will block"""
         self._timeout = value
 
-    def get_sock_num(self):
+    def available(self):
+        if self.socknum != NO_SOCKET_AVAIL:
+            return min(_the_interface.socket_available(self._socknum), MAX_PACKET)
+        return 0
+
+    def connected(self):
+        if self.socknum == NO_SOCKET_AVAIL:
+            return False
+        elif self.available():
+            return True
+        else:
+            status = _the_interface.socket_status(self.socknum)
+            result = status not in (esp.SOCKET_LISTEN,
+                                    esp.SOCKET_CLOSED,
+                                    esp.SOCKET_FIN_WAIT_1,
+                                    esp.SOCKET_FIN_WAIT_2,
+                                    esp.SOCKET_TIME_WAIT,
+                                    esp.SOCKET_SYN_SENT,
+                                    esp.SOCKET_SYN_RCVD,
+                                    esp.SOCKET_CLOSE_WAIT)
+            if not result:
+                self.close()
+                self._socknum = NO_SOCKET_AVAIL
+            return result
+
+    @property
+    def socknum(self):
         return self._socknum
 
-    def set_sock_num(self, sock_num):
-        self._socknum = sock_num
     def close(self):
         """Close the socket, after reading whatever remains"""
         _the_interface.socket_close(self._socknum)

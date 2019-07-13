@@ -4,7 +4,7 @@ from digitalio import DigitalInOut
 
 from adafruit_esp32spi import adafruit_esp32spi
 import adafruit_esp32spi.adafruit_esp32spi_wifimanager as wifimanager
-import adafruit_esp32spi.adafruit_esp32spi_socket as socket
+import adafruit_esp32spi.adafruit_esp32spi_server as server
 
 # Get wifi details and more from a secrets.py file
 try:
@@ -28,54 +28,27 @@ esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset, 
 wifi = wifimanager.ESPSPI_WiFiManager(esp, secrets, debug=True)
 wifi.connect()
 
-socket.set_interface(esp)
-sock = socket.socket() # Request a socket for the server
-curr_sock = sock
-sockNum = sock.get_sock_num()
-print("server status: ", esp.get_server_state(sockNum))
+server.set_interface(esp)
+server = server.server(80, True)
+server.start()
 
-# Start the server on port 80 with the socket number we just requested for it.
-esp.start_server(80, sockNum)
-
-print("socket num: ", sockNum)
-print("server status: ", esp.get_server_state(sockNum))
 print("IP addr: ", esp.pretty_ip(esp.ip_address))
-print("info: ", esp.network_data)
-print("done!")
+print("server started!")
 
-
-status = 0
-last_sock = 255
-def server_avail(): # TODO: make a server helper class
-    global last_sock
-    sock = 255;
-
-    if (curr_sock != 255):
-        # if (last_sock != 255):
-        #       TODO: if last sock, check that last_sock is still connected and available
-        #     sock = last_sock
-        if (sock == 255):
-            sock = esp.socket_available(sockNum)
-    if (sock != 255):
-        last_sock = sock
-        return sock
-
-    return 255
 
 while True:
 
-    avail = server_avail()
-    if (avail != 255):
-        sock.set_sock_num(avail) # TODO: Server class should return a new client socket
-        data = sock.read()
+    client = server.client_available()
+    if (client.available()):
+        data = client.read()
         if len(data):
             print(data)
-            sock.write(b"HTTP/1.1 200 OK\r\n")
-            sock.write(b"Content-type:text/html\r\n")
-            sock.write(b"\r\n")
+            client.write(b"HTTP/1.1 200 OK\r\n")
+            client.write(b"Content-type:text/html\r\n")
+            client.write(b"\r\n")
 
-            sock.write(b"Click <a href=\"/H\">here</a> turn the LED on!!!<br>\r\n")
-            sock.write(b"Click <a href=\"/L\">here</a> turn the LED off!!!!<br>\r\n")
+            client.write(b"Click <a href=\"/H\">here</a> turn the LED on!!!<br>\r\n")
+            client.write(b"Click <a href=\"/L\">here</a> turn the LED off!!!!<br>\r\n")
 
-            sock.write(b"\r\n")
-            sock.close()
+            client.write(b"\r\n")
+            client.close()
