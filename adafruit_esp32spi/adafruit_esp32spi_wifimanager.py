@@ -31,25 +31,18 @@ WiFi Manager for making ESP32 SPI as WiFi much easier
 
 # pylint: disable=no-name-in-module
 
+from micropython import const
 from adafruit_esp32spi import adafruit_esp32spi
 import adafruit_esp32spi.adafruit_esp32spi_requests as requests
-
-class WiFiConnType: # pylint: disable=too-few-public-methods
-    """An enum-like class representing the different types of WiFi connections
-    that can be made. The values can be referenced like ``WiFiConnType.normal``.
-    Possible values are
-    - ``ThermocoupleType.normal``
-    - ``ThermocoupleType.enterprise``
-    """
-    # pylint: disable=invalid-name
-    normal = 1
-    enterprise = 2
 
 class ESPSPI_WiFiManager:
     """
     A class to help manage the Wifi connection
     """
-    def __init__(self, esp, secrets, status_pixel=None, attempts=2, wificonntype=WiFiConnType.normal):
+    NORMAL = const(1)
+    ENTERPRISE = const(2)
+
+    def __init__(self, esp, secrets, status_pixel=None, attempts=2, connection_type=NORMAL):
         """
         :param ESP_SPIcontrol esp: The ESP object we are using
         :param dict secrets: The WiFi and Adafruit IO secrets dict (See examples)
@@ -69,7 +62,7 @@ class ESPSPI_WiFiManager:
         self.ent_ssid = secrets['ent_ssid']
         self.ent_ident = secrets['ent_ident']
         self.ent_user = secrets['ent_user']
-        self.ent_passwd = secrets['ent_passwd']
+        self.ent_password = secrets['ent_password']
         self.attempts = attempts
         self._connection_type = connection_type
         requests.set_interface(self.esp)
