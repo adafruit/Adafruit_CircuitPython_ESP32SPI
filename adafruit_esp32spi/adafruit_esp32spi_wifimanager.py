@@ -38,7 +38,7 @@ class ESPSPI_WiFiManager:
     """
     A class to help manage the Wifi connection
     """
-    def __init__(self, esp, secrets, status_pixel=None, attempts=2):
+    def __init__(self, esp, secrets, status_pixel=None, attempts=2, debug=False):
         """
         :param ESP_SPIcontrol esp: The ESP object we are using
         :param dict secrets: The WiFi and Adafruit IO secrets dict (See examples)
@@ -49,7 +49,7 @@ class ESPSPI_WiFiManager:
         """
         # Read the settings
         self.esp = esp
-        self.debug = False
+        self.debug = debug
         self.ssid = secrets['ssid']
         self.password = secrets['password']
         self.attempts = attempts

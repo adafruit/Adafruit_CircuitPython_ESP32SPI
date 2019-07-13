@@ -148,6 +148,11 @@ class socket:
         """Set the read timeout for sockets, if value is 0 it will block"""
         self._timeout = value
 
+    def get_sock_num(self):
+        return self._socknum
+
+    def set_sock_num(self, sock_num):
+        self._socknum = sock_num
     def close(self):
         """Close the socket, after reading whatever remains"""
         _the_interface.socket_close(self._socknum)
