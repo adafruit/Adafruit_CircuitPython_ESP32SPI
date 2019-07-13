@@ -36,17 +36,6 @@ from micropython import const
 from adafruit_esp32spi import adafruit_esp32spi
 import adafruit_esp32spi.adafruit_esp32spi_requests as requests
 
-class WiFiConnType: # pylint: disable=too-few-public-methods
-    """An enum-like class representing the different types of WiFi connections
-    that can be made. The values can be referenced like ``WiFiConnType.normal``.
-    Possible values are
-    - ``ThermocoupleType.normal``
-    - ``ThermocoupleType.enterprise``
-    """
-    # pylint: disable=invalid-name
-    normal = 1
-    enterprise = 2
-
 class ESPSPI_WiFiManager:
     """
     A class to help manage the Wifi connection
@@ -75,7 +64,7 @@ class ESPSPI_WiFiManager:
         self.ent_ssid = secrets['ent_ssid']
         self.ent_ident = secrets['ent_ident']
         self.ent_user = secrets['ent_user']
-        self.ent_passwd = secrets['ent_passwd']
+        self.ent_password = secrets['ent_password']
         self.attempts = attempts
         self._connection_type = connection_type
         requests.set_interface(self.esp)
@@ -128,12 +117,12 @@ class ESPSPI_WiFiManager:
         Attempt a regular style WiFi connection
         """
         failure_count = 0
-        while not self.esp.is_connected:
+        while not self._esp.is_connected:
             try:
                 if self.debug:
                     print("Connecting to AP...")
                 self.pixel_status((100, 0, 0))
-                self.esp.connect_AP(bytes(self.ssid, 'utf-8'), bytes(self.password, 'utf-8'))
+                self._esp.connect_AP(bytes(self.ssid, 'utf-8'), bytes(self.password, 'utf-8'))
                 failure_count = 0
                 self.pixel_status((0, 100, 0))
             except (ValueError, RuntimeError) as error:
@@ -149,12 +138,12 @@ class ESPSPI_WiFiManager:
         Attempt an enterprise style WiFi connection
         """
         failure_count = 0
-        self.esp.wifi_set_network(bytes(self.ent_ssid, 'utf-8'))
-        self.esp.wifi_set_entidentity(bytes(self.ent_ident, 'utf-8'))
-        self.esp.wifi_set_entusername(bytes(self.ent_user, 'utf-8'))
-        self.esp.wifi_set_entpassword(bytes(self.ent_password, 'utf-8'))
-        self.esp.wifi_set_entenable()
-        while not self.esp.is_connected:
+        self._esp.wifi_set_network(bytes(self.ent_ssid, 'utf-8'))
+        self._esp.wifi_set_entidentity(bytes(self.ent_ident, 'utf-8'))
+        self._esp.wifi_set_entusername(bytes(self.ent_user, 'utf-8'))
+        self._esp.wifi_set_entpassword(bytes(self.ent_password, 'utf-8'))
+        self._esp.wifi_set_entenable()
+        while not self._esp.is_connected:
             try:
                 if self.debug:
                     print("Waiting for the ESP32 to connect to the WPA2 Enterprise AP...")
