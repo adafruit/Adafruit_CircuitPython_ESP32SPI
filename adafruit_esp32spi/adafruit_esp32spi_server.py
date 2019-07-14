@@ -97,8 +97,6 @@ class server:
             if key in self._listeners:
                 headers = parse_headers(client)
                 body = client.read()
-                print("headers: ", headers)
-                print("body: ", body)
                 self._listeners[key](headers, body, client)
             else:
                 # TODO: support optional custom 404 handler?

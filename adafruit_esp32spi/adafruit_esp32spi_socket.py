@@ -60,6 +60,7 @@ def getaddrinfo(host, port, family=0, socktype=0, proto=0, flags=0):
 class socket:
     """A simplified implementation of the Python 'socket' class, for connecting
     through an interface to a remote device"""
+    # pylint: disable=too-many-arguments
     def __init__(self, family=AF_INET, type=SOCK_STREAM, proto=0, fileno=None, socknum=None):
         if family != AF_INET:
             raise RuntimeError("Only AF_INET family supported")
@@ -68,6 +69,7 @@ class socket:
         self._buffer = b''
         self._socknum = socknum if socknum else _the_interface.get_socket()
         self.settimeout(0)
+    # pylint: enable=too-many-arguments
 
     def connect(self, address, conntype=None):
         """Connect the socket to the 'address' (which can be 32bit packed IP or
