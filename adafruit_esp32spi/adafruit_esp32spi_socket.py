@@ -162,14 +162,15 @@ class socket:
             return True
         else:
             status = _the_interface.socket_status(self.socknum)
-            result = status not in (esp.SOCKET_LISTEN,
-                                    esp.SOCKET_CLOSED,
-                                    esp.SOCKET_FIN_WAIT_1,
-                                    esp.SOCKET_FIN_WAIT_2,
-                                    esp.SOCKET_TIME_WAIT,
-                                    esp.SOCKET_SYN_SENT,
-                                    esp.SOCKET_SYN_RCVD,
-                                    esp.SOCKET_CLOSE_WAIT)
+            # TODO: why is esp.<ConstantName> not defined? using magic numbers in mean time
+            result = status not in (1,
+                                    0,
+                                    5,
+                                    6,
+                                    10,
+                                    2,
+                                    3,
+                                    7)
             if not result:
                 self.close()
                 self._socknum = NO_SOCKET_AVAIL

@@ -204,23 +204,11 @@ def request(method, url, data=None, json=None, headers=None, stream=False, timeo
         reason = ""
         if len(line) > 2:
             reason = line[2].rstrip()
-        while True:
-            line = sock.readline()
-            if not line or line == b"\r\n":
-                break
-
-            #print("**line: ", line)
-            title, content = line.split(b': ', 1)
-            if title and content:
-                title = str(title.lower(), 'utf-8')
-                content = str(content, 'utf-8')
-                resp.headers[title] = content
-
-            if line.startswith(b"Transfer-Encoding:"):
-                if b"chunked" in line:
-                    raise ValueError("Unsupported " + line)
-            elif line.startswith(b"Location:") and not 200 <= status <= 299:
-                raise NotImplementedError("Redirects not yet supported")
+        resp.headers = self.parse_headers(sock)
+        if "chunked" in resp.headers.get("transfer-encoding"):
+            raise ValueError("Unsupported " + line)
+        elif resp.headers.get("location") and not 200 <= status <= 299:
+            raise NotImplementedError("Redirects not yet supported")
 
     except:
         sock.close()
@@ -231,6 +219,27 @@ def request(method, url, data=None, json=None, headers=None, stream=False, timeo
     return resp
 # pylint: enable=too-many-branches, too-many-statements, unused-argument
 # pylint: enable=too-many-arguments, too-many-locals
+
+def parse_headers(sock):
+    """
+    Parses the header portion of an HTTP request/response from the socket.
+    Expects first line of HTTP request/response to have been read already
+    return: header dictionary
+    rtype: Dict
+    """
+    headers = {}
+    while True:
+        line = sock.readline()
+        if not line or line == b"\r\n":
+            break
+
+        #print("**line: ", line)
+        title, content = line.split(b': ', 1)
+        if title and content:
+            title = str(title.lower(), 'utf-8')
+            content = str(content, 'utf-8')
+            headers[title] = content
+    return headers
 
 def head(url, **kw):
     """Send HTTP HEAD request"""

@@ -31,7 +31,8 @@ Server management lib to make handling and responding to incoming requests much 
 """
 
 from micropython import const
-import adafruit_esp32spi_socket as socket
+import adafruit_esp32spi.adafruit_esp32spi_socket as socket
+from adafruit_esp32spi.adafruit_esp32spi_requests import parse_headers
 
 _the_interface = None   # pylint: disable=invalid-name
 def set_interface(iface):
@@ -51,6 +52,7 @@ class server:
         self._server_sock = socket.socket(socknum=NO_SOCK_AVAIL)
         self._client_sock = socket.socket(socknum=NO_SOCK_AVAIL)
         self._debug = debug
+        self._listeners = {}
 
 
     def start(self):
@@ -62,11 +64,43 @@ class server:
             print("Server available at {0}:{1}".format(ip, self.port))
             print("Sever status: ", _the_interface.get_server_state(self._server_sock.socknum))
 
+    def on(self, method, path, request_handler):
+        """
+        Register a Request Handler for a particular HTTP method and path.
+        request_handler will be called whenever a matching HTTP request is received.
+
+        request_handler should accept the following args:
+            (Dict headers, bytes body, Socket client)
+        :param str method: the method of the HTTP request
+        :param str path: the path of the HTTP request
+        :param func request_handler: the function to call
+        """
+        self._listeners[self._get_listener_key(method, path)] = request_handler
+
+    def update_poll(self):
+        client = self.client_available()
+        if (client and client.available()):
+            line = client.readline()
+            method, path, ver = line.split(None, 2)
+            key = self._get_listener_key(method, path)
+            if key in self._listeners:
+                headers = parse_headers(client)
+                body = client.read()
+                print("headers: ", headers)
+                print("body: ", body)
+                self._listeners[key](headers, body, client)
+            else:
+                # TODO: support optional custom 404 callback?
+                client.write(b"HTTP/1.1 404 NotFound\r\n")
+                client.close()
+
+
     def client_available(self):
         """
-        returns a client socket connection if available.otherwise, returns a non available socket
-        :return the client
-        :rtype Socket
+        returns a client socket connection if available.
+        Otherwise, returns None
+        :return: the client
+        :rtype: Socket
         """
         sock = None
         if self._server_sock.socknum != NO_SOCK_AVAIL:
@@ -91,4 +125,7 @@ class server:
             self._client_sock = sock
             return self._client_sock
 
-        return socket.socket(socknum=NO_SOCK_AVAIL)
+        return None
+
+    def _get_listener_key(self, method, path):
+        return "{0}|{1}".format(str(method.lower(), 'utf-8'), str(path, 'utf-8'))
