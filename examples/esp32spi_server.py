@@ -10,7 +10,7 @@ import neopixel
 
 
 # This example depends on the 'static' folder in the examples folder
-# being copied to the root of the circuitpython filesystem. 
+# being copied to the root of the circuitpython filesystem.
 # This is where our static assets like html, js, and css live.
 
 
