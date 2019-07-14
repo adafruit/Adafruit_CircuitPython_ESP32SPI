@@ -29,6 +29,7 @@ Server management lib to make handling and responding to incoming requests much 
 
 * Author(s): Matt Costi
 """
+# pylint: disable=no-name-in-module
 
 from micropython import const
 import adafruit_esp32spi.adafruit_esp32spi_socket as socket
@@ -78,10 +79,20 @@ class server:
         self._listeners[self._get_listener_key(method, path)] = request_handler
 
     def update_poll(self):
+        """
+        Call this method inside your main event loop to get the server
+        check for new incoming client requests. When a request comes in for
+        which a request handler has been registered with 'on' method, that
+        request handler will be invoked.
+
+        Unrecognized requests will be automatically be responded to with a 404.
+        """
         client = self.client_available()
         if (client and client.available()):
             line = client.readline()
-            method, path, ver = line.split(None, 2)
+            line = line.split(None, 2)
+            method = line[0]
+            path = line[1]
             key = self._get_listener_key(method, path)
             if key in self._listeners:
                 headers = parse_headers(client)
@@ -90,7 +101,7 @@ class server:
                 print("body: ", body)
                 self._listeners[key](headers, body, client)
             else:
-                # TODO: support optional custom 404 callback?
+                # TODO: support optional custom 404 handler?
                 client.write(b"HTTP/1.1 404 NotFound\r\n")
                 client.close()
 
@@ -127,5 +138,5 @@ class server:
 
         return None
 
-    def _get_listener_key(self, method, path):
+    def _get_listener_key(self, method, path): # pylint: disable=no-self-use
         return "{0}|{1}".format(str(method.lower(), 'utf-8'), str(path, 'utf-8'))

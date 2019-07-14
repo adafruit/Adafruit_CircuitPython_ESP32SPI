@@ -32,7 +32,6 @@ A socket compatible interface thru the ESP SPI command set
 
 import time
 import gc
-import adafruit_esp32spi as esp
 from micropython import const
 
 _the_interface = None   # pylint: disable=invalid-name
@@ -92,7 +91,7 @@ class socket:
         stamp = time.monotonic()
         while b'\r\n' not in self._buffer:
             # there's no line already in there, read some more
-            avail = min(_the_interface.socket_available(self._socknum), MAX_PACKET)
+            avail = self.available()
             if avail:
                 self._buffer += _the_interface.socket_read(self._socknum, avail)
             elif self._timeout > 0 and time.monotonic() - stamp > self._timeout:
@@ -108,7 +107,7 @@ class socket:
         #print("Socket read", size)
         if size == 0:   # read as much as we can at the moment
             while True:
-                avail = min(_the_interface.socket_available(self._socknum), MAX_PACKET)
+                avail = self.available()
                 if avail:
                     self._buffer += _the_interface.socket_read(self._socknum, avail)
                 else:
@@ -124,7 +123,7 @@ class socket:
         received = []
         while to_read > 0:
             #print("Bytes to read:", to_read)
-            avail = min(_the_interface.socket_available(self._socknum), MAX_PACKET)
+            avail = self.available()
             if avail:
                 stamp = time.monotonic()
                 recv = _the_interface.socket_read(self._socknum, min(to_read, avail))
@@ -151,11 +150,13 @@ class socket:
         self._timeout = value
 
     def available(self):
+        """Returns how many bytes of data are available to be read (up to the MAX_PACKET length)"""
         if self.socknum != NO_SOCKET_AVAIL:
             return min(_the_interface.socket_available(self._socknum), MAX_PACKET)
         return 0
 
     def connected(self):
+        """Whether or not we are connected to the socket"""
         if self.socknum == NO_SOCKET_AVAIL:
             return False
         elif self.available():
@@ -178,6 +179,7 @@ class socket:
 
     @property
     def socknum(self):
+        """The socket number"""
         return self._socknum
 
     def close(self):

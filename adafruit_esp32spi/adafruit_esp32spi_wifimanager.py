@@ -38,6 +38,7 @@ class ESPSPI_WiFiManager:
     """
     A class to help manage the Wifi connection
     """
+    # pylint: disable=too-many-arguments
     def __init__(self, esp, secrets, status_pixel=None, attempts=2, debug=False):
         """
         :param ESP_SPIcontrol esp: The ESP object we are using
@@ -56,6 +57,7 @@ class ESPSPI_WiFiManager:
         requests.set_interface(self.esp)
         self.statuspix = status_pixel
         self.pixel_status(0)
+    # pylint: enable=too-many-arguments
 
     def reset(self):
         """

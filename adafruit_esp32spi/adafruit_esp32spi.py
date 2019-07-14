@@ -624,26 +624,28 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         if resp[0][0] != 1:
             raise RuntimeError("Failed to close socket")
 
-    def start_server(self, port, socket_num, conn_mode=TCP_MODE, ip=None):
+    def start_server(self, port, socket_num, conn_mode=TCP_MODE, ip=None): # pylint: disable=invalid-name
+        """Opens a server on the specified port, using the ESP32's internal reference number"""
         if self._debug:
             print("*** starting server")
         self._socknum_ll[0][0] = socket_num
         port_param = struct.pack('>H', port)
         if ip:      # use the 4 arg version
             resp = self._send_command_get_response(_START_SERVER_TCP_CMD,
-                                                    (ip,
+                                                   (ip,
                                                     port_param,
                                                     self._socknum_ll[0],
                                                     (conn_mode,)))
         else:       # use the 3 arg version
             resp = self._send_command_get_response(_START_SERVER_TCP_CMD,
-                                                (port_param,
-                                                self._socknum_ll[0],
-                                                (conn_mode,)))
+                                                   (port_param,
+                                                    self._socknum_ll[0],
+                                                    (conn_mode,)))
         if resp[0][0] != 1:
             raise RuntimeError("Could not start server")
 
     def get_server_state(self, socket_num):
+        """Get the state of the ESP32's internal reference server socket number"""
         self._socknum_ll[0][0] = socket_num
         resp = self._send_command_get_response(_GET_STATE_TCP_CMD, self._socknum_ll)
         return resp[0][0]

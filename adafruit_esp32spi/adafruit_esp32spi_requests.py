@@ -204,7 +204,7 @@ def request(method, url, data=None, json=None, headers=None, stream=False, timeo
         reason = ""
         if len(line) > 2:
             reason = line[2].rstrip()
-        resp.headers = self.parse_headers(sock)
+        resp.headers = parse_headers(sock)
         if "chunked" in resp.headers.get("transfer-encoding"):
             raise ValueError("Unsupported " + line)
         elif resp.headers.get("location") and not 200 <= status <= 299:
