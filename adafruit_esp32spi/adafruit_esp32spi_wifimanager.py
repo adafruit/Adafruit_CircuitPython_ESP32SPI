@@ -57,17 +57,13 @@ class ESPSPI_WiFiManager:
         connection to make. The default is "normal".
         """
         # Read the settings
-        self.esp = esp
+        self._esp = esp
         self.debug = False
         self.ssid = secrets['ssid']
         self.password = secrets['password']
-        self.ent_ssid = secrets['ent_ssid']
-        self.ent_ident = secrets['ent_ident']
-        self.ent_user = secrets['ent_user']
-        self.ent_password = secrets['ent_password']
         self.attempts = attempts
         self._connection_type = connection_type
-        requests.set_interface(self.esp)
+        requests.set_interface(self._esp)
         self.statuspix = status_pixel
         self.pixel_status(0)
 
