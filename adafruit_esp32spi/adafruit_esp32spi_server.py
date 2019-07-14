@@ -31,6 +31,7 @@ Server management lib to make handling and responding to incoming requests much 
 """
 # pylint: disable=no-name-in-module
 
+import os
 from micropython import const
 import adafruit_esp32spi.adafruit_esp32spi_socket as socket
 from adafruit_esp32spi.adafruit_esp32spi_requests import parse_headers
@@ -43,6 +44,7 @@ def set_interface(iface):
     socket.set_interface(iface)
 
 NO_SOCK_AVAIL = const(255)
+INDEX_HTML = "/index.html"
 
 
 # pylint: disable=unused-argument, redefined-builtin, invalid-name
@@ -54,6 +56,8 @@ class server:
         self._client_sock = socket.socket(socknum=NO_SOCK_AVAIL)
         self._debug = debug
         self._listeners = {}
+        self._static_dir = None
+        self._static_files = []
 
 
     def start(self):
@@ -72,11 +76,42 @@ class server:
 
         request_handler should accept the following args:
             (Dict headers, bytes body, Socket client)
+
         :param str method: the method of the HTTP request
         :param str path: the path of the HTTP request
         :param func request_handler: the function to call
         """
         self._listeners[self._get_listener_key(method, path)] = request_handler
+
+    def set_static_dir(self, directory_path):
+        """
+        allows for setting a directory of static files that will be auto-served
+        when that file is GET requested at'/<fileName.extension>'
+        index.html will also be made available at root path '/'
+
+        Note: does not support serving files in child folders at this time
+        """
+        self._static_dir = directory_path
+        self._static_files = ["/" + file for file in os.listdir(self._static_dir)]
+        print(self._static_files)
+
+    def serve_file(self, file_path, dir=None):
+        """
+        writes a file from the file system as a response to the client.
+
+        :param string file_path: path to the image to write to client.
+                if dir is not present, it is treated as an absolute path
+        :param string dir: path to directory that file is located in (optional)
+        """
+        self._client_sock.write(b"HTTP/1.1 200 OK\r\n")
+        self._client_sock.write(b"Content-Type:" + self._get_content_type(file_path) + b"\r\n")
+        self._client_sock.write(b"\r\n")
+        full_path = file_path if not dir else dir + file_path
+        with open(full_path, 'rb') as fp:
+            for line in fp:
+                self._client_sock.write(line)
+        self._client_sock.write(b"\r\n")
+        self._client_sock.close()
 
     def update_poll(self):
         """
@@ -91,16 +126,22 @@ class server:
         if (client and client.available()):
             line = client.readline()
             line = line.split(None, 2)
-            method = line[0]
-            path = line[1]
+            method = str(line[0], "utf-8")
+            path = str(line[1], "utf-8")
             key = self._get_listener_key(method, path)
             if key in self._listeners:
                 headers = parse_headers(client)
                 body = client.read()
                 self._listeners[key](headers, body, client)
+            elif method.lower() == "get":
+                client.read()
+                if path in self._static_files:
+                    self.serve_file(path, dir=self._static_dir)
+                elif path == "/" and INDEX_HTML in self._static_files:
+                    self.serve_file(INDEX_HTML, dir=self._static_dir)
             else:
                 # TODO: support optional custom 404 handler?
-                client.write(b"HTTP/1.1 404 NotFound\r\n")
+                self._client_sock.write(b"HTTP/1.1 404 NotFound\r\n")
                 client.close()
 
 
@@ -137,4 +178,16 @@ class server:
         return None
 
     def _get_listener_key(self, method, path): # pylint: disable=no-self-use
-        return "{0}|{1}".format(str(method.lower(), 'utf-8'), str(path, 'utf-8'))
+        return "{0}|{1}".format(method.lower(), path)
+
+
+    def _get_content_type(self, file): # pylint: disable=no-self-use
+        ext = file.split('.')[-1]
+        if ext in ("html", "htm"):
+            return b"text/html"
+        if ext == "js":
+            return b"application/javascript"
+        if ext == "css":
+            return b"text/css"
+        # TODO: test adding in support for image types as well
+        return b"text/plain"
