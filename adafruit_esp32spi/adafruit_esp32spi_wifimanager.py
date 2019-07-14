@@ -52,18 +52,16 @@ class ESPSPI_WiFiManager:
             or RGB LED (default=None)
         :type status_pixel: NeoPixel, DotStar, or RGB LED
         :param int attempts: (Optional) Failed attempts before resetting the ESP32 (default=2)
-        :param const con_type: (Optional) Type of WiFi connection: normal=1, WPA2 Enterprise=2
-        :param ~adafruit_esp32spi_wifimanager.WiFiConnType wificonntype: The type of WiFi \
-        connection to make. The default is "normal".
+        :param const connection_type: (Optional) Type of WiFi connection: NORMAL or ENTERPRISE
         """
         # Read the settings
-        self._esp = esp
+        self.esp = esp
         self.debug = False
         self.ssid = secrets['ssid']
         self.password = secrets['password']
         self.attempts = attempts
         self._connection_type = connection_type
-        requests.set_interface(self._esp)
+        requests.set_interface(self.esp)
         self.statuspix = status_pixel
         self.pixel_status(0)
 
