@@ -8,12 +8,23 @@ import adafruit_esp32spi.adafruit_esp32spi_server as server
 
 import neopixel
 
+
+# This example depends on the 'static' folder in the examples folder
+# being copied to the root of the circuitpython filesystem. 
+# This is where our static assets like html, js, and css live.
+
+
 # Get wifi details and more from a secrets.py file
 try:
     from secrets import secrets
 except ImportError:
     print("WiFi secrets are kept in secrets.py, please add them there!")
     raise
+
+try:
+    import json as json_module
+except ImportError:
+    import ujson as json_module
 
 print("ESP32 SPI simple web server test!")
 
@@ -41,42 +52,32 @@ server.set_interface(esp)
 server = server.server(80, debug=False)
 
 
-def onLedHigh(headers, body, client):
+def onLedHigh(headers, body, client): # pylint: disable=unused-argument
     print("led on!")
-    print("headers: ", headers)
-    print("body: ", body)
     status_light.fill((0, 0, 100))
-    respond(headers, body, client)
+    server.serve_file("static/index.html")
 
-def onLedLow(headers, body, client):
+def onLedLow(headers, body, client): # pylint: disable=unused-argument
     print("led off!")
-    print("headers: ", headers)
-    print("body: ", body)
     status_light.fill(0)
-    respond(headers, body, client)
+    server.serve_file("static/index.html")
 
-def respond(headers, body, client):
-    print("headers: ", headers)
-    print("body: ", body)
-
-    client.write(b"HTTP/1.1 200 OK\r\n")
-    client.write(b"Content-type:text/html\r\n")
-    client.write(b"\r\n")
-
-    client.write(b"Click <a href=\"/H\">here</a> turn the LED on!!!<br>\r\n")
-    client.write(b"Click <a href=\"/L\">here</a> turn the LED off!!!!<br>\r\n")
-
-    client.write(b"\r\n")
+def onLedColor(headers, body, client): # pylint: disable=unused-argument
+    rgb = json_module.loads(body)
+    print("led color: " + rgb)
+    status_light.fill((rgb.get("r"), rgb.get("g"), rgb.get("b")))
+    client.write(b"HTTP/1.1 200 OK")
     client.close()
 
-server.on("GET", "/", respond)
+server.set_static_dir("/static")
 server.on("GET", "/H", onLedHigh)
 server.on("GET", "/L", onLedLow)
+server.on("POST", "/ajax/ledcolor", onLedColor)
 
 
-print("IP addr: ", esp.pretty_ip(esp.ip_address))
+print("open this IP in your browser: ", esp.pretty_ip(esp.ip_address))
 
 server.start()
-print("server started!")
+
 while True:
     server.update_poll()
