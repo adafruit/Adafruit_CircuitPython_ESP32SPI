@@ -190,12 +190,14 @@ class WSGIServer:
 
         env["REQUEST_METHOD"] = method
         env["SCRIPT_NAME"] = ""
-        env["PATH_INFO"] = path
         env["SERVER_NAME"] = _the_interface.pretty_ip(_the_interface.ip_address)
         env["SERVER_PROTOCOL"] = ver
         env["SERVER_PORT"] = self.port
         if path.find("?") >= 0:
+            env["PATH_INFO"] = path.split()[0]
             env["QUERY_STRING"] = path.split("?")[1]
+        else:
+            env["PATH_INFO"] = path
 
         headers = parse_headers(client)
         if "content-type" in headers:
