@@ -109,9 +109,9 @@ class ESPSPI_WiFiManager:
                     print("Waiting for AP to be initialized...")
                 self.pixel_status((100, 0, 0))
                 if self.password:
-                    self.esp.create_ap(bytes(self.ssid, 'utf-8'), bytes(self.password, 'utf-8'))
+                    self.esp.create_AP(bytes(self.ssid, 'utf-8'), bytes(self.password, 'utf-8'))
                 else:
-                    self.esp.create_ap(bytes(self.ssid, 'utf-8'), None)
+                    self.esp.create_AP(bytes(self.ssid, 'utf-8'), None)
                 failure_count = 0
                 self.pixel_status((0, 100, 0))
             except (ValueError, RuntimeError) as error:
