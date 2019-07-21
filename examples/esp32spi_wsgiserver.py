@@ -1,7 +1,8 @@
+import os
 import board
 import busio
-import os
 from digitalio import DigitalInOut
+import neopixel
 
 from adafruit_esp32spi import adafruit_esp32spi
 import adafruit_esp32spi.adafruit_esp32spi_wifimanager as wifimanager
@@ -23,13 +24,6 @@ try:
 except ImportError:
     import ujson as json_module
 
-"""Use below for Most Boards"""
-import neopixel
-status_light = neopixel.NeoPixel(board.NEOPIXEL, 1, brightness=0.2) # Uncomment for Most Boards
-"""Uncomment below for ItsyBitsy M4"""
-# import adafruit_dotstar as dotstar
-# status_light = dotstar.DotStar(board.APA102_SCK, board.APA102_MOSI, 1, brightness=1)
-
 print("ESP32 SPI simple web server test!")
 
 esp32_cs = DigitalInOut(board.D10)
@@ -38,7 +32,13 @@ esp32_reset = DigitalInOut(board.D7)
 esp32_gpio0 = DigitalInOut(board.D12)
 
 spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
-esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset, gpio0_pin=esp32_gpio0, debug=False)
+esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset, gpio0_pin=esp32_gpio0) # pylint: disable=line-too-long
+
+"""Use below for Most Boards"""
+status_light = neopixel.NeoPixel(board.NEOPIXEL, 1, brightness=0.2) # Uncomment for Most Boards
+"""Uncomment below for ItsyBitsy M4"""
+# import adafruit_dotstar as dotstar
+# status_light = dotstar.DotStar(board.APA102_SCK, board.APA102_MOSI, 1, brightness=1)
 
 ## Connect to wifi with secrets
 wifi = wifimanager.ESPSPI_WiFiManager(esp, secrets, status_light, debug=True)
