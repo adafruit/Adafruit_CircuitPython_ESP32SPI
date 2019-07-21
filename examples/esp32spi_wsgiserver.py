@@ -146,7 +146,7 @@ class SimpleWSGIApplication:
 # Our HTTP Request handlers
 def led_on(environ): # pylint: disable=unused-argument
     print("led on!")
-    status_light.fill(0, 0, 100)
+    status_light.fill((0, 0, 100))
     return web_app.serve_file("static/index.html")
 
 def led_off(environ): # pylint: disable=unused-argument
