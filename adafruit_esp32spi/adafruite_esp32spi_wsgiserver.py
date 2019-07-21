@@ -188,20 +188,20 @@ class WSGIServer:
         env["SERVER_NAME"] = _the_interface.pretty_ip(_the_interface.ip_address)
         env["SERVER_PROTOCOL"] = ver
         env["SERVER_PORT"] = self.port
-        if line.find("?"):
-            env["QUERY_STRING"] = line.split("?")[1]
+        if path.find("?") >= 0:
+            env["QUERY_STRING"] = path.split("?")[1]
 
         headers = parse_headers(client)
         if "content-type" in headers:
             env["CONTENT_TYPE"] = headers.get("content-type")
         if "content-length" in headers:
             env["CONTENT_LENGTH"] = headers.get("content-length")
-            body = client.read(env["CONTENT_LENGTH"])
+            body = client.read(int(env["CONTENT_LENGTH"]))
             env["wsgi.input"] = io.StringIO(body)
         else:
             body = client.read()
             env["wsgi.input"] = io.StringIO(body)
-        for name, value in headers:
+        for name, value in headers.items():
             key = "HTTP_" + name.replace('-', '_').upper()
             if key in env:
                 value = "{0},{1}".format(env[key], value)
