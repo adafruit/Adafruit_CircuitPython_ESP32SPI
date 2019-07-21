@@ -47,6 +47,7 @@ https://www.python.org/dev/peps/pep-0333/
 # pylint: disable=no-name-in-module
 
 import io
+import gc
 from micropython import const
 import adafruit_esp32spi.adafruit_esp32spi_socket as socket
 from adafruit_esp32spi.adafruit_esp32spi_requests import parse_headers
@@ -114,10 +115,15 @@ class WSGIServer:
             for header in self._response_headers:
                 response += "{0}: {1}\r\n".format(*header)
             response += "\r\n"
-            for data in result:
-                response += data
             self._client_sock.write(response.encode("utf-8"))
+            for data in result:
+                if isinstance(data, bytes):
+                    self._client_sock.write(data)
+                else:
+                    self._client_sock.write(data.encode("utf-8"))
+            gc.collect()
         finally:
+            print("closing")
             self._client_sock.close()
 
     def client_available(self):
