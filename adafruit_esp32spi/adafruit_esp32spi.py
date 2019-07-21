@@ -54,7 +54,6 @@ __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI.git"
 # pylint: disable=bad-whitespace
 _SET_NET_CMD           = const(0x10)
 _SET_PASSPHRASE_CMD    = const(0x11)
-_SET_AP_PASSPHRASE_CMD = const(0x19)
 _SET_DEBUG_CMD         = const(0x1A)
 
 _GET_CONN_STATUS_CMD   = const(0x20)
@@ -629,22 +628,15 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         if self._debug:
             print("*** starting server")
         self._socknum_ll[0][0] = socket_num
-        port_param = struct.pack('>H', port)
-        if ip:      # use the 4 arg version
-            resp = self._send_command_get_response(_START_SERVER_TCP_CMD,
-                                                   (ip,
-                                                    port_param,
-                                                    self._socknum_ll[0],
-                                                    (conn_mode,)))
-        else:       # use the 3 arg version
-            resp = self._send_command_get_response(_START_SERVER_TCP_CMD,
-                                                   (port_param,
-                                                    self._socknum_ll[0],
-                                                    (conn_mode,)))
+        params = [struct.pack('>H', port), self._socknum_ll[0], (conn_mode,)]
+        if ip:
+            params.insert(0, ip)
+        resp = self._send_command_get_response(_START_SERVER_TCP_CMD, params)
+
         if resp[0][0] != 1:
             raise RuntimeError("Could not start server")
 
-    def get_server_state(self, socket_num):
+    def server_state(self, socket_num):
         """Get the state of the ESP32's internal reference server socket number"""
         self._socknum_ll[0][0] = socket_num
         resp = self._send_command_get_response(_GET_STATE_TCP_CMD, self._socknum_ll)
