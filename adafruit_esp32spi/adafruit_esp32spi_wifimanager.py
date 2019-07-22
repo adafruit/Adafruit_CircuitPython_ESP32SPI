@@ -44,8 +44,9 @@ class ESPSPI_WiFiManager:
     NORMAL = const(1)
     ENTERPRISE = const(2)
 
-    # pylint: disable=too-many-arguments, line-too-long
-    def __init__(self, esp, secrets, status_pixel=None, attempts=2, connection_type=NORMAL, debug=False):
+    # pylint: disable=too-many-arguments
+    def __init__(self, esp, secrets, status_pixel=None, attempts=2,
+                 connection_type=NORMAL, debug=False):
         """
         :param ESP_SPIcontrol esp: The ESP object we are using
         :param dict secrets: The WiFi and Adafruit IO secrets dict (See examples)
@@ -79,7 +80,7 @@ class ESPSPI_WiFiManager:
             self.ent_user = secrets['ent_user']
         if secrets.get('ent_password'):
             self.ent_password = secrets['ent_password']
-    # pylint: enable=too-many-arguments, line-too-long
+    # pylint: enable=too-many-arguments
 
     def reset(self):
         """
