@@ -41,7 +41,7 @@ status_light = neopixel.NeoPixel(board.NEOPIXEL, 1, brightness=0.2) # Uncomment 
 # status_light = dotstar.DotStar(board.APA102_SCK, board.APA102_MOSI, 1, brightness=1)
 
 ## Connect to wifi with secrets
-wifi = wifimanager.ESPSPI_WiFiManager(esp, secrets, status_light, debug=True)
+wifi = wifimanager.ESPSPI_WiFiManager(esp, secrets, status_light)
 wifi.connect()
 
 class SimpleWSGIApplication:
