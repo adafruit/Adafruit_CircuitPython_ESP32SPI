@@ -194,7 +194,7 @@ class WSGIServer:
         env["SERVER_PROTOCOL"] = ver
         env["SERVER_PORT"] = self.port
         if path.find("?") >= 0:
-            env["PATH_INFO"] = path.split()[0]
+            env["PATH_INFO"] = path.split("?")[0]
             env["QUERY_STRING"] = path.split("?")[1]
         else:
             env["PATH_INFO"] = path
