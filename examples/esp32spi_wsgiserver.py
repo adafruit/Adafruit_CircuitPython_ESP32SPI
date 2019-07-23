@@ -26,10 +26,15 @@ except ImportError:
 
 print("ESP32 SPI simple web server test!")
 
-esp32_cs = DigitalInOut(board.D10)
-esp32_ready = DigitalInOut(board.D9)
-esp32_reset = DigitalInOut(board.D7)
-esp32_gpio0 = DigitalInOut(board.D12)
+# If you are using a board with pre-defined ESP32 Pins:
+esp32_cs = DigitalInOut(board.ESP_CS)
+esp32_ready = DigitalInOut(board.ESP_BUSY)
+esp32_reset = DigitalInOut(board.ESP_RESET)
+
+# If you have an externally connected ESP32:
+# esp32_cs = DigitalInOut(board.D9)
+# esp32_ready = DigitalInOut(board.D10)
+# esp32_reset = DigitalInOut(board.D5)
 
 spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
 esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset, gpio0_pin=esp32_gpio0) # pylint: disable=line-too-long
@@ -164,7 +169,19 @@ def led_color(environ): # pylint: disable=unused-argument
 # Here we create our application, setting the static directory location
 # and registering the above request_handlers for specific HTTP requests
 # we want to listen and respond to.
-web_app = SimpleWSGIApplication(static_dir="/static")
+static_dir = "/static"
+try:
+    static_files = os.listdir(static_dir)
+    if "index.html" not in static_files:
+        raise RuntimeError("""
+            This example depends on an index.html, but it isn't present.
+            Please add it to the {0} directory""".format(static_dir))
+except (OSError) as e:
+    raise RuntimeError("""
+        This example depends on a static asset directory.
+        Please create one named {0} in the root of the device filesystem.""".format(static_dir))
+
+web_app = SimpleWSGIApplication(static_dir=static_dir)
 web_app.on("GET", "/led_on", led_on)
 web_app.on("GET", "/led_off", led_off)
 web_app.on("POST", "/ajax/ledcolor", led_color)
