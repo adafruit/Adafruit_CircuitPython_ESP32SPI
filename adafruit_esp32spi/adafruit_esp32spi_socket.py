@@ -33,6 +33,7 @@ A socket compatible interface thru the ESP SPI command set
 import time
 import gc
 from micropython import const
+from adafruit_esp32spi import adafruit_esp32spi
 
 _the_interface = None   # pylint: disable=invalid-name
 def set_interface(iface):
@@ -165,15 +166,14 @@ class socket:
             return True
         else:
             status = _the_interface.socket_status(self.socknum)
-            # TODO: why is esp.<ConstantName> not defined? using magic numbers in mean time
-            result = status not in (1,
-                                    0,
-                                    5,
-                                    6,
-                                    10,
-                                    2,
-                                    3,
-                                    7)
+            result = status not in (adafruit_esp32spi.SOCKET_LISTEN,
+                                    adafruit_esp32spi.SOCKET_CLOSED,
+                                    adafruit_esp32spi.SOCKET_FIN_WAIT_1,
+                                    adafruit_esp32spi.SOCKET_FIN_WAIT_2,
+                                    adafruit_esp32spi.SOCKET_TIME_WAIT,
+                                    adafruit_esp32spi.SOCKET_SYN_SENT,
+                                    adafruit_esp32spi.SOCKET_SYN_RCVD,
+                                    adafruit_esp32spi.SOCKET_CLOSE_WAIT)
             if not result:
                 self.close()
                 self._socknum = NO_SOCKET_AVAIL
