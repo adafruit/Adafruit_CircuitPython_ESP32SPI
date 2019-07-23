@@ -33,7 +33,7 @@ A socket compatible interface thru the ESP SPI command set
 import time
 import gc
 from micropython import const
-from adafruit_esp32spi import adafruit_esp32spi
+import adafruit_esp32spi
 
 _the_interface = None   # pylint: disable=invalid-name
 def set_interface(iface):
