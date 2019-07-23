@@ -29,11 +29,12 @@ A socket compatible interface thru the ESP SPI command set
 * Author(s): ladyada
 """
 
+# pylint: disable=no-name-in-module
 
 import time
 import gc
 from micropython import const
-import adafruit_esp32spi
+from adafruit_esp32spi import adafruit_esp32spi
 
 _the_interface = None   # pylint: disable=invalid-name
 def set_interface(iface):
