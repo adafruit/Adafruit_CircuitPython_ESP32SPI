@@ -64,6 +64,7 @@ _GET_CURR_RSSI_CMD     = const(0x25)
 _GET_CURR_ENCT_CMD     = const(0x26)
 
 _SCAN_NETWORKS         = const(0x27)
+_START_SERVER_TCP_CMD  = const(0x28)
 _GET_SOCKET_CMD        = const(0x3F)
 _GET_STATE_TCP_CMD     = const(0x29)
 _DATA_SENT_TCP_CMD     = const(0x2A)
@@ -621,6 +622,25 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         resp = self._send_command_get_response(_STOP_CLIENT_TCP_CMD, self._socknum_ll)
         if resp[0][0] != 1:
             raise RuntimeError("Failed to close socket")
+
+    def start_server(self, port, socket_num, conn_mode=TCP_MODE, ip=None): # pylint: disable=invalid-name
+        """Opens a server on the specified port, using the ESP32's internal reference number"""
+        if self._debug:
+            print("*** starting server")
+        self._socknum_ll[0][0] = socket_num
+        params = [struct.pack('>H', port), self._socknum_ll[0], (conn_mode,)]
+        if ip:
+            params.insert(0, ip)
+        resp = self._send_command_get_response(_START_SERVER_TCP_CMD, params)
+
+        if resp[0][0] != 1:
+            raise RuntimeError("Could not start server")
+
+    def server_state(self, socket_num):
+        """Get the state of the ESP32's internal reference server socket number"""
+        self._socknum_ll[0][0] = socket_num
+        resp = self._send_command_get_response(_GET_STATE_TCP_CMD, self._socknum_ll)
+        return resp[0][0]
 
     def set_esp_debug(self, enabled):
         """Enable/disable debug mode on the ESP32. Debug messages will be
