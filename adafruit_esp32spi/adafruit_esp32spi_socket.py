@@ -29,10 +29,12 @@ A socket compatible interface thru the ESP SPI command set
 * Author(s): ladyada
 """
 
+# pylint: disable=no-name-in-module
 
 import time
 import gc
 from micropython import const
+from adafruit_esp32spi import adafruit_esp32spi
 
 _the_interface = None   # pylint: disable=invalid-name
 def set_interface(iface):
@@ -42,6 +44,7 @@ def set_interface(iface):
 
 SOCK_STREAM = const(1)
 AF_INET = const(2)
+NO_SOCKET_AVAIL = const(255)
 
 MAX_PACKET = const(4000)
 
@@ -59,14 +62,16 @@ def getaddrinfo(host, port, family=0, socktype=0, proto=0, flags=0):
 class socket:
     """A simplified implementation of the Python 'socket' class, for connecting
     through an interface to a remote device"""
-    def __init__(self, family=AF_INET, type=SOCK_STREAM, proto=0, fileno=None):
+    # pylint: disable=too-many-arguments
+    def __init__(self, family=AF_INET, type=SOCK_STREAM, proto=0, fileno=None, socknum=None):
         if family != AF_INET:
             raise RuntimeError("Only AF_INET family supported")
         if type != SOCK_STREAM:
             raise RuntimeError("Only SOCK_STREAM type supported")
         self._buffer = b''
-        self._socknum = _the_interface.get_socket()
+        self._socknum = socknum if socknum else _the_interface.get_socket()
         self.settimeout(0)
+    # pylint: enable=too-many-arguments
 
     def connect(self, address, conntype=None):
         """Connect the socket to the 'address' (which can be 32bit packed IP or
@@ -90,7 +95,7 @@ class socket:
         stamp = time.monotonic()
         while b'\r\n' not in self._buffer:
             # there's no line already in there, read some more
-            avail = min(_the_interface.socket_available(self._socknum), MAX_PACKET)
+            avail = self.available()
             if avail:
                 self._buffer += _the_interface.socket_read(self._socknum, avail)
             elif self._timeout > 0 and time.monotonic() - stamp > self._timeout:
@@ -106,7 +111,7 @@ class socket:
         #print("Socket read", size)
         if size == 0:   # read as much as we can at the moment
             while True:
-                avail = min(_the_interface.socket_available(self._socknum), MAX_PACKET)
+                avail = self.available()
                 if avail:
                     self._buffer += _the_interface.socket_read(self._socknum, avail)
                 else:
@@ -122,7 +127,7 @@ class socket:
         received = []
         while to_read > 0:
             #print("Bytes to read:", to_read)
-            avail = min(_the_interface.socket_available(self._socknum), MAX_PACKET)
+            avail = self.available()
             if avail:
                 stamp = time.monotonic()
                 recv = _the_interface.socket_read(self._socknum, min(to_read, avail))
@@ -147,6 +152,38 @@ class socket:
     def settimeout(self, value):
         """Set the read timeout for sockets, if value is 0 it will block"""
         self._timeout = value
+
+    def available(self):
+        """Returns how many bytes of data are available to be read (up to the MAX_PACKET length)"""
+        if self.socknum != NO_SOCKET_AVAIL:
+            return min(_the_interface.socket_available(self._socknum), MAX_PACKET)
+        return 0
+
+    def connected(self):
+        """Whether or not we are connected to the socket"""
+        if self.socknum == NO_SOCKET_AVAIL:
+            return False
+        elif self.available():
+            return True
+        else:
+            status = _the_interface.socket_status(self.socknum)
+            result = status not in (adafruit_esp32spi.SOCKET_LISTEN,
+                                    adafruit_esp32spi.SOCKET_CLOSED,
+                                    adafruit_esp32spi.SOCKET_FIN_WAIT_1,
+                                    adafruit_esp32spi.SOCKET_FIN_WAIT_2,
+                                    adafruit_esp32spi.SOCKET_TIME_WAIT,
+                                    adafruit_esp32spi.SOCKET_SYN_SENT,
+                                    adafruit_esp32spi.SOCKET_SYN_RCVD,
+                                    adafruit_esp32spi.SOCKET_CLOSE_WAIT)
+            if not result:
+                self.close()
+                self._socknum = NO_SOCKET_AVAIL
+            return result
+
+    @property
+    def socknum(self):
+        """The socket number"""
+        return self._socknum
 
     def close(self):
         """Close the socket, after reading whatever remains"""
