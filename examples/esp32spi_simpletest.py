@@ -1,9 +1,9 @@
 import board
 import busio
 from digitalio import DigitalInOut
-
+import adafruit_esp32spi.adafruit_esp32spi_socket as socket
 from adafruit_esp32spi import adafruit_esp32spi
-import adafruit_esp32spi.adafruit_esp32spi_requests as requests
+import adafruit_requests as requests
 
 print("ESP32 SPI webclient test")
 
@@ -24,7 +24,7 @@ esp32_reset = DigitalInOut(board.ESP_RESET)
 spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
 esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset)
 
-requests.set_interface(esp)
+requests.set_socket(socket, esp)
 
 if esp.status == adafruit_esp32spi.WL_IDLE_STATUS:
     print("ESP32 found and in idle mode")
