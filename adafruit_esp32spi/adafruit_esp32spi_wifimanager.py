@@ -34,7 +34,8 @@ WiFi Manager for making ESP32 SPI as WiFi much easier
 from time import sleep
 from micropython import const
 from adafruit_esp32spi import adafruit_esp32spi
-import adafruit_esp32spi.adafruit_esp32spi_requests as requests
+import adafruit_esp32spi.adafruit_esp32spi_socket as socket
+import adafruit_requests as requests
 
 class ESPSPI_WiFiManager:
     """
@@ -61,7 +62,7 @@ class ESPSPI_WiFiManager:
         self.password = secrets['password']
         self.attempts = attempts
         self._connection_type = connection_type
-        requests.set_interface(self.esp)
+        requests.set_socket(socket, esp)
         self.statuspix = status_pixel
         self.pixel_status(0)
 
