@@ -50,7 +50,7 @@ import io
 import gc
 from micropython import const
 import adafruit_esp32spi.adafruit_esp32spi_socket as socket
-from adafruit_esp32spi.adafruit_esp32spi_requests import parse_headers
+from adafruit_requests import parse_headers
 
 _the_interface = None   # pylint: disable=invalid-name
 def set_interface(iface):
