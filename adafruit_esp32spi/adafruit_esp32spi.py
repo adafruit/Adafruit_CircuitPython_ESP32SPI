@@ -504,21 +504,21 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
             raise RuntimeError("No such ssid", ssid)
         raise RuntimeError("Unknown error 0x%02X" % stat)
 
-    def create_AP(self, ssid, password, channel=1, timeout_s=10): # pylint: disable=invalid-name
+    def create_AP(self, ssid, password, channel=1, timeout=10): # pylint: disable=invalid-name
         """
         Create an access point with the given name, password, and channel.
         Will wait until specified timeout seconds and return on success
         or raise an exception on failure.
 
-        :param ssid: the SSID of the created Access Point. Must be 8 or more characters
-        :param passphrase: the password of the created Access Point. Must be 8 or more characters.
-        :param channel: channel of created Access Point (1 - 14).
-        :param timeout_s: number of seconds until we time out and fail to create AP
+        :param str ssid: the SSID of the created Access Point. Must be less than 32 chars.
+        :param str password: the password of the created Access Point. Must be 8-63 chars.
+        :param int channel: channel of created Access Point (1 - 14).
+        :param int timeout: number of seconds until we time out and fail to create AP
         """
-        if len(ssid) < 8:
-            raise RuntimeError("ssid must be 8 more more characters")
-        if len(password) < 8:
-            raise RuntimeError("password must be 8 or more characters")
+        if len(ssid) > 32:
+            raise RuntimeError("ssid must be no more than 32 characters")
+        if len(password) < 8 or len(password) < 64:
+            raise RuntimeError("password must be 8 - 63 characters")
         if channel < 1 or channel > 14:
             raise RuntimeError("channel must be between 1 and 14")
 
@@ -534,7 +534,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
             self._wifi_set_ap_network(ssid, channel)
 
         times = time.monotonic()
-        while (time.monotonic() - times) < timeout_s:  # wait up until timeout
+        while (time.monotonic() - times) < timeout:  # wait up to timeout
             stat = self.status
             if stat == WL_AP_LISTENING:
                 return stat
