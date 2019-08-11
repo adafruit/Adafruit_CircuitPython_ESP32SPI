@@ -154,7 +154,7 @@ class ESPSPI_WiFiManager:
                     failure_count = 0
                     self.reset()
                 continue
-        print("Access Point created! Connect to ssid: {}".format(self.ssid))
+        print("Access Point created! Connect to ssid:\n {}".format(self.ssid))
 
     def connect_enterprise(self):
         """

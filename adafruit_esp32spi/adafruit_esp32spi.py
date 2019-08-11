@@ -517,7 +517,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         """
         if len(ssid) > 32:
             raise RuntimeError("ssid must be no more than 32 characters")
-        if len(password) < 8 or len(password) < 64:
+        if password and (len(password) < 8 or len(password) > 64):
             raise RuntimeError("password must be 8 - 63 characters")
         if channel < 1 or channel > 14:
             raise RuntimeError("channel must be between 1 and 14")
