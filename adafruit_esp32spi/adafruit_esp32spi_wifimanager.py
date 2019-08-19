@@ -37,6 +37,7 @@ from adafruit_esp32spi import adafruit_esp32spi
 import adafruit_esp32spi.adafruit_esp32spi_socket as socket
 import adafruit_requests as requests
 
+
 class ESPSPI_WiFiManager:
     """
     A class to help manage the Wifi connection
@@ -44,8 +45,9 @@ class ESPSPI_WiFiManager:
     NORMAL = const(1)
     ENTERPRISE = const(2)
 
-# pylint: disable=too-many-arguments
-    def __init__(self, esp, secrets, status_pixel=None, attempts=2, connection_type=NORMAL):
+    # pylint: disable=too-many-arguments
+    def __init__(self, esp, secrets, status_pixel=None, attempts=2,
+                 connection_type=NORMAL, debug=False):
         """
         :param ESP_SPIcontrol esp: The ESP object we are using
         :param dict secrets: The WiFi and Adafruit IO secrets dict (See examples)
@@ -57,9 +59,9 @@ class ESPSPI_WiFiManager:
         """
         # Read the settings
         self.esp = esp
-        self.debug = False
+        self.debug = debug
         self.ssid = secrets['ssid']
-        self.password = secrets['password']
+        self.password = secrets.get('password', None)
         self.attempts = attempts
         self._connection_type = connection_type
         requests.set_socket(socket, esp)
@@ -79,7 +81,7 @@ class ESPSPI_WiFiManager:
             self.ent_user = secrets['ent_user']
         if secrets.get('ent_password'):
             self.ent_password = secrets['ent_password']
-# pylint: enable=too-many-arguments
+    # pylint: enable=too-many-arguments
 
     def reset(self):
         """
@@ -127,6 +129,33 @@ class ESPSPI_WiFiManager:
                     failure_count = 0
                     self.reset()
                 continue
+
+    def create_ap(self):
+        """
+        Attempt to initialize in Access Point (AP) mode.
+        Uses SSID and optional passphrase from the current settings
+        Other WiFi devices will be able to connect to the created Access Point
+        """
+        failure_count = 0
+        while not self.esp.ap_listening:
+            try:
+                if self.debug:
+                    print("Waiting for AP to be initialized...")
+                self.pixel_status((100, 0, 0))
+                if self.password:
+                    self.esp.create_AP(bytes(self.ssid, 'utf-8'), bytes(self.password, 'utf-8'))
+                else:
+                    self.esp.create_AP(bytes(self.ssid, 'utf-8'), None)
+                failure_count = 0
+                self.pixel_status((0, 100, 0))
+            except (ValueError, RuntimeError) as error:
+                print("Failed to create access point\n", error)
+                failure_count += 1
+                if failure_count >= self.attempts:
+                    failure_count = 0
+                    self.reset()
+                continue
+        print("Access Point created! Connect to ssid:\n {}".format(self.ssid))
 
     def connect_enterprise(self):
         """

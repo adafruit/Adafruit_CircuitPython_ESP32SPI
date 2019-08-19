@@ -54,6 +54,8 @@ __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI.git"
 # pylint: disable=bad-whitespace
 _SET_NET_CMD           = const(0x10)
 _SET_PASSPHRASE_CMD    = const(0x11)
+_SET_AP_NET_CMD        = const(0x18)
+_SET_AP_PASSPHRASE_CMD = const(0x19)
 _SET_DEBUG_CMD         = const(0x1A)
 
 _GET_CONN_STATUS_CMD   = const(0x20)
@@ -410,6 +412,18 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         if resp[0][0] != 1:
             raise RuntimeError("Failed to enable enterprise mode")
 
+    def _wifi_set_ap_network(self, ssid, channel):
+        """Creates an Access point with SSID and Channel"""
+        resp = self._send_command_get_response(_SET_AP_NET_CMD, [ssid, channel])
+        if resp[0][0] != 1:
+            raise RuntimeError("Failed to setup AP network")
+
+    def _wifi_set_ap_passphrase(self, ssid, passphrase, channel):
+        """Creates an Access point with SSID, passphrase, and Channel"""
+        resp = self._send_command_get_response(_SET_AP_PASSPHRASE_CMD, [ssid, passphrase, channel])
+        if resp[0][0] != 1:
+            raise RuntimeError("Failed to setup AP password")
+
     @property
     def ssid(self):
         """The name of the access point we're connected to"""
@@ -444,15 +458,30 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
             self.reset()
             return False
 
+    @property
+    def ap_listening(self):
+        """Returns if the ESP32 is in access point mode and is listening for connections"""
+        try:
+            return self.status == WL_AP_LISTENING
+        except RuntimeError:
+            self.reset()
+            return False
+
     def connect(self, secrets):
         """Connect to an access point using a secrets dictionary
         that contains a 'ssid' and 'password' entry"""
         self.connect_AP(secrets['ssid'], secrets['password'])
 
-    def connect_AP(self, ssid, password): # pylint: disable=invalid-name
-        """Connect to an access point with given name and password.
-        Will retry up to 10 times and return on success or raise
-        an exception on failure"""
+    def connect_AP(self, ssid, password, timeout_s=10): # pylint: disable=invalid-name
+        """
+        Connect to an access point with given name and password.
+        Will wait until specified timeout seconds and return on success
+        or raise an exception on failure.
+
+        :param ssid: the SSID to connect to
+        :param passphrase: the password of the access point
+        :param timeout_s: number of seconds until we time out and fail to create AP
+        """
         if self._debug:
             print("Connect to AP", ssid, password)
         if isinstance(ssid, str):
@@ -463,16 +492,56 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
             self.wifi_set_passphrase(ssid, password)
         else:
             self.wifi_set_network(ssid)
-        for _ in range(10): # retries
+        times = time.monotonic()
+        while (time.monotonic() - times) < timeout_s:  # wait up until timeout
             stat = self.status
             if stat == WL_CONNECTED:
                 return stat
-            time.sleep(1)
+            time.sleep(0.05)
         if stat in (WL_CONNECT_FAILED, WL_CONNECTION_LOST, WL_DISCONNECTED):
             raise RuntimeError("Failed to connect to ssid", ssid)
         if stat == WL_NO_SSID_AVAIL:
             raise RuntimeError("No such ssid", ssid)
         raise RuntimeError("Unknown error 0x%02X" % stat)
+
+    def create_AP(self, ssid, password, channel=1, timeout=10): # pylint: disable=invalid-name
+        """
+        Create an access point with the given name, password, and channel.
+        Will wait until specified timeout seconds and return on success
+        or raise an exception on failure.
+
+        :param str ssid: the SSID of the created Access Point. Must be less than 32 chars.
+        :param str password: the password of the created Access Point. Must be 8-63 chars.
+        :param int channel: channel of created Access Point (1 - 14).
+        :param int timeout: number of seconds until we time out and fail to create AP
+        """
+        if len(ssid) > 32:
+            raise RuntimeError("ssid must be no more than 32 characters")
+        if password and (len(password) < 8 or len(password) > 64):
+            raise RuntimeError("password must be 8 - 63 characters")
+        if channel < 1 or channel > 14:
+            raise RuntimeError("channel must be between 1 and 14")
+
+        if isinstance(channel, int):
+            channel = bytes(channel)
+        if isinstance(ssid, str):
+            ssid = bytes(ssid, 'utf-8')
+        if password:
+            if isinstance(password, str):
+                password = bytes(password, 'utf-8')
+            self._wifi_set_ap_passphrase(ssid, password, channel)
+        else:
+            self._wifi_set_ap_network(ssid, channel)
+
+        times = time.monotonic()
+        while (time.monotonic() - times) < timeout:  # wait up to timeout
+            stat = self.status
+            if stat == WL_AP_LISTENING:
+                return stat
+            time.sleep(0.05)
+        if stat == WL_AP_FAILED:
+            raise RuntimeError("Failed to create AP", ssid)
+        raise RuntimeError("Unknown error 0x%02x" % stat)
 
     def pretty_ip(self, ip): # pylint: disable=no-self-use, invalid-name
         """Converts a bytearray IP address to a dotted-quad string for printing"""

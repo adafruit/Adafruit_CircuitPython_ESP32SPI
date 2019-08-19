@@ -45,9 +45,19 @@ status_light = neopixel.NeoPixel(board.NEOPIXEL, 1, brightness=0.2) # Uncomment 
 # import adafruit_dotstar as dotstar
 # status_light = dotstar.DotStar(board.APA102_SCK, board.APA102_MOSI, 1, brightness=1)
 
-## Connect to wifi with secrets
+## If you want to connect to wifi with secrets:
 wifi = wifimanager.ESPSPI_WiFiManager(esp, secrets, status_light)
 wifi.connect()
+
+## If you want to create a WIFI hotspot to connect to with secrets:
+# secrets = {"ssid": "My ESP32 AP!", "password": "supersecret"}
+# wifi = wifimanager.ESPSPI_WiFiManager(esp, secrets, status_light)
+# wifi.create_ap()
+
+## To you want to create an un-protected WIFI hotspot to connect to with secrets:"
+# secrets = {"ssid": "My ESP32 AP!"}
+# wifi = wifimanager.ESPSPI_WiFiManager(esp, secrets, status_light)
+# wifi.create_ap()
 
 class SimpleWSGIApplication:
     """
