@@ -8,6 +8,9 @@ from adafruit_esp32spi import adafruit_esp32spi
 import adafruit_esp32spi.adafruit_esp32spi_wifimanager as wifimanager
 import adafruit_esp32spi.adafruit_esp32spi_wsgiserver as server
 
+
+
+
 # This example depends on the 'static' folder in the examples folder
 # being copied to the root of the circuitpython filesystem.
 # This is where our static assets like html, js, and css live.
@@ -38,6 +41,17 @@ esp32_reset = DigitalInOut(board.ESP_RESET)
 
 spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
 esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset) # pylint: disable=line-too-long
+
+#print("MAC addr:", [hex(i) for i in esp.MAC_address])
+
+new_mac = [hex(i) for i in esp.MAC_address]
+
+print("MAC addr:", end = ' ')
+
+for i in reversed(new_mac) :
+    print(i, end = ' ')
+
+print(' ')
 
 """Use below for Most Boards"""
 status_light = neopixel.NeoPixel(board.NEOPIXEL, 1, brightness=0.2) # Uncomment for Most Boards
