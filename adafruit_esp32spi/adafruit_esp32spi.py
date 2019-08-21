@@ -762,3 +762,4 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
                                                ((pin,), (value,)))
         if resp[0][0] != 1:
             raise RuntimeError("Failed to write to pin")
+            
