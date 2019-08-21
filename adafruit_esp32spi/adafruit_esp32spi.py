@@ -337,7 +337,9 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         if self._debug:
             print("MAC address")
         resp = self._send_command_get_response(_GET_MACADDR_CMD, [b'\xFF'])
-        return resp[0]
+        new_resp = bytearray(resp[0])
+        new_resp = reversed(new_resp)
+        return new_resp
 
     def start_scan_networks(self):
         """Begin a scan of visible access points. Follow up with a call
