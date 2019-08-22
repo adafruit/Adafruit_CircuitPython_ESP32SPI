@@ -82,6 +82,7 @@ _REQ_HOST_BY_NAME_CMD  = const(0x34)
 _GET_HOST_BY_NAME_CMD  = const(0x35)
 _START_SCAN_NETWORKS   = const(0x36)
 _GET_FW_VERSION_CMD    = const(0x37)
+_GET_TIME              = const(0x3B)
 _PING_CMD              = const(0x3E)
 
 _SEND_DATA_TCP_CMD     = const(0x44)
@@ -760,3 +761,10 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
                                                ((pin,), (value,)))
         if resp[0][0] != 1:
             raise RuntimeError("Failed to write to pin")
+
+    def get_time(self):
+        """The current unix timestamp"""
+        if self.status == 3:
+            resp = self._send_command_get_response(_GET_TIME)
+            return struct.unpack('<i', resp[0])
+        raise RuntimeError("Must be connected to WiFi before obtaining NTP.")
