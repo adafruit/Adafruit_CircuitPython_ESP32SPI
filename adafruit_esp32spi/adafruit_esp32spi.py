@@ -341,7 +341,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
 
     @property
     def MAC_address_actual(self):        # pylint: disable=invalid-name
-        """A bytearray containing the MAC address of the ESP32"""
+        """A bytearray containing the actual MAC address of the ESP32"""
         if self._debug:
             print("MAC address")
         resp = self._send_command_get_response(_GET_MACADDR_CMD, [b'\xFF'])
@@ -770,4 +770,3 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
                                                ((pin,), (value,)))
         if resp[0][0] != 1:
             raise RuntimeError("Failed to write to pin")
-            
