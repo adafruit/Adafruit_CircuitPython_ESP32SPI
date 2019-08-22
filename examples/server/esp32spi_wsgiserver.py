@@ -216,3 +216,4 @@ while True:
         print("Failed to update server, restarting ESP32\n", e)
         wifi.reset()
         continue
+        
