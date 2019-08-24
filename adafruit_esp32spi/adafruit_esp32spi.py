@@ -82,6 +82,7 @@ _REQ_HOST_BY_NAME_CMD  = const(0x34)
 _GET_HOST_BY_NAME_CMD  = const(0x35)
 _START_SCAN_NETWORKS   = const(0x36)
 _GET_FW_VERSION_CMD    = const(0x37)
+_GET_REMOTE_DATA_CMD   = const(0x3A)
 _GET_TIME              = const(0x3B)
 _PING_CMD              = const(0x3E)
 
@@ -768,3 +769,8 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
             resp = self._send_command_get_response(_GET_TIME)
             return struct.unpack('<i', resp[0])
         raise RuntimeError("Must be connected to WiFi before obtaining NTP.")
+
+    def get_remote_data(self, socket_num):
+        self._socknum_ll[0][0] = socket_num
+        resp = self._send_command_get_response(_GET_REMOTE_DATA_CMD, self._socknum_ll, reply_params=2)
+        return resp[0]

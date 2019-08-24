@@ -98,9 +98,23 @@ class WSGIServer:
         """
         self.client_available()
         if (self._client_sock and self._client_sock.available()):
+            self.print_remote_ip()
             environ = self._get_environ(self._client_sock)
             result = self.application(environ, self._start_response)
             self.finish_response(result)
+        """
+        Optional routine to control what IP connects to your ESP server
+        as it forces a single connection as the server can't handle more
+        than one request at a time.
+        """
+        # self.client_available()
+        # if (self._client_sock and self._client_sock.available()):
+        #    result = self.check_remote_ip()
+        #    if result == "192.168.4.2":
+        #        self.print_remote_ip()
+        #        environ = self._get_environ(self._client_sock)
+        #        result = self.application(environ, self._start_response)
+        #        self.finish_response(result)
 
     def finish_response(self, result):
         """
@@ -216,3 +230,13 @@ class WSGIServer:
             env[key] = value
 
         return env
+
+    def check_remote_ip(self):
+        sock_num = self._client_sock.socknum
+        remote_ip = _the_interface.get_remote_data(sock_num)
+        return _the_interface.pretty_ip(remote_ip)
+
+    def print_remote_ip(self):
+        sock_num = self._client_sock.socknum
+        remote_ip = _the_interface.get_remote_data(sock_num)
+        print("Remote Connection Established:  " + _the_interface.pretty_ip(remote_ip))
