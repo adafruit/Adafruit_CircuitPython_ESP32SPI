@@ -98,7 +98,7 @@ class WSGIServer:
         """
         self.client_available()
         if (self._client_sock and self._client_sock.available()):
-            self.print_remote_ip()
+            # self.print_remote_ip()
             environ = self._get_environ(self._client_sock)
             result = self.application(environ, self._start_response)
             self.finish_response(result)
