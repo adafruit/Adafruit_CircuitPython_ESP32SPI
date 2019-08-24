@@ -95,19 +95,6 @@ class WSGIServer:
         Call this method inside your main event loop to get the server
         check for new incoming client requests. When a request comes in,
         the application callable will be invoked.
-
-        Optional routine to control what IP connects to your ESP server
-        as it forces a single connection as the server can't handle more
-        than one request at a time.
-
-        self.client_available()
-        if (self._client_sock and self._client_sock.available()):
-            result = self.check_remote_ip()
-            if result == "192.168.4.2":
-                self.print_remote_ip()
-                environ = self._get_environ(self._client_sock)
-                result = self.application(environ, self._start_response)
-                self.finish_response(result)
         """
         self.client_available()
         if (self._client_sock and self._client_sock.available()):

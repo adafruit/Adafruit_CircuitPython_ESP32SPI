@@ -776,5 +776,5 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         """
         self._socknum_ll[0][0] = socket_num
         resp = self._send_command_get_response(_GET_REMOTE_DATA_CMD,
-                                                self._socknum_ll, reply_params=2)
+                                               self._socknum_ll, reply_params=2)
         return resp[0]
