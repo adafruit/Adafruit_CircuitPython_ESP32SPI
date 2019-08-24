@@ -231,19 +231,9 @@ class WSGIServer:
 
         return env
 
-    """
-    Method that allows functionality to control what IP is connecting
-    to the server.
-    """
+    """ Functionality to control what IP is connecting to the server. """
     def check_remote_ip(self):
         sock_num = self._client_sock.socknum
         remote_ip = _the_interface.get_remote_data(sock_num)
         return _the_interface.pretty_ip(remote_ip)
 
-    """
-    Method that prints the remote IP that is connecting to the server.
-    """
-    def print_remote_ip(self):
-        sock_num = self._client_sock.socknum
-        remote_ip = _the_interface.get_remote_data(sock_num)
-        print("Remote Connection Established:  " + _the_interface.pretty_ip(remote_ip))
