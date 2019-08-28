@@ -764,7 +764,9 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
 
     def get_time(self):
         """The current unix timestamp"""
-        if self.status == 3:
+        if self.status == WL_CONNECTED:
             resp = self._send_command_get_response(_GET_TIME)
             return struct.unpack('<i', resp[0])
+        if self.status in (WL_AP_LISTENING, WL_AP_CONNECTED):
+            raise RuntimeError("Cannot obtain NTP while in AP mode, must be connected to internet")
         raise RuntimeError("Must be connected to WiFi before obtaining NTP.")
