@@ -111,11 +111,12 @@ class socket:
         gc.collect()
         return firstline
 
-    def read(self, size=0):
-        """Read up to 'size' bytes from the socket, this may be buffered internally!
-        If 'size' isnt specified, return everything in the buffer."""
-        #print("Socket read", size)
-        if size == 0:   # read as much as we can at the moment
+    def recv(self, bufsize=0):
+        """Reads some bytes from the connected remote address.
+        :param int bufsize: maximum number of bytes to receive
+        """
+        #print("Socket read", bufsize)
+        if bufsize == 0:   # read as much as we can at the moment
             while True:
                 avail = self.available()
                 if avail:
@@ -129,7 +130,7 @@ class socket:
             return ret
         stamp = time.monotonic()
 
-        to_read = size - len(self._buffer)
+        to_read = bufsize - len(self._buffer)
         received = []
         while to_read > 0:
             #print("Bytes to read:", to_read)
@@ -146,14 +147,21 @@ class socket:
         self._buffer += b''.join(received)
 
         ret = None
-        if len(self._buffer) == size:
+        if len(self._buffer) == bufsize:
             ret = self._buffer
             self._buffer = b''
         else:
-            ret = self._buffer[:size]
-            self._buffer = self._buffer[size:]
+            ret = self._buffer[:bufsize]
+            self._buffer = self._buffer[bufsize:]
         gc.collect()
         return ret
+
+    def read(self, size=0):
+        """Read up to 'size' bytes from the socket, this may be buffered internally!
+        If 'size' isnt specified, return everything in the buffer.
+        NOTE: This method is deprecated and will be removed.
+        """
+        return self.recv(size)
 
     def settimeout(self, value):
         """Set the read timeout for sockets, if value is 0 it will block"""
