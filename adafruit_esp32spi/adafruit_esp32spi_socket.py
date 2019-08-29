@@ -84,10 +84,16 @@ class socket:
             raise RuntimeError("Failed to connect to host", host)
         self._buffer = b''
 
-    def write(self, data):         # pylint: disable=no-self-use
+    def send(self, data):         # pylint: disable=no-self-use
         """Send some data to the socket"""
         _the_interface.socket_write(self._socknum, data)
         gc.collect()
+
+    def write(self, data):
+        """Sends data to the socket.
+        NOTE: This method is deprecated and will be removed.
+        """
+        self.send(data)
 
     def readline(self):
         """Attempt to return as many bytes as we can up to but not including '\r\n'"""
