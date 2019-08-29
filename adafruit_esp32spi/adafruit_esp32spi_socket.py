@@ -90,7 +90,9 @@ class socket:
         gc.collect()
 
     def write(self, data):
-        """Sends data to the socket."""
+        """Sends data to the socket.
+        NOTE: This method is deprecated and will be removed.
+        """
         self.send(data)
 
     def readline(self):
