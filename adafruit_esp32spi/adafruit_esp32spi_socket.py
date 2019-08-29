@@ -84,7 +84,7 @@ class socket:
             raise RuntimeError("Failed to connect to host", host)
         self._buffer = b''
 
-    def write(self, data):         # pylint: disable=no-self-use
+    def send(self, data):         # pylint: disable=no-self-use
         """Send some data to the socket"""
         _the_interface.socket_write(self._socknum, data)
         gc.collect()

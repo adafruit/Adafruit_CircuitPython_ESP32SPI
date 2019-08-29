@@ -115,12 +115,12 @@ class WSGIServer:
             for header in self._response_headers:
                 response += "{0}: {1}\r\n".format(*header)
             response += "\r\n"
-            self._client_sock.write(response.encode("utf-8"))
+            self._client_sock.send(response.encode("utf-8"))
             for data in result:
                 if isinstance(data, bytes):
-                    self._client_sock.write(data)
+                    self._client_sock.send(data)
                 else:
-                    self._client_sock.write(data.encode("utf-8"))
+                    self._client_sock.send(data.encode("utf-8"))
             gc.collect()
         finally:
             print("closing")
