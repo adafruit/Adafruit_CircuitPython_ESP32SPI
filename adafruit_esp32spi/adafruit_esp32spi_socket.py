@@ -89,6 +89,9 @@ class socket:
         _the_interface.socket_write(self._socknum, data)
         gc.collect()
 
+    def write(self, data):
+        self.send(data)
+
     def readline(self):
         """Attempt to return as many bytes as we can up to but not including '\r\n'"""
         #print("Socket readline")
