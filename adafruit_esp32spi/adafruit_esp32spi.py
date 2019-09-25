@@ -62,6 +62,7 @@ _GET_CONN_STATUS_CMD   = const(0x20)
 _GET_IPADDR_CMD        = const(0x21)
 _GET_MACADDR_CMD       = const(0x22)
 _GET_CURR_SSID_CMD     = const(0x23)
+_GET_CURR_BSSID_CMD    = const(0x24)
 _GET_CURR_RSSI_CMD     = const(0x25)
 _GET_CURR_ENCT_CMD     = const(0x26)
 
@@ -83,6 +84,8 @@ _GET_HOST_BY_NAME_CMD  = const(0x35)
 _START_SCAN_NETWORKS   = const(0x36)
 _GET_FW_VERSION_CMD    = const(0x37)
 _GET_TIME              = const(0x3B)
+_GET_IDX_BSSID_CMD     = const(0x3C)
+_GET_IDX_CHAN_CMD      = const(0x3D)
 _PING_CMD              = const(0x3E)
 
 _SEND_DATA_TCP_CMD     = const(0x44)
@@ -351,7 +354,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
 
     def get_scan_networks(self):
         """The results of the latest SSID scan. Returns a list of dictionaries with
-        'ssid', 'rssi' and 'encryption' entries, one for each AP found"""
+        'ssid', 'rssi', 'encryption', bssid, and channel entries, one for each AP found"""
         self._send_command(_SCAN_NETWORKS)
         names = self._wait_response_cmd(_SCAN_NETWORKS)
         #print("SSID names:", names)
@@ -362,6 +365,10 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
             a_p['rssi'] = struct.unpack('<i', rssi)[0]
             encr = self._send_command_get_response(_GET_IDX_ENCT_CMD, ((i,),))[0]
             a_p['encryption'] = encr[0]
+            bssid = self._send_command_get_response(_GET_IDX_BSSID_CMD, ((i,),))[0]
+            a_p['bssid'] = bssid
+            chan = self._send_command_get_response(_GET_IDX_CHAN_CMD, ((i,),))[0]
+            a_p['channel'] = chan[0]
             APs.append(a_p)
         return APs
 
@@ -429,6 +436,12 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
     def ssid(self):
         """The name of the access point we're connected to"""
         resp = self._send_command_get_response(_GET_CURR_SSID_CMD, [b'\xFF'])
+        return resp[0]
+
+    @property
+    def bssid(self):
+        """The MAC-formatted service set ID of the access point we're connected to"""
+        resp = self._send_command_get_response(_GET_CURR_BSSID_CMD, [b'\xFF'])
         return resp[0]
 
     @property
