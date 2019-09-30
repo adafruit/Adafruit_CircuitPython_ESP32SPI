@@ -94,6 +94,8 @@ _SET_ENT_IDENT_CMD     = const(0x4A)
 _SET_ENT_UNAME_CMD     = const(0x4B)
 _SET_ENT_PASSWD_CMD    = const(0x4C)
 _SET_ENT_ENABLE_CMD    = const(0x4F)
+_SET_CLI_CERT          = const(0x00) # TODO: Decl in nina-fw handler.
+_SET_PK                = const(0x00) # TODO: Decl in nina-fw handler.
 
 _SET_PIN_MODE_CMD      = const(0x50)
 _SET_DIGITAL_WRITE_CMD = const(0x51)
@@ -786,3 +788,36 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         if self.status in (WL_AP_LISTENING, WL_AP_CONNECTED):
             raise RuntimeError("Cannot obtain NTP while in AP mode, must be connected to internet")
         raise RuntimeError("Must be connected to WiFi before obtaining NTP.")
+
+    def set_certificate(self, client_certificate):
+        """Sets client certificate. Must be called and set
+        BEFORE a network connection is established.
+        Begins with -----BEGIN CERTIFICATE-----.
+        :param str client_certificate: User-provided client certificate.
+        """
+        if self._debug:
+            print("** Setting client certificate")
+        if self.status == WL_CONNECTED:
+            raise RuntimeError("set_certificate must be called BEFORE a connection is established.")
+        if isinstance(client_certificate, str):
+            client_certificate = bytes(client_certificate, 'utf-8')
+        resp = self._send_command_get_response(_SET_CLI_CERT, (client_certificate,))
+        if resp[0][0] != 1:
+            raise RuntimeError("Failed to set client certificate")
+        return resp[0]
+
+    def set_private_key(self, private_key):
+        """Sets client certificate. Must be called and set
+        BEFORE a network connection is established.
+        :param str private_key: User-provided private key.
+        """
+        if self._debug:
+            print("** Setting client's private key.")
+        if self.status == WL_CONNECTED:
+            raise RuntimeError("set_private_key must be called BEFORE a connection is established.")
+        if isinstance(private_key, str):
+            private_key = bytes(private_key, 'utf-8')
+        resp = self._send_command_get_response(_SET_PK, (private_key,))
+        if resp[0][0] != 1:
+            raise RuntimeError("Failed to set private key.")
+        return resp[0]
