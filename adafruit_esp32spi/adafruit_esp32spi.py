@@ -94,8 +94,8 @@ _SET_ENT_IDENT_CMD     = const(0x4A)
 _SET_ENT_UNAME_CMD     = const(0x4B)
 _SET_ENT_PASSWD_CMD    = const(0x4C)
 _SET_ENT_ENABLE_CMD    = const(0x4F)
-_SET_CLI_CERT          = const(0x00) # TODO: Decl in nina-fw handler.
-_SET_PK                = const(0x00) # TODO: Decl in nina-fw handler.
+_SET_CLI_CERT          = const(0x40)
+_SET_PK                = const(0x41)
 
 _SET_PIN_MODE_CMD      = const(0x50)
 _SET_DIGITAL_WRITE_CMD = const(0x51)
@@ -790,7 +790,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         raise RuntimeError("Must be connected to WiFi before obtaining NTP.")
 
     def set_certificate(self, client_certificate):
-        """Sets client certificate. Must be called and set
+        """Sets client certificate. Must be called
         BEFORE a network connection is established.
         Begins with -----BEGIN CERTIFICATE-----.
         :param str client_certificate: User-provided client certificate.
@@ -807,7 +807,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         return resp[0]
 
     def set_private_key(self, private_key):
-        """Sets client certificate. Must be called and set
+        """Sets private key. Must be called
         BEFORE a network connection is established.
         :param str private_key: User-provided private key.
         """
