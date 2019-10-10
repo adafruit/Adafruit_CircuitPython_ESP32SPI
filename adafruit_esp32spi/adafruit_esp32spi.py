@@ -133,7 +133,7 @@ WL_AP_CONNECTED       = const(8)
 WL_AP_FAILED          = const(9)
 # pylint: enable=bad-whitespace
 
-class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
+class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-instance-attributes
     """A class that will talk to an ESP32 module programmed with special firmware
     that lets it act as a fast an efficient WiFi co-processor"""
     TCP_MODE = const(0)
@@ -143,6 +143,8 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
     # pylint: disable=too-many-arguments
     def __init__(self, spi, cs_pin, ready_pin, reset_pin, gpio0_pin=None, *, debug=False):
         self._debug = debug
+        self.set_psk = False
+        self.set_crt = False
         self._buffer = bytearray(10)
         self._pbuf = bytearray(1)  # buffer for param read
         self._sendbuf = bytearray(256)  # buffer for command sending
@@ -805,6 +807,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         resp = self._send_command_get_response(_SET_CLI_CERT, (client_certificate,))
         if resp[0][0] != 1:
             raise RuntimeError("Failed to set client certificate")
+        self.set_crt = True
         return resp[0]
 
     def set_private_key(self, private_key):
@@ -822,4 +825,5 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods
         resp = self._send_command_get_response(_SET_PK, (private_key,))
         if resp[0][0] != 1:
             raise RuntimeError("Failed to set private key.")
+        self.set_psk = True
         return resp[0]
