@@ -100,6 +100,7 @@ _SET_PK                = const(0x41)
 _SET_PIN_MODE_CMD      = const(0x50)
 _SET_DIGITAL_WRITE_CMD = const(0x51)
 _SET_ANALOG_WRITE_CMD  = const(0x52)
+_SET_DIGITAL_READ_CMD  = const(0x53)
 
 _START_CMD             = const(0xE0)
 _END_CMD               = const(0xEE)
@@ -778,6 +779,16 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
                                                ((pin,), (value,)))
         if resp[0][0] != 1:
             raise RuntimeError("Failed to write to pin")
+
+    def set_digital_read(self, pin):
+        """
+        Get the digital input value of pin.
+
+        :param int pin: ESP32 GPIO pin to read from.
+        """
+        resp = self._send_command_get_response(_SET_DIGITAL_READ_CMD,
+                                               ((pin,),))[0]
+        return resp[0]
 
     def get_time(self):
         """The current unix timestamp"""
