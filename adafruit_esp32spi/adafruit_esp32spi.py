@@ -101,6 +101,7 @@ _SET_PIN_MODE_CMD      = const(0x50)
 _SET_DIGITAL_WRITE_CMD = const(0x51)
 _SET_ANALOG_WRITE_CMD  = const(0x52)
 _SET_DIGITAL_READ_CMD  = const(0x53)
+_SET_ANALOG_READ_CMD   = const(0x54)
 
 _START_CMD             = const(0xE0)
 _END_CMD               = const(0xEE)
@@ -789,6 +790,19 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         resp = self._send_command_get_response(_SET_DIGITAL_READ_CMD,
                                                ((pin,),))[0]
         return resp[0]
+
+    def set_analog_read(self, pin):
+        """
+        Get the analog input value of pin.
+
+        :param int pin: ESP32 GPIO pin to read from.
+        """
+        resp = self._send_command_get_response(_SET_ANALOG_READ_CMD,
+                                               ((pin,),))[0]
+        resp_a = struct.unpack('<i', resp[0])
+        if resp_a == (-1,):
+            raise ValueError("_SET_ANALOG_READ parameter error -1")
+        return resp_time
 
     def get_time(self):
         """The current unix timestamp"""
