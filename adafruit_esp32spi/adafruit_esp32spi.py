@@ -794,8 +794,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
     def set_certificate(self, client_certificate):
         """Sets client certificate. Must be called
         BEFORE a network connection is established.
-        Begins with -----BEGIN CERTIFICATE-----.
-        :param str client_certificate: User-provided X.509 certificate up to 1300 bytes.
+        :param str client_certificate: User-provided .PEM certificate up to 1300 bytes.
         """
         if self._debug:
             print("** Setting client certificate")
@@ -803,7 +802,9 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             raise RuntimeError("set_certificate must be called BEFORE a connection is established.")
         if isinstance(client_certificate, str):
             client_certificate = bytes(client_certificate, 'utf-8')
-        assert len(client_certificate) < 1300, "X.509 certificate must be less than 1300 bytes."
+        if "-----BEGIN CERTIFICATE" not in client_certificate:
+            raise TypeError(".PEM must start with -----BEGIN CERTIFICATE")
+        assert len(client_certificate) < 1300, ".PEM must be less than 1300 bytes."
         resp = self._send_command_get_response(_SET_CLI_CERT, (client_certificate,))
         if resp[0][0] != 1:
             raise RuntimeError("Failed to set client certificate")
@@ -813,7 +814,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
     def set_private_key(self, private_key):
         """Sets private key. Must be called
         BEFORE a network connection is established.
-        :param str private_key: User-provided private key up to 1700 bytes.
+        :param str private_key: User-provided .PEM file up to 1700 bytes.
         """
         if self._debug:
             print("** Setting client's private key.")
@@ -821,7 +822,9 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             raise RuntimeError("set_private_key must be called BEFORE a connection is established.")
         if isinstance(private_key, str):
             private_key = bytes(private_key, 'utf-8')
-        assert len(private_key) < 1700, "Private key must be less than 1700 bytes."
+        if "-----BEGIN RSA" not in private_key:
+            raise TypeError(".PEM must start with -----BEGIN RSA")
+        assert len(private_key) < 1700, ".PEM must be less than 1700 bytes."
         resp = self._send_command_get_response(_SET_PK, (private_key,))
         if resp[0][0] != 1:
             raise RuntimeError("Failed to set private key.")
