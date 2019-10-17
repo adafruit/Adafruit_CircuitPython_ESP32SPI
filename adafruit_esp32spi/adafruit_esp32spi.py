@@ -133,6 +133,11 @@ WL_DISCONNECTED       = const(6)
 WL_AP_LISTENING       = const(7)
 WL_AP_CONNECTED       = const(8)
 WL_AP_FAILED          = const(9)
+
+ADC_ATTEN_DB_0   = const(0)
+ADC_ATTEN_DB_2_5 = const(1)
+ADC_ATTEN_DB_6   = const(2)
+ADC_ATTEN_DB_11  = const(3)
 # pylint: enable=bad-whitespace
 
 class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-instance-attributes
@@ -783,26 +788,34 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
 
     def set_digital_read(self, pin):
         """
-        Get the digital input value of pin.
+        Get the digital input value of pin. Returns the boolean value of the pin.
 
         :param int pin: ESP32 GPIO pin to read from.
         """
         resp = self._send_command_get_response(_SET_DIGITAL_READ_CMD,
                                                ((pin,),))[0]
-        return resp[0]
+        if resp[0] == 0:
+            return False
+        elif resp[0] == 1:
+            return True
+        else:
+            raise ValueError("_SET_DIGITAL_READ response error", resp_[0])
 
-    def set_analog_read(self, pin):
+    def set_analog_read(self, pin, atten=ADC_ATTEN_DB_11):
         """
-        Get the analog input value of pin.
+        Get the analog input value of pin. Returns an int between 0 and 65536.
 
         :param int pin: ESP32 GPIO pin to read from.
+        :param int atten: attenuation constant
         """
         resp = self._send_command_get_response(_SET_ANALOG_READ_CMD,
-                                               ((pin,),))[0]
+                                               ((pin,), (atten,)))
         resp_a = struct.unpack('<i', resp[0])
-        if resp_a == (-1,):
-            raise ValueError("_SET_ANALOG_READ parameter error -1")
-        return resp_time
+        if resp_a[0] < 0:
+            raise ValueError("_SET_ANALOG_READ parameter error", resp_a[0])
+        if self._debug:
+            print(resp, resp_a, resp_a[0], 16 * resp_a[0])
+        return 16 * resp_a[0]
 
     def get_time(self):
         """The current unix timestamp"""
