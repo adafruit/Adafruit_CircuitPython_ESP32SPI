@@ -810,12 +810,12 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         """
         resp = self._send_command_get_response(_SET_ANALOG_READ_CMD,
                                                ((pin,), (atten,)))
-        resp_a = struct.unpack('<i', resp[0])
-        if resp_a[0] < 0:
-            raise ValueError("_SET_ANALOG_READ parameter error", resp_a[0])
+        resp_analog = struct.unpack('<i', resp[0])
+        if resp_analog[0] < 0:
+            raise ValueError("_SET_ANALOG_READ parameter error", resp_analog[0])
         if self._debug:
-            print(resp, resp_a, resp_a[0], 16 * resp_a[0])
-        return 16 * resp_a[0]
+            print(resp, resp_analog, resp_analog[0], 16 * resp_analog[0])
+        return 16 * resp_analog[0]
 
     def get_time(self):
         """The current unix timestamp"""
