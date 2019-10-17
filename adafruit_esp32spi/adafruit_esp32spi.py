@@ -812,7 +812,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
                                                ((pin,), (atten,)))
         resp_analog = struct.unpack('<i', resp[0])
         if resp_analog[0] < 0:
-            raise ValueError("_SET_ANALOG_READ parameter error", resp_analog[0])
+            raise ValueError("_SET_ANALOG_READ parameter error: invalid pin", resp_analog[0])
         if self._debug:
             print(resp, resp_analog, resp_analog[0], 16 * resp_analog[0])
         return 16 * resp_analog[0]
