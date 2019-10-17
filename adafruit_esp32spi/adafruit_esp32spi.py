@@ -799,7 +799,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         elif resp[0] == 1:
             return True
         else:
-            raise ValueError("_SET_DIGITAL_READ response error", resp[0])
+            raise ValueError("_SET_DIGITAL_READ response error: response is not boolean", resp[0])
 
     def set_analog_read(self, pin, atten=ADC_ATTEN_DB_11):
         """
