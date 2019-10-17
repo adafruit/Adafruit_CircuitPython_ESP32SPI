@@ -792,6 +792,10 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
 
         :param int pin: ESP32 GPIO pin to read from.
         """
+        # Verify nina-fw => 1.5.0
+        fw_semver_maj = bytes(self.firmware_version).decode("utf-8")[2]
+        assert int(fw_semver_maj) >= 5, "Please update nina-fw to 1.5.0 or above."
+
         resp = self._send_command_get_response(_SET_DIGITAL_READ_CMD,
                                                ((pin,),))[0]
         if resp[0] == 0:
@@ -808,6 +812,10 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         :param int pin: ESP32 GPIO pin to read from.
         :param int atten: attenuation constant
         """
+        # Verify nina-fw => 1.5.0
+        fw_semver_maj = bytes(self.firmware_version).decode("utf-8")[2]
+        assert int(fw_semver_maj) >= 5, "Please update nina-fw to 1.5.0 or above."
+
         resp = self._send_command_get_response(_SET_ANALOG_READ_CMD,
                                                ((pin,), (atten,)))
         resp_analog = struct.unpack('<i', resp[0])
