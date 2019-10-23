@@ -100,6 +100,8 @@ _SET_PK                = const(0x41)
 _SET_PIN_MODE_CMD      = const(0x50)
 _SET_DIGITAL_WRITE_CMD = const(0x51)
 _SET_ANALOG_WRITE_CMD  = const(0x52)
+_SET_DIGITAL_READ_CMD  = const(0x53)
+_SET_ANALOG_READ_CMD   = const(0x54)
 
 _START_CMD             = const(0xE0)
 _END_CMD               = const(0xEE)
@@ -131,6 +133,11 @@ WL_DISCONNECTED       = const(6)
 WL_AP_LISTENING       = const(7)
 WL_AP_CONNECTED       = const(8)
 WL_AP_FAILED          = const(9)
+
+ADC_ATTEN_DB_0   = const(0)
+ADC_ATTEN_DB_2_5 = const(1)
+ADC_ATTEN_DB_6   = const(2)
+ADC_ATTEN_DB_11  = const(3)
 # pylint: enable=bad-whitespace
 
 class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-instance-attributes
@@ -778,6 +785,45 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
                                                ((pin,), (value,)))
         if resp[0][0] != 1:
             raise RuntimeError("Failed to write to pin")
+
+    def set_digital_read(self, pin):
+        """
+        Get the digital input value of pin. Returns the boolean value of the pin.
+
+        :param int pin: ESP32 GPIO pin to read from.
+        """
+        # Verify nina-fw => 1.5.0
+        fw_semver_maj = bytes(self.firmware_version).decode("utf-8")[2]
+        assert int(fw_semver_maj) >= 5, "Please update nina-fw to 1.5.0 or above."
+
+        resp = self._send_command_get_response(_SET_DIGITAL_READ_CMD,
+                                               ((pin,),))[0]
+        if resp[0] == 0:
+            return False
+        elif resp[0] == 1:
+            return True
+        else:
+            raise ValueError("_SET_DIGITAL_READ response error: response is not boolean", resp[0])
+
+    def set_analog_read(self, pin, atten=ADC_ATTEN_DB_11):
+        """
+        Get the analog input value of pin. Returns an int between 0 and 65536.
+
+        :param int pin: ESP32 GPIO pin to read from.
+        :param int atten: attenuation constant
+        """
+        # Verify nina-fw => 1.5.0
+        fw_semver_maj = bytes(self.firmware_version).decode("utf-8")[2]
+        assert int(fw_semver_maj) >= 5, "Please update nina-fw to 1.5.0 or above."
+
+        resp = self._send_command_get_response(_SET_ANALOG_READ_CMD,
+                                               ((pin,), (atten,)))
+        resp_analog = struct.unpack('<i', resp[0])
+        if resp_analog[0] < 0:
+            raise ValueError("_SET_ANALOG_READ parameter error: invalid pin", resp_analog[0])
+        if self._debug:
+            print(resp, resp_analog, resp_analog[0], 16 * resp_analog[0])
+        return 16 * resp_analog[0]
 
     def get_time(self):
         """The current unix timestamp"""
