@@ -9,8 +9,8 @@ Introduction
     :target: https://discord.gg/nBQh6qu
     :alt: Discord
 
-.. image:: https://travis-ci.com/adafruit/Adafruit_CircuitPython_ESP32SPI.svg?branch=master
-    :target: https://travis-ci.com/adafruit/Adafruit_CircuitPython_ESP32SPI
+.. image:: https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI/workflows/Build%20CI/badge.svg
+    :target: https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI/actions/
     :alt: Build Status
 
 CircuitPython driver library for using ESP32 as WiFi co-processor using SPI.
