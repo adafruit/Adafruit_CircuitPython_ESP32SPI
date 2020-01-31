@@ -4,6 +4,7 @@ from digitalio import DigitalInOut
 import adafruit_esp32spi.adafruit_esp32spi_socket as socket
 from adafruit_esp32spi import adafruit_esp32spi
 import adafruit_requests as requests
+from secrets import secrets
 
 print("ESP32 SPI webclient test")
 
@@ -37,7 +38,7 @@ for ap in esp.scan_networks():
 print("Connecting to AP...")
 while not esp.is_connected:
     try:
-        esp.connect_AP(b'MY_SSID_NAME', b'MY_SSID_PASSWORD')
+        esp.connect_AP(secrets["ssid"], secrets["password"])
     except RuntimeError as e:
         print("could not connect to AP, retrying: ",e)
         continue
