@@ -16,6 +16,11 @@ esp32_cs = DigitalInOut(board.ESP_CS)
 esp32_ready = DigitalInOut(board.ESP_BUSY)
 esp32_reset = DigitalInOut(board.ESP_RESET)
 
+# If you have an ItsyBitsy Airlift:
+# esp32_cs = DigitalInOut(board.D13)
+# esp32_ready = DigitalInOut(board.D11)
+# esp32_reset = DigitalInOut(board.D12)
+
 # If you have an externally connected ESP32:
 # esp32_cs = DigitalInOut(board.D9)
 # esp32_ready = DigitalInOut(board.D10)
