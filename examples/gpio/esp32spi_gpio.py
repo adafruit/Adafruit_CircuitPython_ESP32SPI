@@ -10,11 +10,12 @@ from adafruit_esp32spi import adafruit_esp32spi
 
 # This example targets a Feather M4 or ItsyBitsy M4 as the CircuitPython processor,
 # along with either an ESP32 Feather or ESP32 Breakout as Wi-Fi co-processor.
-# You may need to choose different pins for other targets."""
+# You may need to choose different pins for other targets.
 
 
 def esp_reset_all():
-    # esp.reset() will re-initialize the ESP32 pin modes and debug level
+    # esp.reset() will reset the ESP32 using its RST pin
+    # side effect is re-initializing ESP32 pin modes and debug output
     esp.reset()
     time.sleep(1)
     # (re-)set NINA serial debug on ESP32 TX
