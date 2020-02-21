@@ -1,20 +1,16 @@
-import board
-import busio
 import time
 import random
+import board
 from digitalio import DigitalInOut, Direction
-from analogio import AnalogIn
 import pulseio
 from adafruit_esp32spi import adafruit_esp32spi
 
 
-"""
-ESP32SPI Digital and Analog Pin Reads & Writes
+# ESP32SPI Digital and Analog Pin Reads & Writes
 
-This example targets a Feather M4 or ItsyBitsy M4 as the CircuitPython processor,
-along with either an ESP32 Feather or ESP32 Breakout as Wi-Fi co-processor.
-You may need to choose different pins for other targets.
-"""
+# This example targets a Feather M4 or ItsyBitsy M4 as the CircuitPython processor,
+# along with either an ESP32 Feather or ESP32 Breakout as Wi-Fi co-processor.
+# You may need to choose different pins for other targets."""
 
 
 def esp_reset_all():
@@ -44,6 +40,7 @@ def esp_init_pin_modes(din, dout):
     esp.set_pin_mode(dout, 0x1)  # Red LED on ESP32 Feather and ESP32 Breakout
 
 def esp_status_text(n):
+    text = 'WL_UNDEFINED'
     t = {0: 'WL_IDLE_STATUS',
          1: 'WL_NO_SSID_AVAIL',
          2: 'WL_SCAN_COMPLETED',
@@ -54,11 +51,10 @@ def esp_status_text(n):
          7: 'WL_AP_LISTENING',
          8: 'WL_AP_CONNECTED',
          9: 'WL_AP_FAILED',
-        10: 'WL_NO_SHIELD', }
+         10: 'WL_NO_SHIELD', }
     if n in t:
-        return t[n]
-    else:
-        return 'WL_UNDEFINED'
+        text = t[n]
+    return text
 
 
 # M4 R/W Pin Assignments
