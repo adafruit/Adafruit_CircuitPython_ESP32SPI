@@ -97,8 +97,7 @@ m4_d_w_val = False
 esp_d_w_val = False
 
 while True:
-    print()
-    print('ESP32 DIGITAL:')
+    print('\nESP32 DIGITAL:')
 
     # ESP32 digital read
     try:
