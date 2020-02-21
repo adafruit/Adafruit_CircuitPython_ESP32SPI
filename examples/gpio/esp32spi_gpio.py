@@ -14,23 +14,13 @@ from adafruit_esp32spi import adafruit_esp32spi
 
 
 def esp_reset_all():
-    esp_reset()
-    esp_debug()
-    esp_init_pin_modes(ESP_D_R_PIN, ESP_D_W_PIN)
-
-def esp_reset(wait=1):
-    """
-    CAUTION this will re-initialize the ESP32 pin modes and debug level
-    """
+    # esp.reset() will re-initialize the ESP32 pin modes and debug level
     esp.reset()
-    time.sleep(wait)
-
-def esp_debug(local=0, remote=True):
-    # ESP32SPI CircuitPython library serial debug on M4 TX
-    esp._debug = local  # 0, 1, 2, 3
-
-    # NINA serial debug on ESP32 TX
-    esp.set_esp_debug(remote)  # False, True
+    time.sleep(1)
+    # (re-)set NINA serial debug on ESP32 TX
+    esp.set_esp_debug(True)  # False, True
+    # (re-)set digital pin modes
+    esp_init_pin_modes(ESP_D_R_PIN, ESP_D_W_PIN)
 
 def esp_init_pin_modes(din, dout):
     # ESP32 Digital Input
