@@ -39,9 +39,9 @@ esp32_reset = DigitalInOut(board.ESP_RESET)
 spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
 esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset) # pylint: disable=line-too-long
 
-"""Use below for Most Boards"""
+# Use below for Most Boards
 status_light = neopixel.NeoPixel(board.NEOPIXEL, 1, brightness=0.2) # Uncomment for Most Boards
-"""Uncomment below for ItsyBitsy M4"""
+# Uncomment below for ItsyBitsy M4
 # import adafruit_dotstar as dotstar
 # status_light = dotstar.DotStar(board.APA102_SCK, board.APA102_MOSI, 1, brightness=1)
 
