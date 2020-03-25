@@ -106,7 +106,7 @@ class socket:
         """
         self.send(data)
 
-    def readline(self,eol=b"\r\n"):
+    def readline(self, eol=b"\r\n"):
         """Attempt to return as many bytes as we can up to but not including eol (default='\r\n')"""
 
         stamp = time.monotonic()
