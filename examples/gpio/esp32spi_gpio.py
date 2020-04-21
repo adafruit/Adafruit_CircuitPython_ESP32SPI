@@ -23,6 +23,7 @@ def esp_reset_all():
     # (re-)set digital pin modes
     esp_init_pin_modes(ESP_D_R_PIN, ESP_D_W_PIN)
 
+
 def esp_init_pin_modes(din, dout):
     # ESP32 Digital Input
     esp.set_pin_mode(din, 0x0)
@@ -30,19 +31,22 @@ def esp_init_pin_modes(din, dout):
     # ESP32 Digital Output (no output on pins 34-39)
     esp.set_pin_mode(dout, 0x1)
 
+
 def esp_status_text(n):
-    text = 'WL_UNDEFINED'
-    t = {0: 'WL_IDLE_STATUS',
-         1: 'WL_NO_SSID_AVAIL',
-         2: 'WL_SCAN_COMPLETED',
-         3: 'WL_CONNECTED',
-         4: 'WL_CONNECT_FAILED',
-         5: 'WL_CONNECTION_LOST',
-         6: 'WL_DISCONNECTED',
-         7: 'WL_AP_LISTENING',
-         8: 'WL_AP_CONNECTED',
-         9: 'WL_AP_FAILED',
-         10: 'WL_NO_SHIELD', }
+    text = "WL_UNDEFINED"
+    t = {
+        0: "WL_IDLE_STATUS",
+        1: "WL_NO_SSID_AVAIL",
+        2: "WL_SCAN_COMPLETED",
+        3: "WL_CONNECTED",
+        4: "WL_CONNECT_FAILED",
+        5: "WL_CONNECTION_LOST",
+        6: "WL_DISCONNECTED",
+        7: "WL_AP_LISTENING",
+        8: "WL_AP_CONNECTED",
+        9: "WL_AP_FAILED",
+        10: "WL_NO_SHIELD",
+    }
     if n in t:
         text = t[n]
     return text
@@ -79,38 +83,46 @@ esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset)
 
 esp_reset_all()
 
-espfirmware = ''
+espfirmware = ""
 for _ in esp.firmware_version:
     if _ == 0:
         break
     else:
         espfirmware += "{:c}".format(_)
-print('ESP32 Firmware:', espfirmware)
+print("ESP32 Firmware:", espfirmware)
 
 esp_MAC_address = esp.MAC_address
-print("ESP32 MAC:      {5:02X}:{4:02X}:{3:02X}:{2:02X}:{1:02X}:{0:02X}"
-      .format(*esp_MAC_address))
+print(
+    "ESP32 MAC:      {5:02X}:{4:02X}:{3:02X}:{2:02X}:{1:02X}:{0:02X}".format(
+        *esp_MAC_address
+    )
+)
 
-print('ESP32 Status:  ', esp.status, esp_status_text(esp.status),
-      'Connected?', esp.is_connected)
+print(
+    "ESP32 Status:  ",
+    esp.status,
+    esp_status_text(esp.status),
+    "Connected?",
+    esp.is_connected,
+)
 
 # initial digital write values
 m4_d_w_val = False
 esp_d_w_val = False
 
 while True:
-    print('\nESP32 DIGITAL:')
+    print("\nESP32 DIGITAL:")
 
     # ESP32 digital read
     try:
         M4_D_W_PIN.value = m4_d_w_val
-        print('M4 wrote:', m4_d_w_val, end=' ')
+        print("M4 wrote:", m4_d_w_val, end=" ")
         # b/c ESP32 might have reset out from under us
         esp_init_pin_modes(ESP_D_R_PIN, ESP_D_W_PIN)
         esp_d_r_val = esp.set_digital_read(ESP_D_R_PIN)
-        print('--> ESP read:', esp_d_r_val)
+        print("--> ESP read:", esp_d_r_val)
     except (RuntimeError, AssertionError) as e:
-        print('ESP32 Error', e)
+        print("ESP32 Error", e)
         esp_reset_all()
 
     # ESP32 digital write
@@ -118,31 +130,45 @@ while True:
         # b/c ESP32 might have reset out from under us
         esp_init_pin_modes(ESP_D_R_PIN, ESP_D_W_PIN)
         esp.set_digital_write(ESP_D_W_PIN, esp_d_w_val)
-        print('ESP wrote:', esp_d_w_val, '--> Red LED')
+        print("ESP wrote:", esp_d_w_val, "--> Red LED")
     except (RuntimeError) as e:
-        print('ESP32 Error', e)
+        print("ESP32 Error", e)
         esp_reset_all()
 
-    print('ESP32 ANALOG:')
+    print("ESP32 ANALOG:")
 
     # ESP32 analog read
     try:
         esp_a_r_val = esp.set_analog_read(ESP_A_R_PIN)
-        print('Potentiometer --> ESP read: ', esp_a_r_val,
-              ' (', '{:1.1f}'.format(esp_a_r_val*3.3/65536), 'v)', sep='')
+        print(
+            "Potentiometer --> ESP read: ",
+            esp_a_r_val,
+            " (",
+            "{:1.1f}".format(esp_a_r_val * 3.3 / 65536),
+            "v)",
+            sep="",
+        )
     except (RuntimeError, AssertionError) as e:
-        print('ESP32 Error', e)
+        print("ESP32 Error", e)
         esp_reset_all()
 
     # ESP32 analog write
     try:
         # don't set the low end to 0 or the M4's pulseio read will stall
-        esp_a_w_val = random.uniform(0.1, .9)
+        esp_a_w_val = random.uniform(0.1, 0.9)
         esp.set_analog_write(ESP_A_W_PIN, esp_a_w_val)
-        print('ESP wrote: ', '{:1.2f}'.format(esp_a_w_val),
-              ' (', '{:d}'.format(int(esp_a_w_val*65536)), ')',
-              ' (', '{:1.1f}'.format(esp_a_w_val*3.3), 'v)',
-              sep='', end=' ')
+        print(
+            "ESP wrote: ",
+            "{:1.2f}".format(esp_a_w_val),
+            " (",
+            "{:d}".format(int(esp_a_w_val * 65536)),
+            ")",
+            " (",
+            "{:1.1f}".format(esp_a_w_val * 3.3),
+            "v)",
+            sep="",
+            end=" ",
+        )
 
         # ESP32 "analog" write is a 1000Hz PWM
         # use pulseio to extract the duty cycle
@@ -152,13 +178,23 @@ while True:
             pass
         M4_A_R_PIN.pause()
         duty = M4_A_R_PIN[0] / (M4_A_R_PIN[0] + M4_A_R_PIN[1])
-        print('--> M4 read: ', '{:1.2f}'.format(duty),
-              ' (', '{:d}'.format(int(duty*65536)), ')',
-              ' (', '{:1.1f}'.format(duty*3.3), 'v)',
-              ' [len=', len(M4_A_R_PIN), ']', sep='')
+        print(
+            "--> M4 read: ",
+            "{:1.2f}".format(duty),
+            " (",
+            "{:d}".format(int(duty * 65536)),
+            ")",
+            " (",
+            "{:1.1f}".format(duty * 3.3),
+            "v)",
+            " [len=",
+            len(M4_A_R_PIN),
+            "]",
+            sep="",
+        )
 
     except (RuntimeError) as e:
-        print('ESP32 Error', e)
+        print("ESP32 Error", e)
         esp_reset_all()
 
     # toggle digital write values
