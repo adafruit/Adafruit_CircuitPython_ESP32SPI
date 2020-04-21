@@ -85,9 +85,7 @@ esp_reset_all()
 
 espfirmware = ""
 for _ in esp.firmware_version:
-    if _ == 0:
-        break
-    else:
+    if _ != 0:
         espfirmware += "{:c}".format(_)
 print("ESP32 Firmware:", espfirmware)
 
