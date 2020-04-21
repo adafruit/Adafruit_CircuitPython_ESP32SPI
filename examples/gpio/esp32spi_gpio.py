@@ -28,7 +28,7 @@ def esp_init_pin_modes(din, dout):
     esp.set_pin_mode(din, 0x0)
 
     # ESP32 Digital Output (no output on pins 34-39)
-    esp.set_pin_mode(dout, 0x1)  # Red LED on ESP32 Feather and ESP32 Breakout
+    esp.set_pin_mode(dout, 0x1)
 
 def esp_status_text(n):
     text = 'WL_UNDEFINED'
@@ -54,7 +54,7 @@ M4_D_W_PIN.direction = Direction.OUTPUT
 M4_A_R_PIN = pulseio.PulseIn(board.A0, maxlen=64)  # PWM read from ESP_A_W_PIN
 M4_A_R_PIN.pause()
 
-# ESP32 R/W Pin assignments
+# ESP32 R/W Pin assignments & connections
 ESP_D_R_PIN = 12  # digital read from M4_D_W_PIN
 ESP_D_W_PIN = 13  # digital write to Red LED on Feather ESP32 and ESP32 Breakout
 # ESP32 Analog Input using ADC1

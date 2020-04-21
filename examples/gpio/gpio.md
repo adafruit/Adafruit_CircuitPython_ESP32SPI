@@ -31,7 +31,7 @@ As of NINA firmware version 1.5.0, the ESP32SPI library can be used to read digi
     # Adafruit ESP32 Airlift Bitsy Add-On†
     #                                                             G,  R,  B
 
-    # Avialable† ESP32SPI Digital Inputs with NINA FW >= 1.5.0
+    # Avialable ESP32SPI Digital Inputs with NINA FW >= 1.5.0
     #
     # Adafruit ESP32 Breakout
     # *,    2, 4,    12,  R,     15, 16, 17,     19, 21, 22,     25, 26, 27, 32,     34, 35, 36, 39
@@ -79,7 +79,7 @@ The Airlift Breakout has level-shifting on RX and GPIO0, so those could be digit
 
 The Airlift FeatherWing and Bitsy Add-On have no level-shifting since they're designed to be stacked onto their associated M4 microcontrollers, so theoretically RX, TX, and GPIO0 could be used as digital inputs, or as digital or analog (PWM) outputs. It's hard to find a use case for doing this when stacked since RX, TX, and GPIO0 will be connected to M4 GPIO pins.
 
-The Airlift [Metro / Arduino] Shield has level-shifting on RX and GPIO0, with stacking issues similar to the wings.
+The Airlift [Metro / Arduino] Shield has level-shifting on RX and GPIO0, with stacking issues similar to the FeatherWings.
 
 The RX, TX, and GPIO0 pins are used for updating the NINA firmware, and have specific behaviors immediately following reboot that need to be considered if reusing them as GPIO. On the Airlift FeatherWing and Bitsy Add-On, there are pads that need to be soldered to connect the pins. NINA does output messages to TX when connected, depending on the esp debug level set.
 
