@@ -32,26 +32,6 @@ def esp_init_pin_modes(din, dout):
     esp.set_pin_mode(dout, 0x1)
 
 
-def esp_status_text(n):
-    text = "WL_UNDEFINED"
-    t = {
-        0: "WL_IDLE_STATUS",
-        1: "WL_NO_SSID_AVAIL",
-        2: "WL_SCAN_COMPLETED",
-        3: "WL_CONNECTED",
-        4: "WL_CONNECT_FAILED",
-        5: "WL_CONNECTION_LOST",
-        6: "WL_DISCONNECTED",
-        7: "WL_AP_LISTENING",
-        8: "WL_AP_CONNECTED",
-        9: "WL_AP_FAILED",
-        10: "WL_NO_SHIELD",
-    }
-    if n in t:
-        text = t[n]
-    return text
-
-
 # M4 R/W Pin Assignments
 M4_D_W_PIN = DigitalInOut(board.A1)  # digital write to ESP_D_R_PIN
 M4_D_W_PIN.direction = Direction.OUTPUT
@@ -94,14 +74,6 @@ print(
     "ESP32 MAC:      {5:02X}:{4:02X}:{3:02X}:{2:02X}:{1:02X}:{0:02X}".format(
         *esp_MAC_address
     )
-)
-
-print(
-    "ESP32 Status:  ",
-    esp.status,
-    esp_status_text(esp.status),
-    "Connected?",
-    esp.is_connected,
 )
 
 # initial digital write values
