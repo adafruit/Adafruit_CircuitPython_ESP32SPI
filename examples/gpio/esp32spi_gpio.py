@@ -8,7 +8,7 @@ from adafruit_esp32spi import adafruit_esp32spi
 
 # ESP32SPI Digital and Analog Pin Reads & Writes
 
-# This example targets a Feather M4 or ItsyBitsy M4 as the CircuitPython processor,
+# This example targets a Feather M4 or ItsyBitsy M4 as the CircuitPython MCU,
 # along with either an ESP32 Feather or ESP32 Breakout as Wi-Fi co-processor.
 # You may need to choose different pins for other targets.
 
@@ -88,9 +88,11 @@ for _ in esp.firmware_version:
 print('ESP32 Firmware:', espfirmware)
 
 esp_MAC_address = esp.MAC_address
-print("ESP32 MAC:      {5:02X}:{4:02X}:{3:02X}:{2:02X}:{1:02X}:{0:02X}".format(*esp_MAC_address))
+print("ESP32 MAC:      {5:02X}:{4:02X}:{3:02X}:{2:02X}:{1:02X}:{0:02X}"
+      .format(*esp_MAC_address))
 
-print('ESP32 Status:  ', esp.status, esp_status_text(esp.status), 'Connected?', esp.is_connected)
+print('ESP32 Status:  ', esp.status, esp_status_text(esp.status),
+      'Connected?', esp.is_connected)
 
 # initial digital write values
 m4_d_w_val = False
