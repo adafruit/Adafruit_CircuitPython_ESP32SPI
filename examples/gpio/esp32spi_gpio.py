@@ -69,10 +69,9 @@ for _ in esp.firmware_version:
         espfirmware += "{:c}".format(_)
 print("ESP32 Firmware:", espfirmware)
 
-esp_MAC_address = esp.MAC_address
 print(
     "ESP32 MAC:      {5:02X}:{4:02X}:{3:02X}:{2:02X}:{1:02X}:{0:02X}".format(
-        *esp_MAC_address
+        *esp.MAC_address
     )
 )
 
