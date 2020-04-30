@@ -83,6 +83,7 @@ _REQ_HOST_BY_NAME_CMD = const(0x34)
 _GET_HOST_BY_NAME_CMD = const(0x35)
 _START_SCAN_NETWORKS = const(0x36)
 _GET_FW_VERSION_CMD = const(0x37)
+_SEND_UDP_DATA_CMD = const(0x39)
 _GET_TIME = const(0x3B)
 _GET_IDX_BSSID_CMD = const(0x3C)
 _GET_IDX_CHAN_CMD = const(0x3D)
@@ -90,6 +91,7 @@ _PING_CMD = const(0x3E)
 
 _SEND_DATA_TCP_CMD = const(0x44)
 _GET_DATABUF_TCP_CMD = const(0x45)
+_INSERT_DATABUF_TCP_CMD = const(0x46)
 _SET_ENT_IDENT_CMD = const(0x4A)
 _SET_ENT_UNAME_CMD = const(0x4B)
 _SET_ENT_PASSWD_CMD = const(0x4C)
@@ -689,15 +691,19 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         """Test if a socket is connected to the destination, returns boolean true/false"""
         return self.socket_status(socket_num) == SOCKET_ESTABLISHED
 
-    def socket_write(self, socket_num, buffer):
+    def socket_write(self, socket_num, buffer, conn_mode=TCP_MODE):
         """Write the bytearray buffer to a socket"""
         if self._debug:
             print("Writing:", buffer)
         self._socknum_ll[0][0] = socket_num
         sent = 0
-        for chunk in range((len(buffer) // 64) + 1):
+        totalChunks = (len(buffer) // 64) + 1
+        send_command = _SEND_DATA_TCP_CMD
+        if conn_mode == UDP_MODE: # UDP requires a different command to write
+            send_command = _INSERT_DATABUF_TCP_CMD
+        for chunk in range(totalChunks):
             resp = self._send_command_get_response(
-                _SEND_DATA_TCP_CMD,
+                send_command,
                 (
                     self._socknum_ll[0],
                     memoryview(buffer)[(chunk * 64) : ((chunk + 1) * 64)],
@@ -706,14 +712,25 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             )
             sent += resp[0][0]
 
-        if sent != len(buffer):
-            raise RuntimeError(
-                "Failed to send %d bytes (sent %d)" % (len(buffer), sent)
-            )
+        if conn_mode == UDP_MODE:
+            # UDP verifies chunks on write, not bytes
+            if sent != totalChunks:
+                raise RuntimeError(
+                    "Failed to write %d chunks (sent %d)" % (totalChunks, sent)
+                )
+            # UDP needs to finalize with this command, does the actual sending
+            resp = self._send_command_get_response(_SEND_UDP_DATA_CMD, self._socknum_ll)
+            if resp[0][0] != 1:
+                raise RuntimeError("Failed to send data")
+        else:
+            if sent != len(buffer):
+                raise RuntimeError(
+                    "Failed to send %d bytes (sent %d)" % (len(buffer), sent)
+                )
 
-        resp = self._send_command_get_response(_DATA_SENT_TCP_CMD, self._socknum_ll)
-        if resp[0][0] != 1:
-            raise RuntimeError("Failed to verify data sent")
+            resp = self._send_command_get_response(_DATA_SENT_TCP_CMD, self._socknum_ll)
+            if resp[0][0] != 1:
+                raise RuntimeError("Failed to verify data sent")
 
     def socket_available(self, socket_num):
         """Determine how many bytes are waiting to be read on the socket"""
@@ -749,12 +766,17 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             print("*** Socket connect mode", conn_mode)
 
         self.socket_open(socket_num, dest, port, conn_mode=conn_mode)
-        times = time.monotonic()
-        while (time.monotonic() - times) < 3:  # wait 3 seconds
-            if self.socket_connected(socket_num):
-                return True
-            time.sleep(0.01)
-        raise RuntimeError("Failed to establish connection")
+        if conn_mode == UDP_MODE:
+            # UDP doesn't actually establish a connection
+            # but the socket for writing is created via start_server
+            self.start_server(port, socket_num, conn_mode)
+        else:
+            times = time.monotonic()
+            while (time.monotonic() - times) < 3:  # wait 3 seconds
+                if self.socket_connected(socket_num):
+                    return True
+                time.sleep(0.01)
+            raise RuntimeError("Failed to establish connection")
 
     def socket_close(self, socket_num):
         """Close a socket using the ESP32's internal reference number"""
