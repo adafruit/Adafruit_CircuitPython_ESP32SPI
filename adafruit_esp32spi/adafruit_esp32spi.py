@@ -722,15 +722,16 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             resp = self._send_command_get_response(_SEND_UDP_DATA_CMD, self._socknum_ll)
             if resp[0][0] != 1:
                 raise RuntimeError("Failed to send data")
-        else:
-            if sent != len(buffer):
-                raise RuntimeError(
-                    "Failed to send %d bytes (sent %d)" % (len(buffer), sent)
-                )
+            return
 
-            resp = self._send_command_get_response(_DATA_SENT_TCP_CMD, self._socknum_ll)
-            if resp[0][0] != 1:
-                raise RuntimeError("Failed to verify data sent")
+        if sent != len(buffer):
+            raise RuntimeError(
+                "Failed to send %d bytes (sent %d)" % (len(buffer), sent)
+            )
+
+        resp = self._send_command_get_response(_DATA_SENT_TCP_CMD, self._socknum_ll)
+        if resp[0][0] != 1:
+            raise RuntimeError("Failed to verify data sent")
 
     def socket_available(self, socket_num):
         """Determine how many bytes are waiting to be read on the socket"""
