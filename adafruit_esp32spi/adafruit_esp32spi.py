@@ -721,7 +721,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             # UDP needs to finalize with this command, does the actual sending
             resp = self._send_command_get_response(_SEND_UDP_DATA_CMD, self._socknum_ll)
             if resp[0][0] != 1:
-                raise RuntimeError("Failed to send data")
+                raise RuntimeError("Failed to send UDP data")
             return
 
         if sent != len(buffer):
