@@ -699,7 +699,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         sent = 0
         totalChunks = (len(buffer) // 64) + 1
         send_command = _SEND_DATA_TCP_CMD
-        if conn_mode == UDP_MODE: # UDP requires a different command to write
+        if conn_mode == UDP_MODE:  # UDP requires a different command to write
             send_command = _INSERT_DATABUF_TCP_CMD
         for chunk in range(totalChunks):
             resp = self._send_command_get_response(
