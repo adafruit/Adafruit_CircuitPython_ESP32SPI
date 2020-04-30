@@ -697,11 +697,11 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             print("Writing:", buffer)
         self._socknum_ll[0][0] = socket_num
         sent = 0
-        totalChunks = (len(buffer) // 64) + 1
+        total_chunks = (len(buffer) // 64) + 1
         send_command = _SEND_DATA_TCP_CMD
-        if conn_mode == UDP_MODE:  # UDP requires a different command to write
+        if conn_mode == self.UDP_MODE:  # UDP requires a different command to write
             send_command = _INSERT_DATABUF_TCP_CMD
-        for chunk in range(totalChunks):
+        for chunk in range(total_chunks):
             resp = self._send_command_get_response(
                 send_command,
                 (
@@ -712,11 +712,11 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             )
             sent += resp[0][0]
 
-        if conn_mode == UDP_MODE:
+        if conn_mode == self.UDP_MODE:
             # UDP verifies chunks on write, not bytes
-            if sent != totalChunks:
+            if sent != total_chunks:
                 raise RuntimeError(
-                    "Failed to write %d chunks (sent %d)" % (totalChunks, sent)
+                    "Failed to write %d chunks (sent %d)" % (total_chunks, sent)
                 )
             # UDP needs to finalize with this command, does the actual sending
             resp = self._send_command_get_response(_SEND_UDP_DATA_CMD, self._socknum_ll)
@@ -766,10 +766,11 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             print("*** Socket connect mode", conn_mode)
 
         self.socket_open(socket_num, dest, port, conn_mode=conn_mode)
-        if conn_mode == UDP_MODE:
+        if conn_mode == self.UDP_MODE:
             # UDP doesn't actually establish a connection
             # but the socket for writing is created via start_server
             self.start_server(port, socket_num, conn_mode)
+            return True
         else:
             times = time.monotonic()
             while (time.monotonic() - times) < 3:  # wait 3 seconds
