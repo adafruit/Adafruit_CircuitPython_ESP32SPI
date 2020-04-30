@@ -771,13 +771,13 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             # but the socket for writing is created via start_server
             self.start_server(port, socket_num, conn_mode)
             return True
-        else:
-            times = time.monotonic()
-            while (time.monotonic() - times) < 3:  # wait 3 seconds
-                if self.socket_connected(socket_num):
-                    return True
-                time.sleep(0.01)
-            raise RuntimeError("Failed to establish connection")
+
+        times = time.monotonic()
+        while (time.monotonic() - times) < 3:  # wait 3 seconds
+            if self.socket_connected(socket_num):
+                return True
+            time.sleep(0.01)
+        raise RuntimeError("Failed to establish connection")
 
     def socket_close(self, socket_num):
         """Close a socket using the ESP32's internal reference number"""
