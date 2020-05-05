@@ -16,12 +16,18 @@ esp32_cs = DigitalInOut(board.ESP_CS)
 esp32_ready = DigitalInOut(board.ESP_BUSY)
 esp32_reset = DigitalInOut(board.ESP_RESET)
 
-# If you have an ItsyBitsy Airlift:
+# If you have an AirLift Shield:
+# esp32_cs = DigitalInOut(board.D10)
+# esp32_ready = DigitalInOut(board.D7)
+# esp32_reset = DigitalInOut(board.D5)
+
+# If you have an AirLift Featherwing or ItsyBitsy Airlift:
 # esp32_cs = DigitalInOut(board.D13)
 # esp32_ready = DigitalInOut(board.D11)
 # esp32_reset = DigitalInOut(board.D12)
 
 # If you have an externally connected ESP32:
+# NOTE: You may need to change the pins to reflect your wiring
 # esp32_cs = DigitalInOut(board.D9)
 # esp32_ready = DigitalInOut(board.D10)
 # esp32_reset = DigitalInOut(board.D5)
