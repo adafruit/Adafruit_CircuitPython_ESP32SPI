@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2019 ladyada for Adafruit Industries
+
+SPDX-License-Identifier: MIT
+-->
+
 # Using ESP32 co-processor GPIO pins with CircuitPython ESP32SPI
 
 As of NINA firmware version 1.3.1, the ESP32SPI library can be used to write digital values to many of the ESP32 GPIO pins using CircuitPython. It can also write "analog" signals using a float between 0 and 1 as the duty cycle (which is converted to an 8-bit integer for use by the NINA firmware). Keep in mind that these are 1000Hz PWM signals using the ESP32 LED Control peripheral, not true analog signals using an on-chip DAC. More information can be found here:

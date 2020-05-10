@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2019 ladyada for Adafruit Industries
+//
+// SPDX-License-Identifier: MIT
+
 let canvas = document.getElementById('colorPicker');
 let ctx = canvas.getContext("2d");
 ctx.width = 300;

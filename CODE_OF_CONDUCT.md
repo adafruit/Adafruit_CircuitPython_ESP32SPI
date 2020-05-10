@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2014 Coraline Ada Ehmke
+SPDX-FileCopyrightText: 2019 Kattni Rembor for Adafruit Industries
+
+SPDX-License-Identifier: CC-BY-4.0
+-->
 # Adafruit Community Code of Conduct
 
 ## Our Pledge

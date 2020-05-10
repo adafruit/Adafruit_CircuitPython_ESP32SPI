@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2019 ladyada for Adafruit Industries
+# SPDX-License-Identifier: MIT
+
 import board
 import busio
 from digitalio import DigitalInOut

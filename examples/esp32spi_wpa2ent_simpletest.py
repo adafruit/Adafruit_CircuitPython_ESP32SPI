@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2019 ladyada for Adafruit Industries
+# SPDX-License-Identifier: MIT
+
 # Example code implementing WPA2 Enterprise mode
 #
 # This code requires firmware version 1.3.0, or newer, running
