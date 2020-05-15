@@ -9,7 +9,7 @@ ctx.height = 300;
 
 function drawColorPicker() {
     /**
-     * Color picker inspired by: 
+     * Color picker inspired by:
      * https://medium.com/@bantic/hand-coding-a-color-wheel-with-canvas-78256c9d7d43
      */
     let radius = 150;
@@ -18,30 +18,30 @@ function drawColorPicker() {
 
     for (let x = -radius; x < radius; x++) {
         for (let y = -radius; y < radius; y++) {
-        
+
         let [r, phi] = xy2polar(x, y);
-        
+
         if (r > radius) {
             // skip all (x,y) coordinates that are outside of the circle
             continue;
         }
-        
+
         let deg = rad2deg(phi);
-        
+
         // Figure out the starting index of this pixel in the image data array.
         let rowLength = 2*radius;
         let adjustedX = x + radius; // convert x from [-50, 50] to [0, 100] (the coordinates of the image data array)
         let adjustedY = y + radius; // convert y from [-50, 50] to [0, 100] (the coordinates of the image data array)
         let pixelWidth = 4; // each pixel requires 4 slots in the data array
         let index = (adjustedX + (adjustedY * rowLength)) * pixelWidth;
-        
+
         let hue = deg;
         let saturation = r / radius;
         let value = 1.0;
-        
+
         let [red, green, blue] = hsv2rgb(hue, saturation, value);
         let alpha = 255;
-        
+
         data[index] = red;
         data[index+1] = green;
         data[index+2] = blue;
@@ -127,4 +127,3 @@ function getCursorPosition(canvas, event) {
 
 drawColorPicker();
 canvas.addEventListener('mousedown', onColorPick);
-
