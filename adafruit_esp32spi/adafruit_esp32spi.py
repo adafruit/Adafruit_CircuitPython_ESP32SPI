@@ -37,6 +37,7 @@ __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI.git"
 # pylint: disable=bad-whitespace
 _SET_NET_CMD = const(0x10)
 _SET_PASSPHRASE_CMD = const(0x11)
+_SET_POWER_MODE_CMD = const(0x17)
 _SET_AP_NET_CMD = const(0x18)
 _SET_AP_PASSPHRASE_CMD = const(0x19)
 _SET_DEBUG_CMD = const(0x1A)
@@ -447,6 +448,12 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         resp = self._send_command_get_response(_SET_AP_NET_CMD, [ssid, channel])
         if resp[0][0] != 1:
             raise RuntimeError("Failed to setup AP network")
+
+    def wifi_set_power_mode(self, power_mode):
+        """Sets wi-fi power save mode on or off"""
+        resp = self._send_command_get_response(_SET_POWER_MODE_CMD, ((bool(power_mode),),))
+        if resp[0][0] != 1:
+            raise RuntimeError("Failed to set power mode")
 
     def _wifi_set_ap_passphrase(self, ssid, passphrase, channel):
         """Creates an Access point with SSID, passphrase, and Channel"""
