@@ -451,7 +451,8 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
 
     def wifi_set_power_mode(self, power_mode):
         """Sets wi-fi power save mode on or off"""
-        resp = self._send_command_get_response(_SET_POWER_MODE_CMD, ((bool(power_mode),),))
+        resp = self._send_command_get_response(_SET_POWER_MODE_CMD,
+                                               ((bool(power_mode),),))
         if resp[0][0] != 1:
             raise RuntimeError("Failed to set power mode")
 
