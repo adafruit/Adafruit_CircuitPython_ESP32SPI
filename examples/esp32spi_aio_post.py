@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2019 ladyada for Adafruit Industries
+# SPDX-License-Identifier: MIT
+
 import time
 import board
 import busio
@@ -28,7 +31,9 @@ esp32_reset = DigitalInOut(board.ESP_RESET)
 spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
 esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset)
 """Use below for Most Boards"""
-status_light = neopixel.NeoPixel(board.NEOPIXEL, 1, brightness=0.2) # Uncomment for Most Boards
+status_light = neopixel.NeoPixel(
+    board.NEOPIXEL, 1, brightness=0.2
+)  # Uncomment for Most Boards
 """Uncomment below for ItsyBitsy M4"""
 # status_light = dotstar.DotStar(board.APA102_SCK, board.APA102_MOSI, 1, brightness=0.2)
 # Uncomment below for an externally defined RGB LED
@@ -44,14 +49,19 @@ counter = 0
 
 while True:
     try:
-        print("Posting data...", end='')
+        print("Posting data...", end="")
         data = counter
-        feed = 'test'
-        payload = {'value':data}
+        feed = "test"
+        payload = {"value": data}
         response = wifi.post(
-            "https://io.adafruit.com/api/v2/"+secrets['aio_username']+"/feeds/"+feed+"/data",
+            "https://io.adafruit.com/api/v2/"
+            + secrets["aio_username"]
+            + "/feeds/"
+            + feed
+            + "/data",
             json=payload,
-            headers={"X-AIO-KEY":secrets['aio_key']})
+            headers={"X-AIO-KEY": secrets["aio_key"]},
+        )
         print(response.json())
         response.close()
         counter = counter + 1

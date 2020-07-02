@@ -1,24 +1,6 @@
-# The MIT License (MIT)
+# SPDX-FileCopyrightText: Copyright (c) 2019 Matt Costi for Adafruit Industries
 #
-# Copyright (c) 2019 Matt Costi for Adafruit Industries
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+# SPDX-License-Identifier: MIT
 
 """
 `adafruit_esp32spi_wsgiserver`
@@ -52,12 +34,15 @@ from micropython import const
 import adafruit_esp32spi.adafruit_esp32spi_socket as socket
 from adafruit_requests import parse_headers
 
-_the_interface = None   # pylint: disable=invalid-name
+_the_interface = None  # pylint: disable=invalid-name
+
+
 def set_interface(iface):
     """Helper to set the global internet interface"""
-    global _the_interface   # pylint: disable=global-statement, invalid-name
+    global _the_interface  # pylint: disable=global-statement, invalid-name
     _the_interface = iface
     socket.set_interface(iface)
+
 
 NO_SOCK_AVAIL = const(255)
 
@@ -88,7 +73,10 @@ class WSGIServer:
         if self._debug:
             ip = _the_interface.pretty_ip(_the_interface.ip_address)
             print("Server available at {0}:{1}".format(ip, self.port))
-            print("Sever status: ", _the_interface.get_server_state(self._server_sock.socknum))
+            print(
+                "Sever status: ",
+                _the_interface.get_server_state(self._server_sock.socknum),
+            )
 
     def update_poll(self):
         """
@@ -97,7 +85,7 @@ class WSGIServer:
         the application callable will be invoked.
         """
         self.client_available()
-        if (self._client_sock and self._client_sock.available()):
+        if self._client_sock and self._client_sock.available():
             environ = self._get_environ(self._client_sock)
             result = self.application(environ, self._start_response)
             self.finish_response(result)
@@ -145,7 +133,9 @@ class WSGIServer:
                 # check for new client sock
                 if self._debug > 2:
                     print("checking for new client sock")
-                client_sock_num = _the_interface.socket_available(self._server_sock.socknum)
+                client_sock_num = _the_interface.socket_available(
+                    self._server_sock.socknum
+                )
                 sock = socket.socket(socknum=client_sock_num)
         else:
             print("Server has not been started, cannot check for clients!")
@@ -210,7 +200,7 @@ class WSGIServer:
             body = client.read()
             env["wsgi.input"] = io.StringIO(body)
         for name, value in headers.items():
-            key = "HTTP_" + name.replace('-', '_').upper()
+            key = "HTTP_" + name.replace("-", "_").upper()
             if key in env:
                 value = "{0},{1}".format(env[key], value)
             env[key] = value

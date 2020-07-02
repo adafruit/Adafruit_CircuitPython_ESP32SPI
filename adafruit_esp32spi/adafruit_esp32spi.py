@@ -1,24 +1,7 @@
-# The MIT License (MIT)
+# SPDX-FileCopyrightText: Copyright (c) 2019 ladyada for Adafruit Industries
 #
-# Copyright (c) 2019 ladyada for Adafruit Industries
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+# SPDX-License-Identifier: MIT
+
 """
 `adafruit_esp32spi`
 ================================================================================
@@ -52,110 +35,116 @@ __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI.git"
 
 # pylint: disable=bad-whitespace
-_SET_NET_CMD           = const(0x10)
-_SET_PASSPHRASE_CMD    = const(0x11)
-_SET_AP_NET_CMD        = const(0x18)
+_SET_NET_CMD = const(0x10)
+_SET_PASSPHRASE_CMD = const(0x11)
+_SET_AP_NET_CMD = const(0x18)
 _SET_AP_PASSPHRASE_CMD = const(0x19)
-_SET_DEBUG_CMD         = const(0x1A)
+_SET_DEBUG_CMD = const(0x1A)
 
-_GET_CONN_STATUS_CMD   = const(0x20)
-_GET_IPADDR_CMD        = const(0x21)
-_GET_MACADDR_CMD       = const(0x22)
-_GET_CURR_SSID_CMD     = const(0x23)
-_GET_CURR_BSSID_CMD    = const(0x24)
-_GET_CURR_RSSI_CMD     = const(0x25)
-_GET_CURR_ENCT_CMD     = const(0x26)
+_GET_CONN_STATUS_CMD = const(0x20)
+_GET_IPADDR_CMD = const(0x21)
+_GET_MACADDR_CMD = const(0x22)
+_GET_CURR_SSID_CMD = const(0x23)
+_GET_CURR_BSSID_CMD = const(0x24)
+_GET_CURR_RSSI_CMD = const(0x25)
+_GET_CURR_ENCT_CMD = const(0x26)
 
-_SCAN_NETWORKS         = const(0x27)
-_START_SERVER_TCP_CMD  = const(0x28)
-_GET_SOCKET_CMD        = const(0x3F)
-_GET_STATE_TCP_CMD     = const(0x29)
-_DATA_SENT_TCP_CMD     = const(0x2A)
-_AVAIL_DATA_TCP_CMD    = const(0x2B)
-_GET_DATA_TCP_CMD      = const(0x2C)
-_START_CLIENT_TCP_CMD  = const(0x2D)
-_STOP_CLIENT_TCP_CMD   = const(0x2E)
+_SCAN_NETWORKS = const(0x27)
+_START_SERVER_TCP_CMD = const(0x28)
+_GET_SOCKET_CMD = const(0x3F)
+_GET_STATE_TCP_CMD = const(0x29)
+_DATA_SENT_TCP_CMD = const(0x2A)
+_AVAIL_DATA_TCP_CMD = const(0x2B)
+_GET_DATA_TCP_CMD = const(0x2C)
+_START_CLIENT_TCP_CMD = const(0x2D)
+_STOP_CLIENT_TCP_CMD = const(0x2E)
 _GET_CLIENT_STATE_TCP_CMD = const(0x2F)
-_DISCONNECT_CMD        = const(0x30)
-_GET_IDX_RSSI_CMD      = const(0x32)
-_GET_IDX_ENCT_CMD      = const(0x33)
-_REQ_HOST_BY_NAME_CMD  = const(0x34)
-_GET_HOST_BY_NAME_CMD  = const(0x35)
-_START_SCAN_NETWORKS   = const(0x36)
-_GET_FW_VERSION_CMD    = const(0x37)
-_GET_TIME              = const(0x3B)
-_GET_IDX_BSSID_CMD     = const(0x3C)
-_GET_IDX_CHAN_CMD      = const(0x3D)
-_PING_CMD              = const(0x3E)
+_DISCONNECT_CMD = const(0x30)
+_GET_IDX_RSSI_CMD = const(0x32)
+_GET_IDX_ENCT_CMD = const(0x33)
+_REQ_HOST_BY_NAME_CMD = const(0x34)
+_GET_HOST_BY_NAME_CMD = const(0x35)
+_START_SCAN_NETWORKS = const(0x36)
+_GET_FW_VERSION_CMD = const(0x37)
+_SEND_UDP_DATA_CMD = const(0x39)
+_GET_TIME = const(0x3B)
+_GET_IDX_BSSID_CMD = const(0x3C)
+_GET_IDX_CHAN_CMD = const(0x3D)
+_PING_CMD = const(0x3E)
 
-_SEND_DATA_TCP_CMD     = const(0x44)
-_GET_DATABUF_TCP_CMD   = const(0x45)
-_SET_ENT_IDENT_CMD     = const(0x4A)
-_SET_ENT_UNAME_CMD     = const(0x4B)
-_SET_ENT_PASSWD_CMD    = const(0x4C)
-_SET_ENT_ENABLE_CMD    = const(0x4F)
-_SET_CLI_CERT          = const(0x40)
-_SET_PK                = const(0x41)
+_SEND_DATA_TCP_CMD = const(0x44)
+_GET_DATABUF_TCP_CMD = const(0x45)
+_INSERT_DATABUF_TCP_CMD = const(0x46)
+_SET_ENT_IDENT_CMD = const(0x4A)
+_SET_ENT_UNAME_CMD = const(0x4B)
+_SET_ENT_PASSWD_CMD = const(0x4C)
+_SET_ENT_ENABLE_CMD = const(0x4F)
+_SET_CLI_CERT = const(0x40)
+_SET_PK = const(0x41)
 
-_SET_PIN_MODE_CMD      = const(0x50)
+_SET_PIN_MODE_CMD = const(0x50)
 _SET_DIGITAL_WRITE_CMD = const(0x51)
-_SET_ANALOG_WRITE_CMD  = const(0x52)
-_SET_DIGITAL_READ_CMD  = const(0x53)
-_SET_ANALOG_READ_CMD   = const(0x54)
+_SET_ANALOG_WRITE_CMD = const(0x52)
+_SET_DIGITAL_READ_CMD = const(0x53)
+_SET_ANALOG_READ_CMD = const(0x54)
 
-_START_CMD             = const(0xE0)
-_END_CMD               = const(0xEE)
-_ERR_CMD               = const(0xEF)
-_REPLY_FLAG            = const(1<<7)
-_CMD_FLAG              = const(0)
+_START_CMD = const(0xE0)
+_END_CMD = const(0xEE)
+_ERR_CMD = const(0xEF)
+_REPLY_FLAG = const(1 << 7)
+_CMD_FLAG = const(0)
 
-SOCKET_CLOSED      = const(0)
-SOCKET_LISTEN      = const(1)
-SOCKET_SYN_SENT    = const(2)
-SOCKET_SYN_RCVD    = const(3)
+SOCKET_CLOSED = const(0)
+SOCKET_LISTEN = const(1)
+SOCKET_SYN_SENT = const(2)
+SOCKET_SYN_RCVD = const(3)
 SOCKET_ESTABLISHED = const(4)
-SOCKET_FIN_WAIT_1  = const(5)
-SOCKET_FIN_WAIT_2  = const(6)
-SOCKET_CLOSE_WAIT  = const(7)
-SOCKET_CLOSING     = const(8)
-SOCKET_LAST_ACK    = const(9)
-SOCKET_TIME_WAIT   = const(10)
+SOCKET_FIN_WAIT_1 = const(5)
+SOCKET_FIN_WAIT_2 = const(6)
+SOCKET_CLOSE_WAIT = const(7)
+SOCKET_CLOSING = const(8)
+SOCKET_LAST_ACK = const(9)
+SOCKET_TIME_WAIT = const(10)
 
-WL_NO_SHIELD          = const(0xFF)
-WL_NO_MODULE          = const(0xFF)
-WL_IDLE_STATUS        = const(0)
-WL_NO_SSID_AVAIL      = const(1)
-WL_SCAN_COMPLETED     = const(2)
-WL_CONNECTED          = const(3)
-WL_CONNECT_FAILED     = const(4)
-WL_CONNECTION_LOST    = const(5)
-WL_DISCONNECTED       = const(6)
-WL_AP_LISTENING       = const(7)
-WL_AP_CONNECTED       = const(8)
-WL_AP_FAILED          = const(9)
+WL_NO_SHIELD = const(0xFF)
+WL_NO_MODULE = const(0xFF)
+WL_IDLE_STATUS = const(0)
+WL_NO_SSID_AVAIL = const(1)
+WL_SCAN_COMPLETED = const(2)
+WL_CONNECTED = const(3)
+WL_CONNECT_FAILED = const(4)
+WL_CONNECTION_LOST = const(5)
+WL_DISCONNECTED = const(6)
+WL_AP_LISTENING = const(7)
+WL_AP_CONNECTED = const(8)
+WL_AP_FAILED = const(9)
 
-ADC_ATTEN_DB_0   = const(0)
+ADC_ATTEN_DB_0 = const(0)
 ADC_ATTEN_DB_2_5 = const(1)
-ADC_ATTEN_DB_6   = const(2)
-ADC_ATTEN_DB_11  = const(3)
+ADC_ATTEN_DB_6 = const(2)
+ADC_ATTEN_DB_11 = const(3)
 # pylint: enable=bad-whitespace
+
 
 class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-instance-attributes
     """A class that will talk to an ESP32 module programmed with special firmware
     that lets it act as a fast an efficient WiFi co-processor"""
+
     TCP_MODE = const(0)
     UDP_MODE = const(1)
     TLS_MODE = const(2)
 
     # pylint: disable=too-many-arguments
-    def __init__(self, spi, cs_pin, ready_pin, reset_pin, gpio0_pin=None, *, debug=False):
+    def __init__(
+        self, spi, cs_pin, ready_pin, reset_pin, gpio0_pin=None, *, debug=False
+    ):
         self._debug = debug
         self.set_psk = False
         self.set_crt = False
         self._buffer = bytearray(10)
         self._pbuf = bytearray(1)  # buffer for param read
         self._sendbuf = bytearray(256)  # buffer for command sending
-        self._socknum_ll = [[0]]      # pre-made list of list of socket #
+        self._socknum_ll = [[0]]  # pre-made list of list of socket #
 
         self._spi_device = SPIDevice(spi, cs_pin, baudrate=8000000)
         self._cs = cs_pin
@@ -168,6 +157,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         if self._gpio0:
             self._gpio0.direction = Direction.INPUT
         self.reset()
+
     # pylint: enable=too-many-arguments
 
     def reset(self):
@@ -179,22 +169,22 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             self._gpio0.value = True  # not bootload mode
         self._cs.value = True
         self._reset.value = False
-        time.sleep(0.01)    # reset
+        time.sleep(0.01)  # reset
         self._reset.value = True
-        time.sleep(0.75)    # wait for it to boot up
+        time.sleep(0.75)  # wait for it to boot up
         if self._gpio0:
             self._gpio0.direction = Direction.INPUT
 
     def _wait_for_ready(self):
         """Wait until the ready pin goes low"""
         if self._debug >= 3:
-            print("Wait for ESP32 ready", end='')
+            print("Wait for ESP32 ready", end="")
         times = time.monotonic()
         while (time.monotonic() - times) < 10:  # wait up to 10 seconds
-            if not self._ready.value: # we're ready!
+            if not self._ready.value:  # we're ready!
                 break
             if self._debug >= 3:
-                print('.', end='')
+                print(".", end="")
                 time.sleep(0.05)
         else:
             raise RuntimeError("ESP32 not responding")
@@ -207,12 +197,12 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         if not params:
             params = ()
 
-        packet_len = 4 # header + end byte
+        packet_len = 4  # header + end byte
         for i, param in enumerate(params):
-            packet_len += len(param)   # parameter
-            packet_len += 1            # size byte
+            packet_len += len(param)  # parameter
+            packet_len += 1  # size byte
             if param_len_16:
-                packet_len += 1        # 2 of em here!
+                packet_len += 1  # 2 of em here!
         while packet_len % 4 != 0:
             packet_len += 1
         # we may need more space
@@ -234,21 +224,24 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             self._sendbuf[ptr] = len(param) & 0xFF
             ptr += 1
             for j, par in enumerate(param):
-                self._sendbuf[ptr+j] = par
+                self._sendbuf[ptr + j] = par
             ptr += len(param)
         self._sendbuf[ptr] = _END_CMD
 
         self._wait_for_ready()
         with self._spi_device as spi:
             times = time.monotonic()
-            while (time.monotonic() - times) < 1: # wait up to 1000ms
+            while (time.monotonic() - times) < 1:  # wait up to 1000ms
                 if self._ready.value:  # ok ready to send!
                     break
             else:
                 raise RuntimeError("ESP32 timed out on SPI select")
-            spi.write(self._sendbuf, start=0, end=packet_len)  # pylint: disable=no-member
+            spi.write(
+                self._sendbuf, start=0, end=packet_len
+            )  # pylint: disable=no-member
             if self._debug >= 3:
                 print("Wrote: ", [hex(b) for b in self._sendbuf[0:packet_len]])
+
     # pylint: disable=too-many-branches
 
     def _read_byte(self, spi):
@@ -290,7 +283,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         responses = []
         with self._spi_device as spi:
             times = time.monotonic()
-            while (time.monotonic() - times) < 1: # wait up to 1000ms
+            while (time.monotonic() - times) < 1:  # wait up to 1000ms
                 if self._ready.value:  # ok ready to send!
                     break
             else:
@@ -318,12 +311,20 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             print("Read %d: " % len(responses[0]), responses)
         return responses
 
-    def _send_command_get_response(self, cmd, params=None, *,
-                                   reply_params=1, sent_param_len_16=False,
-                                   recv_param_len_16=False):
+    def _send_command_get_response(
+        self,
+        cmd,
+        params=None,
+        *,
+        reply_params=1,
+        sent_param_len_16=False,
+        recv_param_len_16=False
+    ):
         """Send a high level SPI command, wait and return the response"""
         self._send_command(cmd, params, param_len_16=sent_param_len_16)
-        return self._wait_response_cmd(cmd, reply_params, param_len_16=recv_param_len_16)
+        return self._wait_response_cmd(
+            cmd, reply_params, param_len_16=recv_param_len_16
+        )
 
     @property
     def status(self):
@@ -336,7 +337,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         resp = self._send_command_get_response(_GET_CONN_STATUS_CMD)
         if self._debug:
             print("Conn status:", resp[0][0])
-        return resp[0][0]   # one byte response
+        return resp[0][0]  # one byte response
 
     @property
     def firmware_version(self):
@@ -347,12 +348,22 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         return resp[0]
 
     @property
-    def MAC_address(self):        # pylint: disable=invalid-name
+    def MAC_address(self):  # pylint: disable=invalid-name
         """A bytearray containing the MAC address of the ESP32"""
         if self._debug:
             print("MAC address")
-        resp = self._send_command_get_response(_GET_MACADDR_CMD, [b'\xFF'])
+        resp = self._send_command_get_response(_GET_MACADDR_CMD, [b"\xFF"])
         return resp[0]
+
+    @property
+    def MAC_address_actual(self):  # pylint: disable=invalid-name
+        """A bytearray containing the actual MAC address of the ESP32"""
+        if self._debug:
+            print("MAC address")
+        resp = self._send_command_get_response(_GET_MACADDR_CMD, [b"\xFF"])
+        new_resp = bytearray(resp[0])
+        new_resp = reversed(new_resp)
+        return new_resp
 
     def start_scan_networks(self):
         """Begin a scan of visible access points. Follow up with a call
@@ -368,18 +379,18 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         'ssid', 'rssi', 'encryption', bssid, and channel entries, one for each AP found"""
         self._send_command(_SCAN_NETWORKS)
         names = self._wait_response_cmd(_SCAN_NETWORKS)
-        #print("SSID names:", names)
-        APs = []                         # pylint: disable=invalid-name
+        # print("SSID names:", names)
+        APs = []  # pylint: disable=invalid-name
         for i, name in enumerate(names):
-            a_p = {'ssid': name}
+            a_p = {"ssid": name}
             rssi = self._send_command_get_response(_GET_IDX_RSSI_CMD, ((i,),))[0]
-            a_p['rssi'] = struct.unpack('<i', rssi)[0]
+            a_p["rssi"] = struct.unpack("<i", rssi)[0]
             encr = self._send_command_get_response(_GET_IDX_ENCT_CMD, ((i,),))[0]
-            a_p['encryption'] = encr[0]
+            a_p["encryption"] = encr[0]
             bssid = self._send_command_get_response(_GET_IDX_BSSID_CMD, ((i,),))[0]
-            a_p['bssid'] = bssid
+            a_p["bssid"] = bssid
             chan = self._send_command_get_response(_GET_IDX_CHAN_CMD, ((i,),))[0]
-            a_p['channel'] = chan[0]
+            a_p["channel"] = chan[0]
             APs.append(a_p)
         return APs
 
@@ -390,7 +401,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         self.start_scan_networks()
         for _ in range(10):  # attempts
             time.sleep(2)
-            APs = self.get_scan_networks() # pylint: disable=invalid-name
+            APs = self.get_scan_networks()  # pylint: disable=invalid-name
             if APs:
                 return APs
         return None
@@ -439,40 +450,44 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
 
     def _wifi_set_ap_passphrase(self, ssid, passphrase, channel):
         """Creates an Access point with SSID, passphrase, and Channel"""
-        resp = self._send_command_get_response(_SET_AP_PASSPHRASE_CMD, [ssid, passphrase, channel])
+        resp = self._send_command_get_response(
+            _SET_AP_PASSPHRASE_CMD, [ssid, passphrase, channel]
+        )
         if resp[0][0] != 1:
             raise RuntimeError("Failed to setup AP password")
 
     @property
     def ssid(self):
         """The name of the access point we're connected to"""
-        resp = self._send_command_get_response(_GET_CURR_SSID_CMD, [b'\xFF'])
+        resp = self._send_command_get_response(_GET_CURR_SSID_CMD, [b"\xFF"])
         return resp[0]
 
     @property
     def bssid(self):
         """The MAC-formatted service set ID of the access point we're connected to"""
-        resp = self._send_command_get_response(_GET_CURR_BSSID_CMD, [b'\xFF'])
+        resp = self._send_command_get_response(_GET_CURR_BSSID_CMD, [b"\xFF"])
         return resp[0]
 
     @property
     def rssi(self):
         """The receiving signal strength indicator for the access point we're
         connected to"""
-        resp = self._send_command_get_response(_GET_CURR_RSSI_CMD, [b'\xFF'])
-        return struct.unpack('<i', resp[0])[0]
+        resp = self._send_command_get_response(_GET_CURR_RSSI_CMD, [b"\xFF"])
+        return struct.unpack("<i", resp[0])[0]
 
     @property
     def network_data(self):
         """A dictionary containing current connection details such as the 'ip_addr',
         'netmask' and 'gateway'"""
-        resp = self._send_command_get_response(_GET_IPADDR_CMD, [b'\xFF'], reply_params=3)
-        return {'ip_addr': resp[0], 'netmask': resp[1], 'gateway': resp[2]}
+        resp = self._send_command_get_response(
+            _GET_IPADDR_CMD, [b"\xFF"], reply_params=3
+        )
+        return {"ip_addr": resp[0], "netmask": resp[1], "gateway": resp[2]}
 
     @property
     def ip_address(self):
         """Our local IP address"""
-        return self.network_data['ip_addr']
+        return self.network_data["ip_addr"]
 
     @property
     def is_connected(self):
@@ -495,9 +510,9 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
     def connect(self, secrets):
         """Connect to an access point using a secrets dictionary
         that contains a 'ssid' and 'password' entry"""
-        self.connect_AP(secrets['ssid'], secrets['password'])
+        self.connect_AP(secrets["ssid"], secrets["password"])
 
-    def connect_AP(self, ssid, password, timeout_s=10): # pylint: disable=invalid-name
+    def connect_AP(self, ssid, password, timeout_s=10):  # pylint: disable=invalid-name
         """
         Connect to an access point with given name and password.
         Will wait until specified timeout seconds and return on success
@@ -510,10 +525,10 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         if self._debug:
             print("Connect to AP", ssid, password)
         if isinstance(ssid, str):
-            ssid = bytes(ssid, 'utf-8')
+            ssid = bytes(ssid, "utf-8")
         if password:
             if isinstance(password, str):
-                password = bytes(password, 'utf-8')
+                password = bytes(password, "utf-8")
             self.wifi_set_passphrase(ssid, password)
         else:
             self.wifi_set_network(ssid)
@@ -529,7 +544,9 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             raise RuntimeError("No such ssid", ssid)
         raise RuntimeError("Unknown error 0x%02X" % stat)
 
-    def create_AP(self, ssid, password, channel=1, timeout=10): # pylint: disable=invalid-name
+    def create_AP(
+        self, ssid, password, channel=1, timeout=10
+    ):  # pylint: disable=invalid-name
         """
         Create an access point with the given name, password, and channel.
         Will wait until specified timeout seconds and return on success
@@ -550,10 +567,10 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         if isinstance(channel, int):
             channel = bytes(channel)
         if isinstance(ssid, str):
-            ssid = bytes(ssid, 'utf-8')
+            ssid = bytes(ssid, "utf-8")
         if password:
             if isinstance(password, str):
-                password = bytes(password, 'utf-8')
+                password = bytes(password, "utf-8")
             self._wifi_set_ap_passphrase(ssid, password, channel)
         else:
             self._wifi_set_ap_network(ssid, channel)
@@ -568,13 +585,13 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             raise RuntimeError("Failed to create AP", ssid)
         raise RuntimeError("Unknown error 0x%02x" % stat)
 
-    def pretty_ip(self, ip): # pylint: disable=no-self-use, invalid-name
+    def pretty_ip(self, ip):  # pylint: disable=no-self-use, invalid-name
         """Converts a bytearray IP address to a dotted-quad string for printing"""
         return "%d.%d.%d.%d" % (ip[0], ip[1], ip[2], ip[3])
 
-    def unpretty_ip(self, ip): # pylint: disable=no-self-use, invalid-name
+    def unpretty_ip(self, ip):  # pylint: disable=no-self-use, invalid-name
         """Converts a dotted-quad string to a bytearray IP address"""
-        octets = [int(x) for x in ip.split('.')]
+        octets = [int(x) for x in ip.split(".")]
         return bytes(octets)
 
     def get_host_by_name(self, hostname):
@@ -583,7 +600,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         if self._debug:
             print("*** Get host by name")
         if isinstance(hostname, str):
-            hostname = bytes(hostname, 'utf-8')
+            hostname = bytes(hostname, "utf-8")
         resp = self._send_command_get_response(_REQ_HOST_BY_NAME_CMD, (hostname,))
         if resp[0][0] != 1:
             raise RuntimeError("Failed to request hostname")
@@ -593,12 +610,12 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
     def ping(self, dest, ttl=250):
         """Ping a destination IP address or hostname, with a max time-to-live
         (ttl). Returns a millisecond timing value"""
-        if isinstance(dest, str):          # convert to IP address
+        if isinstance(dest, str):  # convert to IP address
             dest = self.get_host_by_name(dest)
         # ttl must be between 0 and 255
         ttl = max(0, min(ttl, 255))
         resp = self._send_command_get_response(_PING_CMD, (dest, (ttl,)))
-        return struct.unpack('<H', resp[0])[0]
+        return struct.unpack("<H", resp[0])[0]
 
     def get_socket(self):
         """Request a socket from the ESP32, will allocate and return a number that
@@ -621,19 +638,24 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         self._socknum_ll[0][0] = socket_num
         if self._debug:
             print("*** Open socket")
-        port_param = struct.pack('>H', port)
-        if isinstance(dest, str):          # use the 5 arg version
-            dest = bytes(dest, 'utf-8')
-            resp = self._send_command_get_response(_START_CLIENT_TCP_CMD,
-                                                   (dest, b'\x00\x00\x00\x00',
-                                                    port_param,
-                                                    self._socknum_ll[0],
-                                                    (conn_mode,)))
-        else:                              # ip address, use 4 arg vesion
-            resp = self._send_command_get_response(_START_CLIENT_TCP_CMD,
-                                                   (dest, port_param,
-                                                    self._socknum_ll[0],
-                                                    (conn_mode,)))
+        port_param = struct.pack(">H", port)
+        if isinstance(dest, str):  # use the 5 arg version
+            dest = bytes(dest, "utf-8")
+            resp = self._send_command_get_response(
+                _START_CLIENT_TCP_CMD,
+                (
+                    dest,
+                    b"\x00\x00\x00\x00",
+                    port_param,
+                    self._socknum_ll[0],
+                    (conn_mode,),
+                ),
+            )
+        else:  # ip address, use 4 arg vesion
+            resp = self._send_command_get_response(
+                _START_CLIENT_TCP_CMD,
+                (dest, port_param, self._socknum_ll[0], (conn_mode,)),
+            )
         if resp[0][0] != 1:
             raise RuntimeError("Could not connect to remote server")
 
@@ -643,28 +665,52 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         SOCKET_FIN_WAIT_2, SOCKET_CLOSE_WAIT, SOCKET_CLOSING, SOCKET_LAST_ACK, or
         SOCKET_TIME_WAIT"""
         self._socknum_ll[0][0] = socket_num
-        resp = self._send_command_get_response(_GET_CLIENT_STATE_TCP_CMD, self._socknum_ll)
+        resp = self._send_command_get_response(
+            _GET_CLIENT_STATE_TCP_CMD, self._socknum_ll
+        )
         return resp[0][0]
 
     def socket_connected(self, socket_num):
         """Test if a socket is connected to the destination, returns boolean true/false"""
         return self.socket_status(socket_num) == SOCKET_ESTABLISHED
 
-    def socket_write(self, socket_num, buffer):
+    def socket_write(self, socket_num, buffer, conn_mode=TCP_MODE):
         """Write the bytearray buffer to a socket"""
         if self._debug:
             print("Writing:", buffer)
         self._socknum_ll[0][0] = socket_num
         sent = 0
-        for chunk in range((len(buffer) // 64)+1):
-            resp = self._send_command_get_response(_SEND_DATA_TCP_CMD,
-                                                   (self._socknum_ll[0],
-                                                    memoryview(buffer)[(chunk*64):((chunk+1)*64)]),
-                                                   sent_param_len_16=True)
+        total_chunks = (len(buffer) // 64) + 1
+        send_command = _SEND_DATA_TCP_CMD
+        if conn_mode == self.UDP_MODE:  # UDP requires a different command to write
+            send_command = _INSERT_DATABUF_TCP_CMD
+        for chunk in range(total_chunks):
+            resp = self._send_command_get_response(
+                send_command,
+                (
+                    self._socknum_ll[0],
+                    memoryview(buffer)[(chunk * 64) : ((chunk + 1) * 64)],
+                ),
+                sent_param_len_16=True,
+            )
             sent += resp[0][0]
 
+        if conn_mode == self.UDP_MODE:
+            # UDP verifies chunks on write, not bytes
+            if sent != total_chunks:
+                raise RuntimeError(
+                    "Failed to write %d chunks (sent %d)" % (total_chunks, sent)
+                )
+            # UDP needs to finalize with this command, does the actual sending
+            resp = self._send_command_get_response(_SEND_UDP_DATA_CMD, self._socknum_ll)
+            if resp[0][0] != 1:
+                raise RuntimeError("Failed to send UDP data")
+            return
+
         if sent != len(buffer):
-            raise RuntimeError("Failed to send %d bytes (sent %d)" % (len(buffer), sent))
+            raise RuntimeError(
+                "Failed to send %d bytes (sent %d)" % (len(buffer), sent)
+            )
 
         resp = self._send_command_get_response(_DATA_SENT_TCP_CMD, self._socknum_ll)
         if resp[0][0] != 1:
@@ -674,7 +720,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         """Determine how many bytes are waiting to be read on the socket"""
         self._socknum_ll[0][0] = socket_num
         resp = self._send_command_get_response(_AVAIL_DATA_TCP_CMD, self._socknum_ll)
-        reply = struct.unpack('<H', resp[0])[0]
+        reply = struct.unpack("<H", resp[0])[0]
         if self._debug:
             print("ESPSocket: %d bytes available" % reply)
         return reply
@@ -682,14 +728,17 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
     def socket_read(self, socket_num, size):
         """Read up to 'size' bytes from the socket number. Returns a bytearray"""
         if self._debug:
-            print("Reading %d bytes from ESP socket with status %d" %
-                  (size, self.socket_status(socket_num)))
+            print(
+                "Reading %d bytes from ESP socket with status %d"
+                % (size, self.socket_status(socket_num))
+            )
         self._socknum_ll[0][0] = socket_num
-        resp = self._send_command_get_response(_GET_DATABUF_TCP_CMD,
-                                               (self._socknum_ll[0],
-                                                (size & 0xFF, (size >> 8) & 0xFF)),
-                                               sent_param_len_16=True,
-                                               recv_param_len_16=True)
+        resp = self._send_command_get_response(
+            _GET_DATABUF_TCP_CMD,
+            (self._socknum_ll[0], (size & 0xFF, (size >> 8) & 0xFF)),
+            sent_param_len_16=True,
+            recv_param_len_16=True,
+        )
         return bytes(resp[0])
 
     def socket_connect(self, socket_num, dest, port, conn_mode=TCP_MODE):
@@ -701,6 +750,12 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             print("*** Socket connect mode", conn_mode)
 
         self.socket_open(socket_num, dest, port, conn_mode=conn_mode)
+        if conn_mode == self.UDP_MODE:
+            # UDP doesn't actually establish a connection
+            # but the socket for writing is created via start_server
+            self.start_server(port, socket_num, conn_mode)
+            return True
+
         times = time.monotonic()
         while (time.monotonic() - times) < 3:  # wait 3 seconds
             if self.socket_connected(socket_num):
@@ -717,12 +772,14 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         if resp[0][0] != 1:
             raise RuntimeError("Failed to close socket")
 
-    def start_server(self, port, socket_num, conn_mode=TCP_MODE, ip=None): # pylint: disable=invalid-name
+    def start_server(
+        self, port, socket_num, conn_mode=TCP_MODE, ip=None
+    ):  # pylint: disable=invalid-name
         """Opens a server on the specified port, using the ESP32's internal reference number"""
         if self._debug:
             print("*** starting server")
         self._socknum_ll[0][0] = socket_num
-        params = [struct.pack('>H', port), self._socknum_ll[0], (conn_mode,)]
+        params = [struct.pack(">H", port), self._socknum_ll[0], (conn_mode,)]
         if ip:
             params.insert(0, ip)
         resp = self._send_command_get_response(_START_SERVER_TCP_CMD, params)
@@ -756,8 +813,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             pin_mode = 0
         else:
             pin_mode = mode
-        resp = self._send_command_get_response(_SET_PIN_MODE_CMD,
-                                               ((pin,), (pin_mode,)))
+        resp = self._send_command_get_response(_SET_PIN_MODE_CMD, ((pin,), (pin_mode,)))
         if resp[0][0] != 1:
             raise RuntimeError("Failed to set pin mode")
 
@@ -768,8 +824,9 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         :param int pin: ESP32 GPIO pin to write to.
         :param bool value: Value for the pin.
         """
-        resp = self._send_command_get_response(_SET_DIGITAL_WRITE_CMD,
-                                               ((pin,), (value,)))
+        resp = self._send_command_get_response(
+            _SET_DIGITAL_WRITE_CMD, ((pin,), (value,))
+        )
         if resp[0][0] != 1:
             raise RuntimeError("Failed to write to pin")
 
@@ -781,8 +838,9 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         :param float value: 0=off 1.0=full on
         """
         value = int(255 * analog_value)
-        resp = self._send_command_get_response(_SET_ANALOG_WRITE_CMD,
-                                               ((pin,), (value,)))
+        resp = self._send_command_get_response(
+            _SET_ANALOG_WRITE_CMD, ((pin,), (value,))
+        )
         if resp[0][0] != 1:
             raise RuntimeError("Failed to write to pin")
 
@@ -796,14 +854,14 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         fw_semver_maj = bytes(self.firmware_version).decode("utf-8")[2]
         assert int(fw_semver_maj) >= 5, "Please update nina-fw to 1.5.0 or above."
 
-        resp = self._send_command_get_response(_SET_DIGITAL_READ_CMD,
-                                               ((pin,),))[0]
+        resp = self._send_command_get_response(_SET_DIGITAL_READ_CMD, ((pin,),))[0]
         if resp[0] == 0:
             return False
-        elif resp[0] == 1:
+        if resp[0] == 1:
             return True
-        else:
-            raise ValueError("_SET_DIGITAL_READ response error: response is not boolean", resp[0])
+        raise ValueError(
+            "_SET_DIGITAL_READ response error: response is not boolean", resp[0]
+        )
 
     def set_analog_read(self, pin, atten=ADC_ATTEN_DB_11):
         """
@@ -816,11 +874,12 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         fw_semver_maj = bytes(self.firmware_version).decode("utf-8")[2]
         assert int(fw_semver_maj) >= 5, "Please update nina-fw to 1.5.0 or above."
 
-        resp = self._send_command_get_response(_SET_ANALOG_READ_CMD,
-                                               ((pin,), (atten,)))
-        resp_analog = struct.unpack('<i', resp[0])
+        resp = self._send_command_get_response(_SET_ANALOG_READ_CMD, ((pin,), (atten,)))
+        resp_analog = struct.unpack("<i", resp[0])
         if resp_analog[0] < 0:
-            raise ValueError("_SET_ANALOG_READ parameter error: invalid pin", resp_analog[0])
+            raise ValueError(
+                "_SET_ANALOG_READ parameter error: invalid pin", resp_analog[0]
+            )
         if self._debug:
             print(resp, resp_analog, resp_analog[0], 16 * resp_analog[0])
         return 16 * resp_analog[0]
@@ -829,12 +888,14 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         """The current unix timestamp"""
         if self.status == WL_CONNECTED:
             resp = self._send_command_get_response(_GET_TIME)
-            resp_time = struct.unpack('<i', resp[0])
+            resp_time = struct.unpack("<i", resp[0])
             if resp_time == (0,):
                 raise ValueError("_GET_TIME returned 0")
             return resp_time
         if self.status in (WL_AP_LISTENING, WL_AP_CONNECTED):
-            raise RuntimeError("Cannot obtain NTP while in AP mode, must be connected to internet")
+            raise RuntimeError(
+                "Cannot obtain NTP while in AP mode, must be connected to internet"
+            )
         raise RuntimeError("Must be connected to WiFi before obtaining NTP.")
 
     def set_certificate(self, client_certificate):
@@ -845,9 +906,11 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         if self._debug:
             print("** Setting client certificate")
         if self.status == WL_CONNECTED:
-            raise RuntimeError("set_certificate must be called BEFORE a connection is established.")
+            raise RuntimeError(
+                "set_certificate must be called BEFORE a connection is established."
+            )
         if isinstance(client_certificate, str):
-            client_certificate = bytes(client_certificate, 'utf-8')
+            client_certificate = bytes(client_certificate, "utf-8")
         if "-----BEGIN CERTIFICATE" not in client_certificate:
             raise TypeError(".PEM must start with -----BEGIN CERTIFICATE")
         assert len(client_certificate) < 1300, ".PEM must be less than 1300 bytes."
@@ -865,9 +928,11 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         if self._debug:
             print("** Setting client's private key.")
         if self.status == WL_CONNECTED:
-            raise RuntimeError("set_private_key must be called BEFORE a connection is established.")
+            raise RuntimeError(
+                "set_private_key must be called BEFORE a connection is established."
+            )
         if isinstance(private_key, str):
-            private_key = bytes(private_key, 'utf-8')
+            private_key = bytes(private_key, "utf-8")
         if "-----BEGIN RSA" not in private_key:
             raise TypeError(".PEM must start with -----BEGIN RSA")
         assert len(private_key) < 1700, ".PEM must be less than 1700 bytes."

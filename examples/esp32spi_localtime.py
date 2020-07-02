@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2019 ladyada for Adafruit Industries
+# SPDX-License-Identifier: MIT
+
 import time
 import board
 import busio
@@ -24,9 +27,11 @@ esp32_reset = DigitalInOut(board.ESP_RESET)
 spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
 esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset)
 """Use below for Most Boards"""
-status_light = neopixel.NeoPixel(board.NEOPIXEL, 1, brightness=0.2) # Uncomment for Most Boards
+status_light = neopixel.NeoPixel(
+    board.NEOPIXEL, 1, brightness=0.2
+)  # Uncomment for Most Boards
 """Uncomment below for ItsyBitsy M4"""
-#status_light = dotstar.DotStar(board.APA102_SCK, board.APA102_MOSI, 1, brightness=0.2)
+# status_light = dotstar.DotStar(board.APA102_SCK, board.APA102_MOSI, 1, brightness=0.2)
 wifi = adafruit_esp32spi_wifimanager.ESPSPI_WiFiManager(esp, secrets, status_light)
 
 the_rtc = rtc.RTC()
@@ -42,18 +47,20 @@ while True:
         continue
 
 json = response.json()
-current_time = json['datetime']
-the_date, the_time = current_time.split('T')
-year, month, mday = [int(x) for x in the_date.split('-')]
-the_time = the_time.split('.')[0]
-hours, minutes, seconds = [int(x) for x in the_time.split(':')]
+current_time = json["datetime"]
+the_date, the_time = current_time.split("T")
+year, month, mday = [int(x) for x in the_date.split("-")]
+the_time = the_time.split(".")[0]
+hours, minutes, seconds = [int(x) for x in the_time.split(":")]
 
 # We can also fill in these extra nice things
-year_day = json['day_of_year']
-week_day = json['day_of_week']
-is_dst = json['dst']
+year_day = json["day_of_year"]
+week_day = json["day_of_week"]
+is_dst = json["dst"]
 
-now = time.struct_time((year, month, mday, hours, minutes, seconds, week_day, year_day, is_dst))
+now = time.struct_time(
+    (year, month, mday, hours, minutes, seconds, week_day, year_day, is_dst)
+)
 print(now)
 the_rtc.datetime = now
 

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2019 ladyada for Adafruit Industries
+# SPDX-License-Identifier: MIT
+
 import board
 import busio
 from digitalio import DigitalInOut
@@ -17,7 +20,18 @@ esp32_cs = DigitalInOut(board.ESP_CS)
 esp32_ready = DigitalInOut(board.ESP_BUSY)
 esp32_reset = DigitalInOut(board.ESP_RESET)
 
+# If you have an AirLift Shield:
+# esp32_cs = DigitalInOut(board.D10)
+# esp32_ready = DigitalInOut(board.D7)
+# esp32_reset = DigitalInOut(board.D5)
+
+# If you have an AirLift Featherwing or ItsyBitsy Airlift:
+# esp32_cs = DigitalInOut(board.D13)
+# esp32_ready = DigitalInOut(board.D11)
+# esp32_reset = DigitalInOut(board.D12)
+
 # If you have an externally connected ESP32:
+# NOTE: You may need to change the pins to reflect your wiring
 # esp32_cs = DigitalInOut(board.D9)
 # esp32_ready = DigitalInOut(board.D10)
 # esp32_reset = DigitalInOut(board.D5)
@@ -33,34 +47,36 @@ print("Firmware vers.", esp.firmware_version)
 print("MAC addr:", [hex(i) for i in esp.MAC_address])
 
 for ap in esp.scan_networks():
-    print("\t%s\t\tRSSI: %d" % (str(ap['ssid'], 'utf-8'), ap['rssi']))
+    print("\t%s\t\tRSSI: %d" % (str(ap["ssid"], "utf-8"), ap["rssi"]))
 
 print("Connecting to AP...")
 while not esp.is_connected:
     try:
         esp.connect_AP(secrets["ssid"], secrets["password"])
     except RuntimeError as e:
-        print("could not connect to AP, retrying: ",e)
+        print("could not connect to AP, retrying: ", e)
         continue
-print("Connected to", str(esp.ssid, 'utf-8'), "\tRSSI:", esp.rssi)
+print("Connected to", str(esp.ssid, "utf-8"), "\tRSSI:", esp.rssi)
 print("My IP address is", esp.pretty_ip(esp.ip_address))
-print("IP lookup adafruit.com: %s" % esp.pretty_ip(esp.get_host_by_name("adafruit.com")))
+print(
+    "IP lookup adafruit.com: %s" % esp.pretty_ip(esp.get_host_by_name("adafruit.com"))
+)
 print("Ping google.com: %d ms" % esp.ping("google.com"))
 
-#esp._debug = True
+# esp._debug = True
 print("Fetching text from", TEXT_URL)
 r = requests.get(TEXT_URL)
-print('-'*40)
+print("-" * 40)
 print(r.text)
-print('-'*40)
+print("-" * 40)
 r.close()
 
 print()
 print("Fetching json from", JSON_URL)
 r = requests.get(JSON_URL)
-print('-'*40)
+print("-" * 40)
 print(r.json())
-print('-'*40)
+print("-" * 40)
 r.close()
 
 print("Done!")

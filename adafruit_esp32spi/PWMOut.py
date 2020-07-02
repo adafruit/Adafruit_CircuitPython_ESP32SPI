@@ -1,24 +1,7 @@
-# The MIT License (MIT)
+# SPDX-FileCopyrightText: Copyright (c) 2019 Brent Rubell for Adafruit Industries
 #
-# Copyright (c) 2019 Brent Rubell for Adafruit Industries
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+# SPDX-License-Identifier: MIT
+
 """
 `PWMOut`
 ==============================
@@ -27,7 +10,8 @@ PWMOut CircuitPython API for ESP32SPI.
 * Author(s): Brent Rubell
 """
 
-class PWMOut():
+
+class PWMOut:
     """
     Implementation of CircuitPython PWMOut for ESP32SPI.
 
@@ -37,16 +21,18 @@ class PWMOut():
     :param int frequency: The target frequency in Hertz (32-bit).
     :param bool variable_frequency: True if the frequency will change over time.
     """
-    ESP32_PWM_PINS = set([0, 1, 2, 4, 5,
-                          12, 13, 14, 15,
-                          16, 17, 18, 19,
-                          21, 22, 23, 25,
-                          26, 27, 32, 33])
-    def __init__(self, esp, pwm_pin, *, frequency=500, duty_cycle=0, variable_frequency=False):
+
+    ESP32_PWM_PINS = set(
+        [0, 1, 2, 4, 5, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33]
+    )
+
+    def __init__(
+        self, esp, pwm_pin, *, frequency=500, duty_cycle=0, variable_frequency=False
+    ):
         if pwm_pin in self.ESP32_PWM_PINS:
             self._pwm_pin = pwm_pin
         else:
-            raise AttributeError("Pin %d is not a valid ESP32 GPIO Pin."%pwm_pin)
+            raise AttributeError("Pin %d is not a valid ESP32 GPIO Pin." % pwm_pin)
         self._esp = esp
         self._duty_cycle = duty_cycle
         self._freq = frequency
@@ -67,8 +53,10 @@ class PWMOut():
     def _is_deinited(self):
         """Checks if PWMOut object has been previously de-initalized"""
         if self._pwm_pin is None:
-            raise ValueError("PWMOut Object has been deinitialized and can no longer "
-                             "be used. Create a new PWMOut object.")
+            raise ValueError(
+                "PWMOut Object has been deinitialized and can no longer "
+                "be used. Create a new PWMOut object."
+            )
 
     @property
     def duty_cycle(self):
