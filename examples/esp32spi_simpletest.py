@@ -1,13 +1,13 @@
 # SPDX-FileCopyrightText: 2019 ladyada for Adafruit Industries
 # SPDX-License-Identifier: MIT
 
+from secrets import secrets
 import board
 import busio
 from digitalio import DigitalInOut
 import adafruit_esp32spi.adafruit_esp32spi_socket as socket
 from adafruit_esp32spi import adafruit_esp32spi
 import adafruit_requests as requests
-from secrets import secrets
 
 print("ESP32 SPI webclient test")
 
