@@ -15,9 +15,9 @@ WiFi Manager for making ESP32 SPI as WiFi much easier
 
 from time import sleep
 from micropython import const
+import adafruit_requests as requests
 from adafruit_esp32spi import adafruit_esp32spi
 import adafruit_esp32spi.adafruit_esp32spi_socket as socket
-import adafruit_requests as requests
 
 
 class ESPSPI_WiFiManager:
