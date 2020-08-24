@@ -15,9 +15,9 @@ import board
 import busio
 from digitalio import DigitalInOut
 
+import adafruit_requests as requests
 import adafruit_esp32spi.adafruit_esp32spi_socket as socket
 from adafruit_esp32spi import adafruit_esp32spi
-import adafruit_requests as requests
 
 # Version number comparison code. Credit to gnud on stackoverflow
 # (https://stackoverflow.com/a/1714190), swapping out cmp() to
