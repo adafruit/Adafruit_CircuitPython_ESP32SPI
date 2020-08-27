@@ -31,8 +31,8 @@ https://www.python.org/dev/peps/pep-0333/
 import io
 import gc
 from micropython import const
-import adafruit_esp32spi.adafruit_esp32spi_socket as socket
 from adafruit_requests import parse_headers
+import adafruit_esp32spi.adafruit_esp32spi_socket as socket
 
 _the_interface = None  # pylint: disable=invalid-name
 

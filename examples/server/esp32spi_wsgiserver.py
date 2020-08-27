@@ -220,7 +220,7 @@ except (OSError) as e:
         Please create one named {0} in the root of the device filesystem.""".format(
             static
         )
-    )
+    ) from e
 
 web_app = SimpleWSGIApplication(static_dir=static)
 web_app.on("GET", "/led_on", led_on)

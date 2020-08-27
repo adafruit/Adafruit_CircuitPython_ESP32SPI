@@ -6,9 +6,9 @@ import board
 import busio
 from digitalio import DigitalInOut
 import neopixel
+import rtc
 from adafruit_esp32spi import adafruit_esp32spi
 from adafruit_esp32spi import adafruit_esp32spi_wifimanager
-import rtc
 
 # Get wifi details and more from a secrets.py file
 try:

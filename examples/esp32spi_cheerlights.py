@@ -6,11 +6,11 @@ import board
 import busio
 from digitalio import DigitalInOut
 
-from adafruit_esp32spi import adafruit_esp32spi
-from adafruit_esp32spi import adafruit_esp32spi_wifimanager
-
 import neopixel
 import adafruit_fancyled.adafruit_fancyled as fancy
+
+from adafruit_esp32spi import adafruit_esp32spi
+from adafruit_esp32spi import adafruit_esp32spi_wifimanager
 
 # Get wifi details and more from a secrets.py file
 try:

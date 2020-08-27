@@ -34,7 +34,6 @@ from adafruit_bus_device.spi_device import SPIDevice
 __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI.git"
 
-# pylint: disable=bad-whitespace
 _SET_NET_CMD = const(0x10)
 _SET_PASSPHRASE_CMD = const(0x11)
 _SET_AP_NET_CMD = const(0x18)
@@ -123,7 +122,6 @@ ADC_ATTEN_DB_0 = const(0)
 ADC_ATTEN_DB_2_5 = const(1)
 ADC_ATTEN_DB_6 = const(2)
 ADC_ATTEN_DB_11 = const(3)
-# pylint: enable=bad-whitespace
 
 
 class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-instance-attributes
