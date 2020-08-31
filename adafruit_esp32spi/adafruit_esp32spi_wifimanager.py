@@ -20,6 +20,7 @@ from adafruit_esp32spi import adafruit_esp32spi
 import adafruit_esp32spi.adafruit_esp32spi_socket as socket
 
 
+# pylint: disable=too-many-instance-attributes
 class ESPSPI_WiFiManager:
     """
     A class to help manage the Wifi connection
@@ -57,6 +58,7 @@ class ESPSPI_WiFiManager:
         requests.set_socket(socket, esp)
         self.statuspix = status_pixel
         self.pixel_status(0)
+        self._ap_index = 0
 
         # Check for WPA2 Enterprise keys in the secrets dictionary and load them if they exist
         if secrets.get("ent_ssid"):
@@ -103,19 +105,39 @@ class ESPSPI_WiFiManager:
         else:
             raise TypeError("Invalid WiFi connection type specified")
 
+    def _get_next_ap(self):
+        if isinstance(self.ssid, (tuple, list)) and isinstance(
+            self.password, (tuple, list)
+        ):
+            if not self.ssid or not self.password:
+                raise ValueError("SSID and Password should contain at least 1 value")
+            if len(self.ssid) != len(self.password):
+                raise ValueError("The length of SSIDs and Passwords should match")
+            access_point = (self.ssid[self._ap_index], self.password[self._ap_index])
+            self._ap_index += 1
+            if self._ap_index >= len(self.ssid):
+                self._ap_index = 0
+            return access_point
+        if isinstance(self.ssid, (tuple, list)) or isinstance(
+            self.password, (tuple, list)
+        ):
+            raise NotImplementedError(
+                "If using multiple passwords, both SSID and Password should be lists or tuples"
+            )
+        return (self.ssid, self.password)
+
     def connect_normal(self):
         """
         Attempt a regular style WiFi connection
         """
         failure_count = 0
+        (ssid, password) = self._get_next_ap()
         while not self.esp.is_connected:
             try:
                 if self.debug:
                     print("Connecting to AP...")
                 self.pixel_status((100, 0, 0))
-                self.esp.connect_AP(
-                    bytes(self.ssid, "utf-8"), bytes(self.password, "utf-8")
-                )
+                self.esp.connect_AP(bytes(ssid, "utf-8"), bytes(password, "utf-8"))
                 failure_count = 0
                 self.pixel_status((0, 100, 0))
             except (ValueError, RuntimeError) as error:
@@ -123,6 +145,7 @@ class ESPSPI_WiFiManager:
                 failure_count += 1
                 if failure_count >= self.attempts:
                     failure_count = 0
+                    (ssid, password) = self._get_next_ap()
                     self.reset()
                 continue
 
