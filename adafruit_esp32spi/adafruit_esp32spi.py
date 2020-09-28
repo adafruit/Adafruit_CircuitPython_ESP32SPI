@@ -134,8 +134,17 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
 
     # pylint: disable=too-many-arguments
     def __init__(
-        self, spi, cs_pin, ready_pin, reset_pin, gpio0_pin=None, *, debug=False
+        self,
+        spi,
+        cs_pin,
+        ready_pin,
+        reset_pin,
+        gpio0_pin=None,
+        *,
+        debug=False,
+        service_function=None
     ):
+        self._client_service_function = service_function
         self._debug = debug
         self.set_psk = False
         self.set_crt = False
@@ -157,6 +166,10 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         self.reset()
 
     # pylint: enable=too-many-arguments
+    def service_client_fn(self):
+        """If one was provided, call the client's service function while waiting"""
+        if self._client_service_function:
+            self._client_service_function()
 
     def reset(self):
         """Hard reset the ESP32 using the reset pin"""
@@ -184,6 +197,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             if self._debug >= 3:
                 print(".", end="")
                 time.sleep(0.05)
+            self.service_client_fn()
         else:
             raise RuntimeError("ESP32 not responding")
         if self._debug >= 3:
@@ -394,8 +408,8 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
 
     def scan_networks(self):
         """Scan for visible access points, returns a list of access point details.
-         Returns a list of dictionaries with 'ssid', 'rssi' and 'encryption' entries,
-         one for each AP found"""
+        Returns a list of dictionaries with 'ssid', 'rssi' and 'encryption' entries,
+        one for each AP found"""
         self.start_scan_networks()
         for _ in range(10):  # attempts
             time.sleep(2)
