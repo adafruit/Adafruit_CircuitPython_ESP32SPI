@@ -52,7 +52,14 @@ class socket:
 
     # pylint: disable=too-many-arguments
     def __init__(
-        self, family=AF_INET, type=SOCK_STREAM, proto=0, fileno=None, socknum=None
+        self,
+        family=AF_INET,
+        type=SOCK_STREAM,
+        proto=0,
+        fileno=None,
+        socknum=None,
+        remote_ip=None,
+        remote_port=None,
     ):
         if family != AF_INET:
             raise RuntimeError("Only AF_INET family supported")
@@ -60,6 +67,8 @@ class socket:
             raise RuntimeError("Only SOCK_STREAM type supported")
         self._buffer = b""
         self._socknum = socknum if socknum else _the_interface.get_socket()
+        self._remote_ip = remote_ip
+        self._remote_port = remote_port
         self.settimeout(0)
 
     # pylint: enable=too-many-arguments
