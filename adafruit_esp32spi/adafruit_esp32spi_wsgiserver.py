@@ -114,6 +114,14 @@ class WSGIServer:
             print("closing")
             self._client_sock.close()
 
+    def check_remote_ip(self):
+        """
+        Functionality to control what IP is connecting to the server.
+        """
+        socknum = self._client_sock.socknum
+        remote_ip = _the_interface.get_remote_data(socknum)
+        return _the_interface.pretty_ip(remote_ip)
+
     def client_available(self):
         """
         returns a client socket connection if available.
@@ -178,6 +186,7 @@ class WSGIServer:
         env["wsgi.multiprocess"] = False
         env["wsgi.run_once"] = False
 
+        env['REMOTE_ADDR'] = self._client_sock.remote_ip
         env["REQUEST_METHOD"] = method
         env["SCRIPT_NAME"] = ""
         env["SERVER_NAME"] = _the_interface.pretty_ip(_the_interface.ip_address)

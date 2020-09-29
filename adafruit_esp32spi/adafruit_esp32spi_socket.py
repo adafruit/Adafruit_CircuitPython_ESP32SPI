@@ -193,6 +193,16 @@ class socket:
         """The socket number"""
         return self._socknum
 
+    @property
+    def remote_ip(self):
+        """The remote ip"""
+        return self._remote_ip
+
+    @property
+    def remote_port(self):
+        """The remote port"""
+        return self._remote_port
+
     def close(self):
         """Close the socket, after reading whatever remains"""
         _the_interface.socket_close(self._socknum)

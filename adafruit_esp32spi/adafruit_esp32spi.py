@@ -66,6 +66,7 @@ _GET_HOST_BY_NAME_CMD = const(0x35)
 _START_SCAN_NETWORKS = const(0x36)
 _GET_FW_VERSION_CMD = const(0x37)
 _SEND_UDP_DATA_CMD = const(0x39)
+_GET_REMOTE_DATA_CMD = const(0x3A)
 _GET_TIME = const(0x3B)
 _GET_IDX_BSSID_CMD = const(0x3C)
 _GET_IDX_CHAN_CMD = const(0x3D)
@@ -895,6 +896,15 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
                 "Cannot obtain NTP while in AP mode, must be connected to internet"
             )
         raise RuntimeError("Must be connected to WiFi before obtaining NTP.")
+
+    def get_remote_data(self, socknum):
+        """Obtain remote IP
+        :param int socknum: the socket number.
+        """
+        self._socknum_ll[0][0] = socknum
+        resp = self._send_command_get_response(_GET_REMOTE_DATA_CMD,
+                                               self._socknum_ll, reply_params=2)
+        return { 'ip_addr': resp[0], 'port': resp[1] }
 
     def set_certificate(self, client_certificate):
         """Sets client certificate. Must be called
