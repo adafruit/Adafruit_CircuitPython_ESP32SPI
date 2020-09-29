@@ -317,7 +317,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         *,
         reply_params=1,
         sent_param_len_16=False,
-        recv_param_len_16=False
+        recv_param_len_16=False,
     ):
         """Send a high level SPI command, wait and return the response"""
         self._send_command(cmd, params, param_len_16=sent_param_len_16)
@@ -902,9 +902,10 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         :param int socknum: the socket number.
         """
         self._socknum_ll[0][0] = socknum
-        resp = self._send_command_get_response(_GET_REMOTE_DATA_CMD,
-                                               self._socknum_ll, reply_params=2)
-        return { 'ip_addr': resp[0], 'port': resp[1] }
+        resp = self._send_command_get_response(
+            _GET_REMOTE_DATA_CMD, self._socknum_ll, reply_params=2
+        )
+        return {"ip_addr": resp[0], "port": resp[1]}
 
     def set_certificate(self, client_certificate):
         """Sets client certificate. Must be called

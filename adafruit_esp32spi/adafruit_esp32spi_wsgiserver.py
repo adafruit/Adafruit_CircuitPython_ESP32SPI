@@ -186,7 +186,7 @@ class WSGIServer:
         env["wsgi.multiprocess"] = False
         env["wsgi.run_once"] = False
 
-        env['REMOTE_ADDR'] = self._client_sock.remote_ip
+        env["REMOTE_ADDR"] = self._client_sock.remote_ip
         env["REQUEST_METHOD"] = method
         env["SCRIPT_NAME"] = ""
         env["SERVER_NAME"] = _the_interface.pretty_ip(_the_interface.ip_address)
