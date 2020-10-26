@@ -346,4 +346,4 @@ class ESPSPI_WiFiManager:
         """
         if not self.esp.is_connected:
             self.connect()
-        return self.esp.rssi()
+        return self.esp.rssi
