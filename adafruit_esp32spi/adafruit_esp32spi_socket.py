@@ -107,7 +107,7 @@ class socket:
     def recv(self, bufsize=0):
         """Reads some bytes from the connected remote address. Will only return
            an empty string after the configured timeout.
-        
+
            :param int bufsize: maximum number of bytes to receive
         """
         # print("Socket read", bufsize)
