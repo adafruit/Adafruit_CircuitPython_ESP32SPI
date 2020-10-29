@@ -105,8 +105,10 @@ class socket:
         return firstline
 
     def recv(self, bufsize=0):
-        """Reads some bytes from the connected remote address.
-        :param int bufsize: maximum number of bytes to receive
+        """Reads some bytes from the connected remote address. Will only return
+           an empty string after the configured timeout.
+
+           :param int bufsize: maximum number of bytes to receive
         """
         # print("Socket read", bufsize)
         if bufsize == 0:  # read as much as we can at the moment
@@ -134,6 +136,10 @@ class socket:
                 received.append(recv)
                 to_read -= len(recv)
                 gc.collect()
+            elif received:
+                # We've received some bytes but no more are available. So return
+                # what we have.
+                break
             if self._timeout > 0 and time.monotonic() - stamp > self._timeout:
                 break
         # print(received)
