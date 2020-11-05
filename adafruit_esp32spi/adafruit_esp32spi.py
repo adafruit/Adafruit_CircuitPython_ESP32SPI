@@ -772,9 +772,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             print("*** Closing socket #%d" % socket_num)
         self._socknum_ll[0][0] = socket_num
         try:
-            self._send_command_get_response(
-                _STOP_CLIENT_TCP_CMD, self._socknum_ll
-            )
+            self._send_command_get_response(_STOP_CLIENT_TCP_CMD, self._socknum_ll)
         except RuntimeError:
             pass
         if socket_num == self._tls_socket:
