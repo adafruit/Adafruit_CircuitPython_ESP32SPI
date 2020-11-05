@@ -623,7 +623,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         resp = self._send_command_get_response(_GET_SOCKET_CMD)
         resp = resp[0][0]
         if resp == 255:
-            raise OSError(23) # ENFILE - File table overflow
+            raise OSError(23)  # ENFILE - File table overflow
         if self._debug:
             print("Allocated socket #%d" % resp)
         return resp
@@ -637,7 +637,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         if self._debug:
             print("*** Open socket to", dest, port, conn_mode)
         if conn_mode == TLS_MODE and self._tls_socket is not None:
-            raise OSError(23) # ENFILE - File table overflow
+            raise OSError(23)  # ENFILE - File table overflow
         port_param = struct.pack(">H", port)
         if isinstance(dest, str):  # use the 5 arg version
             dest = bytes(dest, "utf-8")
@@ -772,7 +772,9 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             print("*** Closing socket #%d" % socket_num)
         self._socknum_ll[0][0] = socket_num
         try:
-            resp = self._send_command_get_response(_STOP_CLIENT_TCP_CMD, self._socknum_ll)
+            resp = self._send_command_get_response(
+                _STOP_CLIENT_TCP_CMD, self._socknum_ll
+            )
         except RuntimeError:
             pass
         if socket_num == self._tls_socket:
