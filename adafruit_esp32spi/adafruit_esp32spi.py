@@ -152,6 +152,8 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         self._cs.direction = Direction.OUTPUT
         self._ready.direction = Direction.INPUT
         self._reset.direction = Direction.OUTPUT
+        # Only one TLS socket at a time is supported so track when we already have one.
+        self._tls_socket = None
         if self._gpio0:
             self._gpio0.direction = Direction.INPUT
         self.reset()
@@ -330,11 +332,9 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         (not found), WL_IDLE_STATUS, WL_NO_SSID_AVAIL, WL_SCAN_COMPLETED,
         WL_CONNECTED, WL_CONNECT_FAILED, WL_CONNECTION_LOST, WL_DISCONNECTED,
         WL_AP_LISTENING, WL_AP_CONNECTED, WL_AP_FAILED"""
-        if self._debug:
-            print("Connection status")
         resp = self._send_command_get_response(_GET_CONN_STATUS_CMD)
         if self._debug:
-            print("Conn status:", resp[0][0])
+            print("Connection status:", resp[0][0])
         return resp[0][0]  # one byte response
 
     @property
@@ -623,7 +623,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         resp = self._send_command_get_response(_GET_SOCKET_CMD)
         resp = resp[0][0]
         if resp == 255:
-            raise RuntimeError("No sockets available")
+            raise OSError(23)  # ENFILE - File table overflow
         if self._debug:
             print("Allocated socket #%d" % resp)
         return resp
@@ -635,7 +635,9 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         (dest must be hostname for TLS_MODE!)"""
         self._socknum_ll[0][0] = socket_num
         if self._debug:
-            print("*** Open socket")
+            print("*** Open socket to", dest, port, conn_mode)
+        if conn_mode == ESP_SPIcontrol.TLS_MODE and self._tls_socket is not None:
+            raise OSError(23)  # ENFILE - File table overflow
         port_param = struct.pack(">H", port)
         if isinstance(dest, str):  # use the 5 arg version
             dest = bytes(dest, "utf-8")
@@ -656,6 +658,8 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             )
         if resp[0][0] != 1:
             raise RuntimeError("Could not connect to remote server")
+        if conn_mode == ESP_SPIcontrol.TLS_MODE:
+            self._tls_socket = socket_num
 
     def socket_status(self, socket_num):
         """Get the socket connection status, can be SOCKET_CLOSED, SOCKET_LISTEN,
@@ -706,6 +710,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             return
 
         if sent != len(buffer):
+            self.socket_close(socket_num)
             raise RuntimeError(
                 "Failed to send %d bytes (sent %d)" % (len(buffer), sent)
             )
@@ -766,9 +771,12 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         if self._debug:
             print("*** Closing socket #%d" % socket_num)
         self._socknum_ll[0][0] = socket_num
-        resp = self._send_command_get_response(_STOP_CLIENT_TCP_CMD, self._socknum_ll)
-        if resp[0][0] != 1:
-            raise RuntimeError("Failed to close socket")
+        try:
+            self._send_command_get_response(_STOP_CLIENT_TCP_CMD, self._socknum_ll)
+        except RuntimeError:
+            pass
+        if socket_num == self._tls_socket:
+            self._tls_socket = None
 
     def start_server(
         self, port, socket_num, conn_mode=TCP_MODE, ip=None
