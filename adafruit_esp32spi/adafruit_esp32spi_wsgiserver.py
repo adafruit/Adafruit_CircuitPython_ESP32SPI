@@ -31,7 +31,6 @@ https://www.python.org/dev/peps/pep-0333/
 import io
 import gc
 from micropython import const
-from adafruit_requests import parse_headers
 import adafruit_esp32spi.adafruit_esp32spi_socket as socket
 
 _the_interface = None  # pylint: disable=invalid-name
@@ -45,6 +44,18 @@ def set_interface(iface):
 
 
 NO_SOCK_AVAIL = const(255)
+
+
+def parse_headers(client):
+    headers = {}
+    while True:
+        line = str(client.readline(), "utf-8")
+        if not line:
+            break
+        title, content = line.split(':', 1)
+        headers[title.strip().lower()] = content.strip()
+    return headers
+
 
 # pylint: disable=invalid-name
 class WSGIServer:
@@ -99,7 +110,7 @@ class WSGIServer:
         :param string result: the data string to send back in the response to the client.
         """
         try:
-            response = "HTTP/1.1 {0}\r\n".format(self._response_status)
+            response = "HTTP/1.1 {0}\r\n".format(self._response_status or "500 ISE")
             for header in self._response_headers:
                 response += "{0}: {1}\r\n".format(*header)
             response += "\r\n"
@@ -159,7 +170,7 @@ class WSGIServer:
             ex ("header-name", "header value")
         """
         self._response_status = status
-        self._response_headers = [("Server", "esp32WSGIServer")] + response_headers
+        self._response_headers = [("Server", "esp32WSGIServer"), ("Connection", "close")] + response_headers
 
     def _get_environ(self, client):
         """
