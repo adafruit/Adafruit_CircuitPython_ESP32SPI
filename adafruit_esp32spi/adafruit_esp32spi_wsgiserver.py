@@ -47,6 +47,10 @@ NO_SOCK_AVAIL = const(255)
 
 
 def parse_headers(client):
+    """
+    Parses the header portion of an HTTP request from the socket.
+    Expects first line of HTTP request to have been read already.
+    """
     headers = {}
     while True:
         line = str(client.readline(), "utf-8")
