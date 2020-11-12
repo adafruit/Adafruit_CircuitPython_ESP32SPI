@@ -52,7 +52,7 @@ def parse_headers(client):
         line = str(client.readline(), "utf-8")
         if not line:
             break
-        title, content = line.split(':', 1)
+        title, content = line.split(":", 1)
         headers[title.strip().lower()] = content.strip()
     return headers
 
@@ -170,7 +170,10 @@ class WSGIServer:
             ex ("header-name", "header value")
         """
         self._response_status = status
-        self._response_headers = [("Server", "esp32WSGIServer"), ("Connection", "close")] + response_headers
+        self._response_headers = [
+            ("Server", "esp32WSGIServer"),
+            ("Connection", "close"),
+        ] + response_headers
 
     def _get_environ(self, client):
         """
