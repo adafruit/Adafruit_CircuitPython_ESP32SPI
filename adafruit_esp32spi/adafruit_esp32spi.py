@@ -31,7 +31,7 @@ from micropython import const
 from digitalio import Direction
 from adafruit_bus_device.spi_device import SPIDevice
 
-__version__ = "0.0.0-auto.0"
+__version__ = "3.5.3"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI.git"
 
 _SET_NET_CMD = const(0x10)
@@ -508,7 +508,17 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
     def connect(self, secrets):
         """Connect to an access point using a secrets dictionary
         that contains a 'ssid' and 'password' entry"""
-        self.connect_AP(secrets["ssid"], secrets["password"])
+        if isinstance(secrets["ssid"], (list, tuple)):
+            for sekrits in zip(secrets["ssid"], secrets["password"]):
+                try:
+                    self.connect_AP(sekrits[0], sekrits[1])
+                except RuntimeError as e:
+                    print(e)
+                stat = self.status
+                if stat == WL_CONNECTED:
+                    break
+        else:
+            self.connect_AP(secrets["ssid"], secrets["password"])
 
     def connect_AP(self, ssid, password, timeout_s=10):  # pylint: disable=invalid-name
         """
