@@ -512,8 +512,8 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             for sekrits in zip(secrets["ssid"], secrets["password"]):
                 try:
                     self.connect_AP(sekrits[0], sekrits[1])
-                except RuntimeError as e:
-                    print(e)
+                except RuntimeError as ex:
+                    print(ex)
                 stat = self.status
                 if stat == WL_CONNECTED:
                     break
