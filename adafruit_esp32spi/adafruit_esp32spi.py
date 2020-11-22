@@ -87,6 +87,8 @@ _SET_ANALOG_WRITE_CMD = const(0x52)
 _SET_DIGITAL_READ_CMD = const(0x53)
 _SET_ANALOG_READ_CMD = const(0x54)
 
+_GET_GAMEPADS_DATA = const(0x60)
+
 _START_CMD = const(0xE0)
 _END_CMD = const(0xEE)
 _ERR_CMD = const(0xEF)
@@ -947,3 +949,40 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             raise RuntimeError("Failed to set private key.")
         self.set_psk = True
         return resp[0]
+
+    def get_gamepads_data(self):
+        """Returns a list of gamepads. Empty if no gamepad are connected.
+        Each gamepad entry is a dictionary that represents that gamepad state
+        like: buttons pressed, axis values, dpad and more.
+
+        Feature ONLY available in Bluepad32 firmware. Not present in Nina-fw.
+        """
+        resp = self._send_command_get_response(_GET_GAMEPADS_DATA)
+        # Response has exactly one argument
+        assert len(resp) == 1, "Invalid number of responses."
+        arg1 = resp[0]
+        gamepads = []
+        total_gamepads = arg1[0]
+        # Sanity check
+        assert total_gamepads < 8, "Invalid number of gamepads"
+
+        # TODO: Expose these gamepad constants to Python:
+        # https://gitlab.com/ricardoquesada/bluepad32/-/blob/master/src/main/uni_gamepad.h
+        offset = 1
+        for _ in range(total_gamepads):
+            unp = struct.unpack_from("<BBiiiiiiHB", arg1, offset)
+            gamepad = {
+                "idx": unp[0],
+                "dpad": unp[1],
+                "axis_x": unp[2],
+                "axis_y": unp[3],
+                "axis_rx": unp[4],
+                "axis_ry": unp[5],
+                "brake": unp[6],
+                "accelerator": unp[7],
+                "buttons": unp[8],
+                "misc_buttons": unp[9],
+            }
+            gamepads.append(gamepad)
+            offset += 29
+        return gamepads
