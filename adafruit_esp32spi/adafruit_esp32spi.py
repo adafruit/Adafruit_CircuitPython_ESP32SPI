@@ -505,6 +505,12 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             self.reset()
             return False
 
+    def disconnect(self):
+        """Disconnect from the access point"""
+        resp = self._send_command_get_response(_DISCONNECT_CMD)
+        if resp[0][0] != 1:
+            raise RuntimeError("Failed to disconnect")
+
     def connect(self, secrets):
         """Connect to an access point using a secrets dictionary
         that contains a 'ssid' and 'password' entry"""
