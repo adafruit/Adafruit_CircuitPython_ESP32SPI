@@ -394,8 +394,8 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
 
     def scan_networks(self):
         """Scan for visible access points, returns a list of access point details.
-         Returns a list of dictionaries with 'ssid', 'rssi' and 'encryption' entries,
-         one for each AP found"""
+        Returns a list of dictionaries with 'ssid', 'rssi' and 'encryption' entries,
+        one for each AP found"""
         self.start_scan_networks()
         for _ in range(10):  # attempts
             time.sleep(2)
