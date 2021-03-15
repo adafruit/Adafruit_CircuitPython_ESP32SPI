@@ -37,7 +37,7 @@ print("Connecting")
 s.connect(socketaddr)
 
 print("Sending")
-s.send(b'Hello, world')
+s.send(b"Hello, world")
 
 print("Receiving")
 print(s.recv(128))
