@@ -10,11 +10,11 @@ from secrets import secrets
 
 
 TIMEOUT = 5
-# adjust host and port to match server
-HOST = "192.168.10.179"
-PORT = 5000
+# edit host and port to match server
+HOST = "wifitest.adafruit.com"
+PORT = 80
 
-# PyPortal or similar; adjust pins as needed
+# PyPortal or similar; edit pins as needed
 spi = board.SPI()
 esp32_cs = DigitalInOut(board.ESP_CS)
 esp32_ready = DigitalInOut(board.ESP_BUSY)
@@ -37,7 +37,7 @@ print("Connecting")
 s.connect(socketaddr)
 
 print("Sending")
-s.send(b"Hello, world")
+s.send(b"HEAD / HTTP/1.0\r\n\r\n")
 
 print("Receiving")
-print(s.recv(128))
+print(s.recv(1024))
