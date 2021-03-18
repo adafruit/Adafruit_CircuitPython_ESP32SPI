@@ -79,10 +79,9 @@ class socket:
 
     def send(self, data, conntype=None):  # pylint: disable=no-self-use
         """Send some data to the socket"""
-        if conntype:
-            _the_interface.socket_write(self._socknum, data, conn_mode=conntype)
-        else:
-            _the_interface.socket_write(self._socknum, data)
+        if conntype is None:
+            conntype = _the_interface.TCP_MODE
+        _the_interface.socket_write(self._socknum, data, conn_mode=conntype)
         gc.collect()
 
     def write(self, data):
