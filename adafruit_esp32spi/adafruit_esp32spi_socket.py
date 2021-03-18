@@ -78,7 +78,8 @@ class socket:
         self._buffer = b""
 
     def send(self, data, conntype=None):  # pylint: disable=no-self-use
-        """Send some data to the socket"""
+        """Send some data to the socket. 'conntype' is an extra that may
+        indicate UDP or not, depending on the underlying interface"""
         if conntype is None:
             conntype = _the_interface.TCP_MODE
         _the_interface.socket_write(self._socknum, data, conn_mode=conntype)
