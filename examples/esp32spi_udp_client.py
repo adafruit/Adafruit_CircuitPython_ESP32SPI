@@ -3,12 +3,17 @@
 
 import struct
 import time
-from secrets import secrets
 import board
 from digitalio import DigitalInOut
 from adafruit_esp32spi import adafruit_esp32spi
 import adafruit_esp32spi.adafruit_esp32spi_socket as socket
 
+# Get wifi details and more from a secrets.py file
+try:
+    from secrets import secrets
+except ImportError:
+    print("WiFi secrets are kept in secrets.py, please add them there!")
+    raise
 
 TIMEOUT = 5
 # edit host and port to match server
