@@ -3,11 +3,11 @@
 
 import struct
 import time
+from secrets import secrets
 import board
 from digitalio import DigitalInOut
 from adafruit_esp32spi import adafruit_esp32spi
 import adafruit_esp32spi.adafruit_esp32spi_socket as socket
-from secrets import secrets
 
 
 TIMEOUT = 5
@@ -33,6 +33,7 @@ print("Server ping:", esp.ping(HOST), "ms")
 socket.set_interface(esp)
 socketaddr = socket.getaddrinfo(HOST, PORT)[0][4]
 s = socket.socket()
+
 s.settimeout(TIMEOUT)
 
 print("Sending")
