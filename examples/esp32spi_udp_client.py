@@ -42,7 +42,7 @@ s = socket.socket()
 s.settimeout(TIMEOUT)
 
 print("Sending")
-s.connect(socketaddr, esp.UDP_MODE)
+s.connect(socketaddr, conntype=esp.UDP_MODE)
 packet = bytearray(48)
 packet[0] = 0b00100011  # Not leap second, NTP version 4, Client mode
 s.send(packet, conntype=esp.UDP_MODE)
