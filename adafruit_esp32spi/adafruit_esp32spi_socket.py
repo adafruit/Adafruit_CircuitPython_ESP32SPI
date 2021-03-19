@@ -78,8 +78,7 @@ class socket:
         self._buffer = b""
 
     def send(self, data):  # pylint: disable=no-self-use
-        """Send some data to the socket. 'conntype' is an extra that may
-        indicate UDP or not, depending on the underlying interface"""
+        """Send some data to the socket."""
         if self._type is SOCK_DGRAM:
             conntype = _the_interface.UDP_MODE
         else:
