@@ -37,7 +37,7 @@ print("Connecting")
 s.connect(socketaddr)
 
 print("Sending")
-s.send(b"HEAD / HTTP/1.0\r\n\r\n")
+s.send(b"GET /testwifi/index.html HTTP/1.0\r\n\r\n")
 
 print("Receiving")
 print(s.recv(1024))
