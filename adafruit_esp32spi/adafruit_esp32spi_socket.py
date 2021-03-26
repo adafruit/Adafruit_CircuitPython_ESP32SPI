@@ -27,7 +27,8 @@ def set_interface(iface):
     _the_interface = iface
 
 
-SOCK_STREAM = const(1)
+SOCK_STREAM = const(0)
+SOCK_DGRAM = const(1)
 AF_INET = const(2)
 NO_SOCKET_AVAIL = const(255)
 
@@ -56,8 +57,7 @@ class socket:
     ):
         if family != AF_INET:
             raise RuntimeError("Only AF_INET family supported")
-        if type != SOCK_STREAM:
-            raise RuntimeError("Only SOCK_STREAM type supported")
+        self._type = type
         self._buffer = b""
         self._socknum = socknum if socknum else _the_interface.get_socket()
         self.settimeout(0)
@@ -78,8 +78,12 @@ class socket:
         self._buffer = b""
 
     def send(self, data):  # pylint: disable=no-self-use
-        """Send some data to the socket"""
-        _the_interface.socket_write(self._socknum, data)
+        """Send some data to the socket."""
+        if self._type is SOCK_DGRAM:
+            conntype = _the_interface.UDP_MODE
+        else:
+            conntype = _the_interface.TCP_MODE
+        _the_interface.socket_write(self._socknum, data, conn_mode=conntype)
         gc.collect()
 
     def write(self, data):
