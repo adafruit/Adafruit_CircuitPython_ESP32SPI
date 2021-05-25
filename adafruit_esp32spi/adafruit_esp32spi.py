@@ -260,14 +260,14 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             print("\t\tRead:", [hex(i) for i in buffer])
 
     def _wait_spi_char(self, spi, desired):
-        """Read a byte with a time-out, and if we get it, check that its what we expect"""
-        times = time.monotonic()
-        while (time.monotonic() - times) < 0.1:
+        """Read a byte with a retry loop, and if we get it, check that its what we expect"""
+        for _ in range(10):
             r = self._read_byte(spi)
             if r == _ERR_CMD:
                 raise RuntimeError("Error response to command")
             if r == desired:
                 return True
+            time.sleep(0.01)
         raise RuntimeError("Timed out waiting for SPI char")
 
     def _check_data(self, spi, desired):
