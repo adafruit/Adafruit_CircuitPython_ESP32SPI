@@ -16,7 +16,7 @@ As of NINA firmware version 1.5.0, the ESP32SPI library can be used to read digi
 
 ```
     # ESP32_GPIO_PINS:
-    # https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI/blob/master/adafruit_esp32spi/digitalio.py
+    # https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI/blob/main/adafruit_esp32spi/digitalio.py
     # 0, 1, 2, 4, 5, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33, 34, 35, 36, 39
     #
     # Pins Used for ESP32SPI
