@@ -408,10 +408,10 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
                 return APs
         return None
 
-    def set_ip_config(self, ip, gw, mask="255.255.255.0"):
+    def set_ip_config(self, new_ip, new_gw, new_mask="255.255.255.0"):
         """Tells the ESP32 to set ip, gateway and network mask b"\xFF" """
         resp = self._send_command_get_response(_SET_IP_CONFIG,
-                                               params= [b"\x00",self.unpretty_ip(ip),self.unpretty_ip(gw), self.unpretty_ip(mask)],
+                                               params= [b"\x00",self.unpretty_ip(new_ip),self.unpretty_ip(new_gw), self.unpretty_ip(new_mask)],
                                                sent_param_len_16=False)
         return resp
 
