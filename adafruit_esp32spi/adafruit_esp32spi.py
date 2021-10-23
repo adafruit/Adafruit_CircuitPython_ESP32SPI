@@ -37,6 +37,9 @@ __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI.git"
 
 _SET_NET_CMD = const(0x10)
 _SET_PASSPHRASE_CMD = const(0x11)
+_SET_IP_CONFIG = const(0x14)
+_SET_DNS_CONFIG = const(0x15)
+_SET_HOSTNAME = const(0x16)
 _SET_AP_NET_CMD = const(0x18)
 _SET_AP_PASSPHRASE_CMD = const(0x19)
 _SET_DEBUG_CMD = const(0x1A)
@@ -404,6 +407,26 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             if APs:
                 return APs
         return None
+
+    def set_ip_config(self, ip, gw, mask="255.255.255.0"):
+        """Tells the ESP32 to set ip, gateway and network mask b"\xFF" """
+        resp = self._send_command_get_response(_SET_IP_CONFIG,
+                                               params= [b"\x00",self.unpretty_ip(ip),self.unpretty_ip(gw), self.unpretty_ip(mask)],
+                                               sent_param_len_16=False)
+        return resp
+
+    def set_dns_config(self, dns1, dns2="8.8.8.8"):
+        """Tells the ESP32 to set DNS, with dns2 default to google dns=8.8.8.8"""
+        resp = self._send_command_get_response(_SET_DNS_CONFIG, [b"\x00", self.unpretty_ip(dns1), self.unpretty_ip(dns2)])
+        if resp[0][0] != 1:
+            raise RuntimeError("Failed to set dns with esp32")
+        
+    def set_hostname(self, hostname):
+        """Tells the ESP32 to set hostname"""
+        resp = self._send_command_get_response(_SET_HOSTNAME, [hostname])
+        return resp
+        if resp[0][0] != 1:
+            raise RuntimeError("Failed to set hostname with esp32")
 
     def wifi_set_network(self, ssid):
         """Tells the ESP32 to set the access point to the given ssid"""
