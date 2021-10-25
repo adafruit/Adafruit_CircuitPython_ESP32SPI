@@ -59,6 +59,11 @@ Usage Example
 
 Check the examples folder for various demos for connecting and fetching data!
 
+Documentation
+=============
+
+API documentation for this library can be found on `Read the Docs <https://circuitpython.readthedocs.io/projects/esp32spi/en/latest/>`_.
+
 Contributing
 ============
 
