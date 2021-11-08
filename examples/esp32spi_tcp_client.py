@@ -1,12 +1,11 @@
 # SPDX-FileCopyrightText: 2021 Adafruit Industries
 # SPDX-License-Identifier: MIT
 
+from secrets import secrets  # pylint: disable=no-name-in-module
 import board
 from digitalio import DigitalInOut
 from adafruit_esp32spi import adafruit_esp32spi
 import adafruit_esp32spi.adafruit_esp32spi_socket as socket
-import adafruit_requests as requests
-from secrets import secrets
 
 
 TIMEOUT = 5
