@@ -197,7 +197,6 @@ class DigitalInOut:
         :param DriveMode mode: Defines the drive mode when outputting digital values.
         Either PUSH_PULL or OPEN_DRAIN
         """
-        self.__drive_mode = mode
         if mode is DriveMode.OPEN_DRAIN:
             raise NotImplementedError(
                 "Drive mode %s not implemented in ESP32SPI." % mode
