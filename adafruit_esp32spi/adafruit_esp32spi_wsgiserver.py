@@ -89,8 +89,8 @@ class WSGIServer:
             ip = _the_interface.pretty_ip(_the_interface.ip_address)
             print("Server available at {0}:{1}".format(ip, self.port))
             print(
-                "Sever status: ",
-                _the_interface.get_server_state(self._server_sock.socknum),
+                "Server status: ",
+                _the_interface.server_state(self._server_sock.socknum),
             )
 
     def update_poll(self):
