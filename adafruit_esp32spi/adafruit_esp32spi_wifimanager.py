@@ -43,7 +43,11 @@ class ESPSPI_WiFiManager:
         :param ESP_SPIcontrol esp: The ESP object we are using
         :param dict secrets: The WiFi and Adafruit IO secrets dict (See examples)
         :param status_pixel: (Optional) The pixel device - A NeoPixel, DotStar,
-            or RGB LED (default=None)
+            or RGB LED (default=None). The status LED, if given, turns red when
+            attempting to connect to a Wi-Fi network or create an access point,
+            turning green upon success. Additionally, if given, it will turn blue
+            when attempting an HTTP method or returning IP address, turning off
+            upon success.
         :type status_pixel: NeoPixel, DotStar, or RGB LED
         :param int attempts: (Optional) Failed attempts before resetting the ESP32 (default=2)
         :param const connection_type: (Optional) Type of WiFi connection: NORMAL or ENTERPRISE
@@ -128,7 +132,7 @@ class ESPSPI_WiFiManager:
 
     def connect_normal(self):
         """
-        Attempt a regular style WiFi connection
+        Attempt a regular style WiFi connection.
         """
         failure_count = 0
         (ssid, password) = self._get_next_ap()
@@ -242,6 +246,7 @@ class ESPSPI_WiFiManager:
             self.connect()
         self.pixel_status((0, 0, 100))
         return_val = requests.post(url, **kw)
+        self.pixel_status(0)
         return return_val
 
     def put(self, url, **kw):
