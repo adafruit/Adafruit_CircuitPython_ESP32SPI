@@ -132,7 +132,7 @@ class ESPSPI_WiFiManager:
 
     def connect_normal(self):
         """
-        Attempt a regular style WiFi connection. 
+        Attempt a regular style WiFi connection.
         """
         failure_count = 0
         (ssid, password) = self._get_next_ap()
