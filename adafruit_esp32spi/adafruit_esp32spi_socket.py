@@ -95,7 +95,7 @@ class socket:
     def readline(self, eol=b"\r\n"):
         """Attempt to return as many bytes as we can up to but not including
         end-of-line character (default is '\\r\\n')"""
-        
+
         # print("Socket readline")
         stamp = time.monotonic()
         while eol not in self._buffer:
