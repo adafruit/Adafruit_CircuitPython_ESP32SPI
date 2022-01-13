@@ -8,7 +8,7 @@
 DigitalIO for ESP32 over SPI.
 
 * Author(s): Brent Rubell, based on Adafruit_Blinka digitalio implementation
-and bcm283x Pin implementation.
+    and bcm283x Pin implementation.
 
 https://github.com/adafruit/Adafruit_Blinka/blob/master/src/adafruit_blinka/microcontroller/bcm283x/pin.py
 https://github.com/adafruit/Adafruit_Blinka/blob/master/src/digitalio.py
