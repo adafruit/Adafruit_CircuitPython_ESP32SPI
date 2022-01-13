@@ -187,7 +187,7 @@ class socket:
             if self._timeout > 0 and time.monotonic() - stamp > self._timeout:
                 break
         gc.collect()
-        return buffer
+        return len(buffer) - to_read
 
     def read(self, size=0):
         """Read up to 'size' bytes from the socket, this may be buffered internally!
