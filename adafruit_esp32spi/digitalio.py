@@ -195,7 +195,7 @@ class DigitalInOut:
     def drive_mode(self, mode):
         """Sets the pin drive mode.
         :param DriveMode mode: Defines the drive mode when outputting digital values.
-        Either PUSH_PULL or OPEN_DRAIN
+            Either PUSH_PULL or OPEN_DRAIN
         """
         if mode is DriveMode.OPEN_DRAIN:
             raise NotImplementedError(
