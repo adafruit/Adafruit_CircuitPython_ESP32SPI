@@ -159,6 +159,36 @@ class socket:
         gc.collect()
         return ret
 
+    def recv_into(self, buffer):
+        """Read some bytes from the connected remote address into a given buffer
+
+        :param bytearray buffer: The buffer to read into
+        """
+
+        stamp = time.monotonic()
+        to_read = len(buffer)
+        received = []
+        while to_read > 0:
+            # print("Bytes to read:", to_read)
+            avail = self.available()
+            if avail:
+                stamp = time.monotonic()
+                recv = _the_interface.socket_read(self._socknum, min(to_read, avail))
+                # received.append(recv)
+                start = len(buffer) - to_read
+                to_read -= len(recv)
+                end = len(buffer) - to_read
+                buffer[start:end] = bytearray(recv)
+                gc.collect()
+            elif received:
+                # We've received some bytes but no more are available. So return
+                # what we have.
+                break
+            if self._timeout > 0 and time.monotonic() - stamp > self._timeout:
+                break
+        gc.collect()
+        return buffer
+
     def read(self, size=0):
         """Read up to 'size' bytes from the socket, this may be buffered internally!
         If 'size' isnt specified, return everything in the buffer.
