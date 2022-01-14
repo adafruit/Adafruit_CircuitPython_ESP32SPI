@@ -92,11 +92,13 @@ class socket:
         """
         self.send(data)
 
-    def readline(self):
-        """Attempt to return as many bytes as we can up to but not including '\r\n'"""
+    def readline(self, eol=b"\r\n"):
+        """Attempt to return as many bytes as we can up to but not including
+        end-of-line character (default is '\\r\\n')"""
+
         # print("Socket readline")
         stamp = time.monotonic()
-        while b"\r\n" not in self._buffer:
+        while eol not in self._buffer:
             # there's no line already in there, read some more
             avail = self.available()
             if avail:
@@ -104,7 +106,7 @@ class socket:
             elif self._timeout > 0 and time.monotonic() - stamp > self._timeout:
                 self.close()  # Make sure to close socket so that we don't exhaust sockets.
                 raise RuntimeError("Didn't receive full response, failing out")
-        firstline, self._buffer = self._buffer.split(b"\r\n", 1)
+        firstline, self._buffer = self._buffer.split(eol, 1)
         gc.collect()
         return firstline
 
