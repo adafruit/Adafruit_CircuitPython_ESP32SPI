@@ -161,14 +161,14 @@ class socket:
         gc.collect()
         return ret
 
-    def recv_into(self, buffer):
+    def recv_into(self, buffer, nbytes=None):
         """Read some bytes from the connected remote address into a given buffer
 
         :param bytearray buffer: The buffer to read into
         """
 
         stamp = time.monotonic()
-        to_read = len(buffer)
+        to_read = len(buffer) if nbytes is None else nbytes
         received = []
         while to_read > 0:
             # print("Bytes to read:", to_read)
