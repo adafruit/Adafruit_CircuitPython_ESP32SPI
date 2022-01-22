@@ -161,20 +161,24 @@ class socket:
         gc.collect()
         return ret
 
-    def recv_into(self, buffer, nbytes=None):
+    def recv_into(self, buffer, nbytes=0):
         """Read some bytes from the connected remote address into a given buffer
 
         :param bytearray buffer: The buffer to read into
-        :param int nbytes: (Optional) Number of bytes to receive
-            default is as many as possible before filling the
+        :param int nbytes: (Optional) Number of bytes to receive default is 0,
+            which will receive as many bytes as possible before filling the
             buffer or timing out
         """
 
+        if not (0 <= nbytes <= len(buffer)):
+            raise ValueError(
+                "Can only read number of bytes between 0 and length of supplied buffer"
+            )
+
         stamp = time.monotonic()
         to_read = len(buffer)
-        limit = 0 if nbytes is None else to_read - nbytes
         received = []
-        while to_read > limit:
+        while to_read > nbytes:
             # print("Bytes to read:", to_read)
             avail = self.available()
             if avail:
