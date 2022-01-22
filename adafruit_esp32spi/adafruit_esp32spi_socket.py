@@ -172,9 +172,9 @@ class socket:
 
         stamp = time.monotonic()
         to_read = len(buffer)
-        nbytes = to_read if nbytes is None else to_read - nbytes
+        limit = to_read if nbytes is None else to_read - nbytes
         received = []
-        while to_read > len(buffer) - nbytes:
+        while to_read > limit:
             # print("Bytes to read:", to_read)
             avail = self.available()
             if avail:
