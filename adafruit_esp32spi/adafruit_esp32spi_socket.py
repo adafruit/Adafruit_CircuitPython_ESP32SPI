@@ -165,12 +165,16 @@ class socket:
         """Read some bytes from the connected remote address into a given buffer
 
         :param bytearray buffer: The buffer to read into
+        :param int nbytes: (Optional) Number of bytes to receive
+            default is as many as possible before filling the
+            buffer or timing out
         """
 
         stamp = time.monotonic()
-        to_read = len(buffer) if nbytes is None else nbytes
+        to_read = len(buffer)
+        nbytes = to_read if nbytes is None else to_read - nbytes
         received = []
-        while to_read > 0:
+        while to_read > len(buffer) - nbytes:
             # print("Bytes to read:", to_read)
             avail = self.available()
             if avail:
