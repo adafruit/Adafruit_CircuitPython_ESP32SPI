@@ -170,7 +170,7 @@ class socket:
             buffer or timing out
         """
 
-        if not (0 <= nbytes <= len(buffer)):
+        if not 0 <= nbytes <= len(buffer):
             raise ValueError(
                 "Can only read number of bytes between 0 and length of supplied buffer"
             )
