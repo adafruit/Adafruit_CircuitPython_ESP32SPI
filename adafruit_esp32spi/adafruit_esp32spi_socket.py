@@ -184,7 +184,7 @@ class socket:
             if avail:
                 stamp = time.monotonic()
                 recv = _the_interface.socket_read(self._socknum, min(to_read, avail))
-                # received.append(recv)
+                received.append(recv)
                 start = len(buffer) - to_read
                 to_read -= len(recv)
                 end = len(buffer) - to_read
