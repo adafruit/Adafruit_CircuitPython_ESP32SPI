@@ -126,7 +126,6 @@ class WSGIServer:
                     self._client_sock.send(data.encode("utf-8"))
             gc.collect()
         finally:
-            print("closing")
             self._client_sock.close()
 
     def client_available(self):
