@@ -410,21 +410,35 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
 
     def set_ip_config(self, new_ip, new_gw, new_mask="255.255.255.0"):
         """Tells the ESP32 to set ip, gateway and network mask b"\xFF" """
-        resp = self._send_command_get_response(_SET_IP_CONFIG,
-                                               params= [b"\x00",self.unpretty_ip(new_ip),self.unpretty_ip(new_gw), self.unpretty_ip(new_mask)],
-                                               sent_param_len_16=False)
+        resp = self._send_command_get_response(
+            _SET_IP_CONFIG,
+            params=[
+                b"\x00",
+                self.unpretty_ip(new_ip),
+                self.unpretty_ip(new_gw),
+                self.unpretty_ip(new_mask),
+            ],
+            sent_param_len_16=False,
+        )
         return resp
 
     def set_dns_config(self, dns1, dns2="8.8.8.8"):
         """Tells the ESP32 to set DNS, with dns2 default to google dns=8.8.8.8"""
-        resp = self._send_command_get_response(_SET_DNS_CONFIG, [b"\x00", self.unpretty_ip(dns1), self.unpretty_ip(dns2)])
+        resp = self._send_command_get_response(
+            _SET_DNS_CONFIG, [b"\x00", self.unpretty_ip(dns1), self.unpretty_ip(dns2)]
+        )
         if resp[0][0] != 1:
             raise RuntimeError("Failed to set dns with esp32")
-        
+
     def set_hostname(self, hostname):
-        """Tells the ESP32 to set hostname"""
-        resp = self._send_command_get_response(_SET_HOSTNAME, [hostname])
-        return resp
+        """
+        Tells the ESP32 to set hostname
+
+        :params str hostname: Set the host name, used by DHCP to associate a local
+                              domain name like hostname.home for example, depending
+                              on the DHCP server setup.
+        """
+        resp = self._send_command_get_response(_SET_HOSTNAME, [hostname.encode()])
         if resp[0][0] != 1:
             raise RuntimeError("Failed to set hostname with esp32")
 
