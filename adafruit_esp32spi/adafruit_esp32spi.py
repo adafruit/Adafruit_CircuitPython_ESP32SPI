@@ -408,22 +408,31 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
                 return APs
         return None
 
-    def set_ip_config(self, new_ip, new_gw, new_mask="255.255.255.0"):
-        """Tells the ESP32 to set ip, gateway and network mask b"\xFF" """
+    def set_ip_config(self, ip_address, gateway, mask="255.255.255.0"):
+        """Tells the ESP32 to set ip, gateway and network mask b"\xFF"
+
+        :param str ip_address: IP address (as a string).
+        :param str gateway: Gateway (as a string).
+        :param str mask: Mask, defaults to 255.255.255.0 (as a string).
+        """
         resp = self._send_command_get_response(
             _SET_IP_CONFIG,
             params=[
                 b"\x00",
-                self.unpretty_ip(new_ip),
-                self.unpretty_ip(new_gw),
-                self.unpretty_ip(new_mask),
+                self.unpretty_ip(ip_address),
+                self.unpretty_ip(gateway),
+                self.unpretty_ip(mask),
             ],
             sent_param_len_16=False,
         )
         return resp
 
-    def set_dns_config(self, dns1, dns2="8.8.8.8"):
-        """Tells the ESP32 to set DNS, with dns2 default to google dns=8.8.8.8"""
+    def set_dns_config(self, dns1, dns2):
+        """Tells the ESP32 to set DNS
+
+        :param str dns1: DNS server 1 IP as a string.
+        :param str dns2: DNS server 2 IP as a string.
+        """
         resp = self._send_command_get_response(
             _SET_DNS_CONFIG, [b"\x00", self.unpretty_ip(dns1), self.unpretty_ip(dns2)]
         )
@@ -431,12 +440,9 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             raise RuntimeError("Failed to set dns with esp32")
 
     def set_hostname(self, hostname):
-        """
-        Tells the ESP32 to set hostname
+        """Tells the ESP32 to set hostname for DHCP.
 
-        :params str hostname: Set the host name, used by DHCP to associate a local
-                              domain name like hostname.home for example, depending
-                              on the DHCP server setup.
+        :param str hostname: The new host name.
         """
         resp = self._send_command_get_response(_SET_HOSTNAME, [hostname.encode()])
         if resp[0][0] != 1:
@@ -555,8 +561,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         self.connect_AP(secrets["ssid"], secrets["password"])
 
     def connect_AP(self, ssid, password, timeout_s=10):  # pylint: disable=invalid-name
-        """
-        Connect to an access point with given name and password.
+        """Connect to an access point with given name and password.
         Will wait until specified timeout seconds and return on success
         or raise an exception on failure.
 
@@ -589,8 +594,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
     def create_AP(
         self, ssid, password, channel=1, timeout=10
     ):  # pylint: disable=invalid-name
-        """
-        Create an access point with the given name, password, and channel.
+        """Create an access point with the given name, password, and channel.
         Will wait until specified timeout seconds and return on success
         or raise an exception on failure.
 
@@ -851,8 +855,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             raise RuntimeError("Failed to set debug mode")
 
     def set_pin_mode(self, pin, mode):
-        """
-        Set the io mode for a GPIO pin.
+        """Set the io mode for a GPIO pin.
 
         :param int pin: ESP32 GPIO pin to set.
         :param value: direction for pin, digitalio.Direction or integer (0=input, 1=output).
@@ -868,8 +871,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             raise RuntimeError("Failed to set pin mode")
 
     def set_digital_write(self, pin, value):
-        """
-        Set the digital output value of pin.
+        """Set the digital output value of pin.
 
         :param int pin: ESP32 GPIO pin to write to.
         :param bool value: Value for the pin.
@@ -881,8 +883,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             raise RuntimeError("Failed to write to pin")
 
     def set_analog_write(self, pin, analog_value):
-        """
-        Set the analog output value of pin, using PWM.
+        """Set the analog output value of pin, using PWM.
 
         :param int pin: ESP32 GPIO pin to write to.
         :param float value: 0=off 1.0=full on
@@ -895,8 +896,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             raise RuntimeError("Failed to write to pin")
 
     def set_digital_read(self, pin):
-        """
-        Get the digital input value of pin. Returns the boolean value of the pin.
+        """Get the digital input value of pin. Returns the boolean value of the pin.
 
         :param int pin: ESP32 GPIO pin to read from.
         """
@@ -914,8 +914,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         )
 
     def set_analog_read(self, pin, atten=ADC_ATTEN_DB_11):
-        """
-        Get the analog input value of pin. Returns an int between 0 and 65536.
+        """Get the analog input value of pin. Returns an int between 0 and 65536.
 
         :param int pin: ESP32 GPIO pin to read from.
         :param int atten: attenuation constant
@@ -951,6 +950,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
     def set_certificate(self, client_certificate):
         """Sets client certificate. Must be called
         BEFORE a network connection is established.
+
         :param str client_certificate: User-provided .PEM certificate up to 1300 bytes.
         """
         if self._debug:
@@ -973,6 +973,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
     def set_private_key(self, private_key):
         """Sets private key. Must be called
         BEFORE a network connection is established.
+
         :param str private_key: User-provided .PEM file up to 1700 bytes.
         """
         if self._debug:

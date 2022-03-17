@@ -1,20 +1,25 @@
+# SPDX-FileCopyrightText: 2019 ladyada for Adafruit Industries
+# SPDX-License-Identifier: MIT
+
 import time
 import board
 import busio
 from digitalio import DigitalInOut
-import adafruit_requests as requests
 import adafruit_esp32spi.adafruit_esp32spi_socket as socket
 from adafruit_esp32spi import adafruit_esp32spi
-import neopixel
-from rainbowio import colorwheel
-import gc
-from secrets import secrets
 
-IP_ADDRESS = "192.168.2.2"
-GATEWAY_ADDRESS = "192.168.2.1"
+# Get wifi details and more from a secrets.py file
+try:
+    from secrets import secrets
+except ImportError:
+    print("WiFi secrets are kept in secrets.py, please add them there!")
+    raise
+
+IP_ADDRESS = "192.168.1.111"
+GATEWAY_ADDRESS = "192.168.1.1"
 SUBNET_MASK = "255.255.255.0"
 
-UDP_IN_ADDR = "192.168.2.2"
+UDP_IN_ADDR = "192.168.1.1"
 UDP_IN_PORT = 5500
 
 UDP_TIMEOUT = 20
@@ -49,7 +54,7 @@ print("Connected to", str(esp.ssid, "utf-8"), "\tRSSI:", esp.rssi)
 ip1 = esp.ip_address
 
 print("set ip dns")
-esp.set_dns_config("192.168.2.1", "8.8.8.8")
+esp.set_dns_config("192.168.1.1", "8.8.8.8")
 
 print("set ip config")
 esp.set_ip_config(IP_ADDRESS, GATEWAY_ADDRESS, SUBNET_MASK)
