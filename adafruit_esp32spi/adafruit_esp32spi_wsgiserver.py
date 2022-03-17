@@ -67,12 +67,14 @@ class WSGIServer:
     A simple server that implements the WSGI interface
     """
 
-    def __init__(self, port=80, debug=False, application=None):
+    def __init__(self, port=80, debug=False, application=None, *, error_return=None):
         self.application = application
         self.port = port
         self._server_sock = socket.socket(socknum=NO_SOCK_AVAIL)
         self._client_sock = socket.socket(socknum=NO_SOCK_AVAIL)
         self._debug = debug
+
+        self._error_return = error_return
 
         self._response_status = None
         self._response_headers = []
@@ -102,7 +104,14 @@ class WSGIServer:
         self.client_available()
         if self._client_sock and self._client_sock.available():
             environ = self._get_environ(self._client_sock)
-            result = self.application(environ, self._start_response)
+            try:
+                result = self.application(environ, self._start_response)
+            except Exception as error:  # pylint: disable=broad-except
+                if self._error_return:
+                    self._start_response(self._error_return[0], self._error_return[1])
+                    result = self._error_return[2]
+                else:
+                    raise error
             self.finish_response(result)
 
     def finish_response(self, result):
