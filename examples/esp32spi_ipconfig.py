@@ -15,6 +15,8 @@ except ImportError:
     print("WiFi secrets are kept in secrets.py, please add them there!")
     raise
 
+HOSTNAME = "esp32-spi-hostname-test"
+
 IP_ADDRESS = "192.168.1.111"
 GATEWAY_ADDRESS = "192.168.1.1"
 SUBNET_MASK = "255.255.255.0"
@@ -35,8 +37,8 @@ socket.set_interface(esp)
 
 s_in = socket.socket(type=socket.SOCK_DGRAM)
 s_in.settimeout(UDP_TIMEOUT)
-print("set hostname:")
-esp.set_hostname("new_hostname".encode("utf-8"))
+print("set hostname:", HOSTNAME)
+esp.set_hostname(HOSTNAME)
 
 if esp.status == adafruit_esp32spi.WL_IDLE_STATUS:
     print("ESP32 found and in idle mode")
