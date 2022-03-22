@@ -130,6 +130,7 @@ ADC_ATTEN_DB_11 = const(3)
 
 # pylint: disable=too-many-lines
 
+
 class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-instance-attributes
     """A class that will talk to an ESP32 module programmed with special firmware
     that lets it act as a fast an efficient WiFi co-processor"""
