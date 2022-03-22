@@ -29,8 +29,8 @@ Implementation Notes
 import struct
 import time
 from micropython import const
-from digitalio import Direction
 from adafruit_bus_device.spi_device import SPIDevice
+from digitalio import Direction
 
 __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI.git"
@@ -128,6 +128,7 @@ ADC_ATTEN_DB_2_5 = const(1)
 ADC_ATTEN_DB_6 = const(2)
 ADC_ATTEN_DB_11 = const(3)
 
+# pylint: disable=too-many-lines
 
 class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-instance-attributes
     """A class that will talk to an ESP32 module programmed with special firmware
