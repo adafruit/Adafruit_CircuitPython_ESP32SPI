@@ -70,6 +70,7 @@ _GET_HOST_BY_NAME_CMD = const(0x35)
 _START_SCAN_NETWORKS = const(0x36)
 _GET_FW_VERSION_CMD = const(0x37)
 _SEND_UDP_DATA_CMD = const(0x39)
+_GET_REMOTE_DATA_CMD = const(0x3A)
 _GET_TIME = const(0x3B)
 _GET_IDX_BSSID_CMD = const(0x3C)
 _GET_IDX_CHAN_CMD = const(0x3D)
@@ -846,6 +847,12 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         self._socknum_ll[0][0] = socket_num
         resp = self._send_command_get_response(_GET_STATE_TCP_CMD, self._socknum_ll)
         return resp[0][0]
+
+    def get_remote_data(self, socket_num):
+        """Get the IP address and port of the remote host"""
+        self._socknum_ll[0][0] = socket_num
+        resp = self._send_command_get_response(_GET_REMOTE_DATA_CMD, self._socknum_ll, reply_params=2)
+        return {"ip_addr": resp[0], "port": struct.unpack("<H", resp[1])[0]}
 
     def set_esp_debug(self, enabled):
         """Enable/disable debug mode on the ESP32. Debug messages will be
