@@ -851,7 +851,9 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
     def get_remote_data(self, socket_num):
         """Get the IP address and port of the remote host"""
         self._socknum_ll[0][0] = socket_num
-        resp = self._send_command_get_response(_GET_REMOTE_DATA_CMD, self._socknum_ll, reply_params=2)
+        resp = self._send_command_get_response(
+            _GET_REMOTE_DATA_CMD, self._socknum_ll, reply_params=2
+        )
         return {"ip_addr": resp[0], "port": struct.unpack("<H", resp[1])[0]}
 
     def set_esp_debug(self, enabled):
