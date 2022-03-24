@@ -29,8 +29,8 @@ Implementation Notes
 import struct
 import time
 from micropython import const
-from digitalio import Direction
 from adafruit_bus_device.spi_device import SPIDevice
+from digitalio import Direction
 
 __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI.git"
@@ -70,6 +70,7 @@ _GET_HOST_BY_NAME_CMD = const(0x35)
 _START_SCAN_NETWORKS = const(0x36)
 _GET_FW_VERSION_CMD = const(0x37)
 _SEND_UDP_DATA_CMD = const(0x39)
+_GET_REMOTE_DATA_CMD = const(0x3A)
 _GET_TIME = const(0x3B)
 _GET_IDX_BSSID_CMD = const(0x3C)
 _GET_IDX_CHAN_CMD = const(0x3D)
@@ -126,6 +127,8 @@ ADC_ATTEN_DB_0 = const(0)
 ADC_ATTEN_DB_2_5 = const(1)
 ADC_ATTEN_DB_6 = const(2)
 ADC_ATTEN_DB_11 = const(3)
+
+# pylint: disable=too-many-lines
 
 
 class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-instance-attributes
@@ -846,6 +849,14 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         self._socknum_ll[0][0] = socket_num
         resp = self._send_command_get_response(_GET_STATE_TCP_CMD, self._socknum_ll)
         return resp[0][0]
+
+    def get_remote_data(self, socket_num):
+        """Get the IP address and port of the remote host"""
+        self._socknum_ll[0][0] = socket_num
+        resp = self._send_command_get_response(
+            _GET_REMOTE_DATA_CMD, self._socknum_ll, reply_params=2
+        )
+        return {"ip_addr": resp[0], "port": struct.unpack("<H", resp[1])[0]}
 
     def set_esp_debug(self, enabled):
         """Enable/disable debug mode on the ESP32. Debug messages will be
