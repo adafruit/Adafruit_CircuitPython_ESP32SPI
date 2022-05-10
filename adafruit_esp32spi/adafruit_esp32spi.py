@@ -377,7 +377,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             print("Start scan")
         resp = self._send_command_get_response(_START_SCAN_NETWORKS)
         if resp[0][0] != 1:
-            raise RuntimeError("Failed to start AP scan")
+            raise OSError("Failed to start AP scan")
 
     def get_scan_networks(self):
         """The results of the latest SSID scan. Returns a list of dictionaries with
@@ -631,8 +631,8 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
                 return stat
             time.sleep(0.05)
         if stat == WL_AP_FAILED:
-            raise RuntimeError("Failed to create AP", ssid)
-        raise RuntimeError("Unknown error 0x%02x" % stat)
+            raise ConnectionError("Failed to create AP", ssid)
+        raise OSError("Unknown error 0x%02x" % stat)
 
     def pretty_ip(self, ip):  # pylint: disable=no-self-use, invalid-name
         """Converts a bytearray IP address to a dotted-quad string for printing"""
@@ -652,7 +652,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             hostname = bytes(hostname, "utf-8")
         resp = self._send_command_get_response(_REQ_HOST_BY_NAME_CMD, (hostname,))
         if resp[0][0] != 1:
-            raise RuntimeError("Failed to request hostname")
+            raise ConnectionError("Failed to request hostname")
         resp = self._send_command_get_response(_GET_HOST_BY_NAME_CMD)
         return resp[0]
 
@@ -708,7 +708,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
                 (dest, port_param, self._socknum_ll[0], (conn_mode,)),
             )
         if resp[0][0] != 1:
-            raise RuntimeError("Could not connect to remote server")
+            raise ConnectionError("Could not connect to remote server")
         if conn_mode == ESP_SPIcontrol.TLS_MODE:
             self._tls_socket = socket_num
 
@@ -824,7 +824,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         self._socknum_ll[0][0] = socket_num
         try:
             self._send_command_get_response(_STOP_CLIENT_TCP_CMD, self._socknum_ll)
-        except RuntimeError:
+        except OSError:
             pass
         if socket_num == self._tls_socket:
             self._tls_socket = None
@@ -842,7 +842,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         resp = self._send_command_get_response(_START_SERVER_TCP_CMD, params)
 
         if resp[0][0] != 1:
-            raise RuntimeError("Could not start server")
+            raise OSError("Could not start server")
 
     def server_state(self, socket_num):
         """Get the state of the ESP32's internal reference server socket number"""
@@ -863,7 +863,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         written to the ESP32's UART."""
         resp = self._send_command_get_response(_SET_DEBUG_CMD, ((bool(enabled),),))
         if resp[0][0] != 1:
-            raise RuntimeError("Failed to set debug mode")
+            raise OSError("Failed to set debug mode")
 
     def set_pin_mode(self, pin, mode):
         """Set the io mode for a GPIO pin.
@@ -879,7 +879,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             pin_mode = mode
         resp = self._send_command_get_response(_SET_PIN_MODE_CMD, ((pin,), (pin_mode,)))
         if resp[0][0] != 1:
-            raise RuntimeError("Failed to set pin mode")
+            raise OSError("Failed to set pin mode")
 
     def set_digital_write(self, pin, value):
         """Set the digital output value of pin.
@@ -891,7 +891,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             _SET_DIGITAL_WRITE_CMD, ((pin,), (value,))
         )
         if resp[0][0] != 1:
-            raise RuntimeError("Failed to write to pin")
+            raise OSError("Failed to write to pin")
 
     def set_analog_write(self, pin, analog_value):
         """Set the analog output value of pin, using PWM.
@@ -904,7 +904,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             _SET_ANALOG_WRITE_CMD, ((pin,), (value,))
         )
         if resp[0][0] != 1:
-            raise RuntimeError("Failed to write to pin")
+            raise OSError("Failed to write to pin")
 
     def set_digital_read(self, pin):
         """Get the digital input value of pin. Returns the boolean value of the pin.
@@ -953,10 +953,10 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
                 raise ValueError("_GET_TIME returned 0")
             return resp_time
         if self.status in (WL_AP_LISTENING, WL_AP_CONNECTED):
-            raise RuntimeError(
+            raise OSError(
                 "Cannot obtain NTP while in AP mode, must be connected to internet"
             )
-        raise RuntimeError("Must be connected to WiFi before obtaining NTP.")
+        raise OSError("Must be connected to WiFi before obtaining NTP.")
 
     def set_certificate(self, client_certificate):
         """Sets client certificate. Must be called
@@ -967,7 +967,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         if self._debug:
             print("** Setting client certificate")
         if self.status == WL_CONNECTED:
-            raise RuntimeError(
+            raise ValueError(
                 "set_certificate must be called BEFORE a connection is established."
             )
         if isinstance(client_certificate, str):
@@ -977,7 +977,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         assert len(client_certificate) < 1300, ".PEM must be less than 1300 bytes."
         resp = self._send_command_get_response(_SET_CLI_CERT, (client_certificate,))
         if resp[0][0] != 1:
-            raise RuntimeError("Failed to set client certificate")
+            raise OSError("Failed to set client certificate")
         self.set_crt = True
         return resp[0]
 
@@ -990,7 +990,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         if self._debug:
             print("** Setting client's private key.")
         if self.status == WL_CONNECTED:
-            raise RuntimeError(
+            raise ValueError(
                 "set_private_key must be called BEFORE a connection is established."
             )
         if isinstance(private_key, str):
@@ -1000,6 +1000,6 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         assert len(private_key) < 1700, ".PEM must be less than 1700 bytes."
         resp = self._send_command_get_response(_SET_PK, (private_key,))
         if resp[0][0] != 1:
-            raise RuntimeError("Failed to set private key.")
+            raise OSError("Failed to set private key.")
         self.set_psk = True
         return resp[0]
