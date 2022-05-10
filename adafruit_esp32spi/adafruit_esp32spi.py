@@ -194,7 +194,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
                 print(".", end="")
                 time.sleep(0.05)
         else:
-            raise RuntimeError("ESP32 not responding")
+            raise TimeoutError("ESP32 not responding")
         if self._debug >= 3:
             print()
 
@@ -242,7 +242,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
                 if self._ready.value:  # ok ready to send!
                     break
             else:
-                raise RuntimeError("ESP32 timed out on SPI select")
+                raise TimeoutError("ESP32 timed out on SPI select")
             spi.write(
                 self._sendbuf, start=0, end=packet_len
             )  # pylint: disable=no-member
@@ -271,17 +271,17 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         for _ in range(10):
             r = self._read_byte(spi)
             if r == _ERR_CMD:
-                raise RuntimeError("Error response to command")
+                raise BrokenPipeError("Error response to command")
             if r == desired:
                 return True
             time.sleep(0.01)
-        raise RuntimeError("Timed out waiting for SPI char")
+        raise TimeoutError("Timed out waiting for SPI char")
 
     def _check_data(self, spi, desired):
         """Read a byte and verify its the value we want"""
         r = self._read_byte(spi)
         if r != desired:
-            raise RuntimeError("Expected %02X but got %02X" % (desired, r))
+            raise BrokenPipeError("Expected %02X but got %02X" % (desired, r))
 
     def _wait_response_cmd(self, cmd, num_responses=None, *, param_len_16=False):
         """Wait for ready, then parse the response"""
@@ -294,7 +294,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
                 if self._ready.value:  # ok ready to send!
                     break
             else:
-                raise RuntimeError("ESP32 timed out on SPI select")
+                raise TimeoutError("ESP32 timed out on SPI select")
 
             self._wait_spi_char(spi, _START_CMD)
             self._check_data(spi, cmd | _REPLY_FLAG)
@@ -440,7 +440,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             _SET_DNS_CONFIG, [b"\x00", self.unpretty_ip(dns1), self.unpretty_ip(dns2)]
         )
         if resp[0][0] != 1:
-            raise RuntimeError("Failed to set dns with esp32")
+            raise OSError("Failed to set dns with esp32")
 
     def set_hostname(self, hostname):
         """Tells the ESP32 to set hostname for DHCP.
@@ -449,49 +449,49 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         """
         resp = self._send_command_get_response(_SET_HOSTNAME, [hostname.encode()])
         if resp[0][0] != 1:
-            raise RuntimeError("Failed to set hostname with esp32")
+            raise OSError("Failed to set hostname with esp32")
 
     def wifi_set_network(self, ssid):
         """Tells the ESP32 to set the access point to the given ssid"""
         resp = self._send_command_get_response(_SET_NET_CMD, [ssid])
         if resp[0][0] != 1:
-            raise RuntimeError("Failed to set network")
+            raise OSError("Failed to set network")
 
     def wifi_set_passphrase(self, ssid, passphrase):
         """Sets the desired access point ssid and passphrase"""
         resp = self._send_command_get_response(_SET_PASSPHRASE_CMD, [ssid, passphrase])
         if resp[0][0] != 1:
-            raise RuntimeError("Failed to set passphrase")
+            raise OSError("Failed to set passphrase")
 
     def wifi_set_entidentity(self, ident):
         """Sets the WPA2 Enterprise anonymous identity"""
         resp = self._send_command_get_response(_SET_ENT_IDENT_CMD, [ident])
         if resp[0][0] != 1:
-            raise RuntimeError("Failed to set enterprise anonymous identity")
+            raise OSError("Failed to set enterprise anonymous identity")
 
     def wifi_set_entusername(self, username):
         """Sets the desired WPA2 Enterprise username"""
         resp = self._send_command_get_response(_SET_ENT_UNAME_CMD, [username])
         if resp[0][0] != 1:
-            raise RuntimeError("Failed to set enterprise username")
+            raise OSError("Failed to set enterprise username")
 
     def wifi_set_entpassword(self, password):
         """Sets the desired WPA2 Enterprise password"""
         resp = self._send_command_get_response(_SET_ENT_PASSWD_CMD, [password])
         if resp[0][0] != 1:
-            raise RuntimeError("Failed to set enterprise password")
+            raise OSError("Failed to set enterprise password")
 
     def wifi_set_entenable(self):
         """Enables WPA2 Enterprise mode"""
         resp = self._send_command_get_response(_SET_ENT_ENABLE_CMD)
         if resp[0][0] != 1:
-            raise RuntimeError("Failed to enable enterprise mode")
+            raise OSError("Failed to enable enterprise mode")
 
     def _wifi_set_ap_network(self, ssid, channel):
         """Creates an Access point with SSID and Channel"""
         resp = self._send_command_get_response(_SET_AP_NET_CMD, [ssid, channel])
         if resp[0][0] != 1:
-            raise RuntimeError("Failed to setup AP network")
+            raise OSError("Failed to setup AP network")
 
     def _wifi_set_ap_passphrase(self, ssid, passphrase, channel):
         """Creates an Access point with SSID, passphrase, and Channel"""
@@ -499,7 +499,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             _SET_AP_PASSPHRASE_CMD, [ssid, passphrase, channel]
         )
         if resp[0][0] != 1:
-            raise RuntimeError("Failed to setup AP password")
+            raise OSError("Failed to setup AP password")
 
     @property
     def ssid(self):
