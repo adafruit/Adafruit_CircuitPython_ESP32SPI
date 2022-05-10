@@ -751,24 +751,24 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         if conn_mode == self.UDP_MODE:
             # UDP verifies chunks on write, not bytes
             if sent != total_chunks:
-                raise RuntimeError(
+                raise ConnectionError(
                     "Failed to write %d chunks (sent %d)" % (total_chunks, sent)
                 )
             # UDP needs to finalize with this command, does the actual sending
             resp = self._send_command_get_response(_SEND_UDP_DATA_CMD, self._socknum_ll)
             if resp[0][0] != 1:
-                raise RuntimeError("Failed to send UDP data")
+                raise ConnectionError("Failed to send UDP data")
             return
 
         if sent != len(buffer):
             self.socket_close(socket_num)
-            raise RuntimeError(
+            raise ConnectionError(
                 "Failed to send %d bytes (sent %d)" % (len(buffer), sent)
             )
 
         resp = self._send_command_get_response(_DATA_SENT_TCP_CMD, self._socknum_ll)
         if resp[0][0] != 1:
-            raise RuntimeError("Failed to verify data sent")
+            raise ConnectionError("Failed to verify data sent")
 
     def socket_available(self, socket_num):
         """Determine how many bytes are waiting to be read on the socket"""
