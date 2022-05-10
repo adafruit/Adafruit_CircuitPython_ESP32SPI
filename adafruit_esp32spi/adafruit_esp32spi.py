@@ -815,7 +815,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             if self.socket_connected(socket_num):
                 return True
             time.sleep(0.01)
-        raise RuntimeError("Failed to establish connection")
+        raise TimeoutError("Failed to establish connection")
 
     def socket_close(self, socket_num):
         """Close a socket using the ESP32's internal reference number"""
