@@ -50,6 +50,7 @@ class Pin:
 
     def init(self, mode=IN):
         """Initalizes a pre-defined pin.
+
         :param mode: Pin mode (IN, OUT, LOW, HIGH). Defaults to IN.
         """
         if mode is not None:
@@ -64,6 +65,7 @@ class Pin:
 
     def value(self, val=None):
         """Sets ESP32 Pin GPIO output mode.
+
         :param val: Pin output level (LOW, HIGH)
         """
         if val is not None:
@@ -133,6 +135,7 @@ class DigitalInOut:
 
     def switch_to_output(self, value=False, drive_mode=DriveMode.PUSH_PULL):
         """Set the drive mode and value and then switch to writing out digital values.
+
         :param bool value: Default mode to set upon switching.
         :param DriveMode drive_mode: Drive mode for the output.
         """
@@ -142,6 +145,7 @@ class DigitalInOut:
 
     def switch_to_input(self, pull=None):
         """Sets the pull and then switch to read in digital values.
+
         :param Pull pull: Pull configuration for the input.
         """
         raise NotImplementedError(
@@ -156,6 +160,7 @@ class DigitalInOut:
     @direction.setter
     def direction(self, pin_dir):
         """Sets the direction of the pin.
+
         :param Direction dir: Pin direction (Direction.OUTPUT or Direction.INPUT)
         """
         self.__direction = pin_dir
@@ -176,6 +181,7 @@ class DigitalInOut:
     @value.setter
     def value(self, val):
         """Sets the digital logic level of the pin.
+
         :param type value: Pin logic level.
         :param int value: Pin logic level. 1 is logic high, 0 is logic low.
         :param bool value: Pin logic level. True is logic high, False is logic low.
@@ -195,8 +201,9 @@ class DigitalInOut:
     @drive_mode.setter
     def drive_mode(self, mode):
         """Sets the pin drive mode.
+
         :param DriveMode mode: Defines the drive mode when outputting digital values.
-            Either PUSH_PULL or OPEN_DRAIN
+                               Either PUSH_PULL or OPEN_DRAIN
         """
         if mode is DriveMode.OPEN_DRAIN:
             raise NotImplementedError(
