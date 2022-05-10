@@ -539,7 +539,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         """Whether the ESP32 is connected to an access point"""
         try:
             return self.status == WL_CONNECTED
-        except RuntimeError:
+        except OSError:
             self.reset()
             return False
 
@@ -548,7 +548,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         """Returns if the ESP32 is in access point mode and is listening for connections"""
         try:
             return self.status == WL_AP_LISTENING
-        except RuntimeError:
+        except OSError:
             self.reset()
             return False
 
@@ -556,7 +556,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         """Disconnect from the access point"""
         resp = self._send_command_get_response(_DISCONNECT_CMD)
         if resp[0][0] != 1:
-            raise RuntimeError("Failed to disconnect")
+            raise OSError("Failed to disconnect")
 
     def connect(self, secrets):
         """Connect to an access point using a secrets dictionary
@@ -589,10 +589,10 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
                 return stat
             time.sleep(0.05)
         if stat in (WL_CONNECT_FAILED, WL_CONNECTION_LOST, WL_DISCONNECTED):
-            raise RuntimeError("Failed to connect to ssid", ssid)
+            raise ConnectionError("Failed to connect to ssid", ssid)
         if stat == WL_NO_SSID_AVAIL:
-            raise RuntimeError("No such ssid", ssid)
-        raise RuntimeError("Unknown error 0x%02X" % stat)
+            raise ConnectionError("No such ssid", ssid)
+        raise OSError("Unknown error 0x%02X" % stat)
 
     def create_AP(
         self, ssid, password, channel=1, timeout=10
@@ -607,11 +607,11 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         :param int timeout: number of seconds until we time out and fail to create AP
         """
         if len(ssid) > 32:
-            raise RuntimeError("ssid must be no more than 32 characters")
+            raise ValueError("ssid must be no more than 32 characters")
         if password and (len(password) < 8 or len(password) > 64):
-            raise RuntimeError("password must be 8 - 63 characters")
+            raise ValueError("password must be 8 - 63 characters")
         if channel < 1 or channel > 14:
-            raise RuntimeError("channel must be between 1 and 14")
+            raise ValueError("channel must be between 1 and 14")
 
         if isinstance(channel, int):
             channel = bytes(channel)
