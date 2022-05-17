@@ -144,7 +144,7 @@ class ESPSPI_WiFiManager:
                 self.esp.connect_AP(bytes(ssid, "utf-8"), bytes(password, "utf-8"))
                 failure_count = 0
                 self.pixel_status((0, 100, 0))
-            except (ValueError, OSError) as error:
+            except OSError as error:
                 print("Failed to connect, retrying\n", error)
                 failure_count += 1
                 if failure_count >= self.attempts:
@@ -173,7 +173,7 @@ class ESPSPI_WiFiManager:
                     self.esp.create_AP(bytes(self.ssid, "utf-8"), None)
                 failure_count = 0
                 self.pixel_status((0, 100, 0))
-            except (ValueError, OSError) as error:
+            except OSError as error:
                 print("Failed to create access point\n", error)
                 failure_count += 1
                 if failure_count >= self.attempts:
@@ -203,7 +203,7 @@ class ESPSPI_WiFiManager:
                 failure_count = 0
                 self.pixel_status((0, 100, 0))
                 sleep(1)
-            except (ValueError, OSError) as error:
+            except OSError as error:
                 print("Failed to connect, retrying\n", error)
                 failure_count += 1
                 if failure_count >= self.attempts:
