@@ -94,7 +94,7 @@ while True:
         esp_init_pin_modes(ESP_D_R_PIN, ESP_D_W_PIN)
         esp_d_r_val = esp.set_digital_read(ESP_D_R_PIN)
         print("--> ESP read:", esp_d_r_val)
-    except (RuntimeError, AssertionError) as e:
+    except (OSError, AssertionError) as e:
         print("ESP32 Error", e)
         esp_reset_all()
 
@@ -104,7 +104,7 @@ while True:
         esp_init_pin_modes(ESP_D_R_PIN, ESP_D_W_PIN)
         esp.set_digital_write(ESP_D_W_PIN, esp_d_w_val)
         print("ESP wrote:", esp_d_w_val, "--> Red LED")
-    except (RuntimeError) as e:
+    except OSError as e:
         print("ESP32 Error", e)
         esp_reset_all()
 
@@ -121,7 +121,7 @@ while True:
             "v)",
             sep="",
         )
-    except (RuntimeError, AssertionError) as e:
+    except (OSError, AssertionError) as e:
         print("ESP32 Error", e)
         esp_reset_all()
 
@@ -166,7 +166,7 @@ while True:
             sep="",
         )
 
-    except (RuntimeError) as e:
+    except OSError as e:
         print("ESP32 Error", e)
         esp_reset_all()
 
