@@ -63,7 +63,7 @@ while True:
         response.close()
         counter = counter + 1
         print("OK")
-    except (ValueError, OSError) as e:
+    except OSError as e:
         print("Failed to get data, retrying\n", e)
         wifi.reset()
         continue

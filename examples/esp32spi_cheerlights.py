@@ -54,7 +54,7 @@ while True:
             value = value[key]
             print(value)
         response.close()
-    except (ValueError, OSError) as e:
+    except OSError as e:
         print("Failed to get data, retrying\n", e)
         wifi.reset()
         continue
