@@ -920,7 +920,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             return False
         if resp[0] == 1:
             return True
-        raise ValueError(
+        raise OSError(
             "_SET_DIGITAL_READ response error: response is not boolean", resp[0]
         )
 
@@ -950,7 +950,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             resp = self._send_command_get_response(_GET_TIME)
             resp_time = struct.unpack("<i", resp[0])
             if resp_time == (0,):
-                raise ValueError("_GET_TIME returned 0")
+                raise OSError("_GET_TIME returned 0")
             return resp_time
         if self.status in (WL_AP_LISTENING, WL_AP_CONNECTED):
             raise OSError(
