@@ -21,7 +21,7 @@ print("ESP32 SPI socket count client test")
 
 TIMEOUT = 5
 # edit host and port to match server
-HOST = "test-server.local"
+HOST = "192.168.1.149"
 PORT = 8981
 
 esp32_cs = DigitalInOut(board.GP10)
@@ -42,12 +42,14 @@ socketaddr = socket.getaddrinfo(HOST, PORT)[0][4]
 s = socket.socket()
 s.settimeout(TIMEOUT)
 
-print("Connecting")
-s.connect(socketaddr)
 
 while True:
+  print("Connecting")
+  s.connect(socketaddr)
   # get a count from the Socket. lets receive this as 4 bytes - unpack as an int.
   data = s.recv(4)
   # print it
+  print(f"Data length {len(data)}. Data: ", end='')
   print(struct.unpack("!I", data))
-  time.sleep(0.1)
+  time.sleep(0.01)
+  s.close()
