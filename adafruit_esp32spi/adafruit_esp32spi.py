@@ -780,7 +780,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         return reply
 
     def socket_read(self, socket_num, size):
-        """Read up to 'size' bytes from the socket number. Returns a bytearray"""
+        """Read up to 'size' bytes from the socket number. Returns a bytes"""
         if self._debug:
             print(
                 "Reading %d bytes from ESP socket with status %d"
