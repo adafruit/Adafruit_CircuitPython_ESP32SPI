@@ -86,7 +86,7 @@ class socket:
         _the_interface.socket_write(self._socknum, data, conn_mode=conntype)
         gc.collect()
 
-    def recv(self, bufsize: int):
+    def recv(self, bufsize: int) -> bytes:
         """Reads some bytes from the connected remote address. Will only return
         an empty string after the configured timeout.
 
@@ -94,6 +94,7 @@ class socket:
         """
         buf = bytearray(bufsize)
         self.recv_into(buf, bufsize)
+        return bytes(buf)
 
     def recv_into(self, buffer, nbytes: int = 0):
         """Read bytes from the connected remote address into a given buffer.
