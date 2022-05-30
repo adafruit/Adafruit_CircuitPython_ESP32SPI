@@ -151,9 +151,7 @@ class WSGIServer:
             # check for new client sock
             if self._debug > 2:
                 print("checking for new client sock")
-            client_sock_num = _the_interface.socket_available(
-                self._server_sock.socknum
-            )
+            client_sock_num = _the_interface.socket_available(self._server_sock.socknum)
             sock = socket.socket(socknum=client_sock_num)
 
         if sock and sock.socknum != NO_SOCK_AVAIL:
