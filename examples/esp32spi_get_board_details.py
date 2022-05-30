@@ -1,6 +1,9 @@
+# SPDX-FileCopyrightText: 2020 ladyada for Adafruit Industries
+# SPDX-License-Identifier: MIT
+
+import time
 import board
 import busio
-import time
 
 from digitalio import DigitalInOut
 from adafruit_esp32spi import adafruit_esp32spi

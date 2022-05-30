@@ -5,6 +5,7 @@ import gc
 import struct
 import board
 import busio
+from micropython import const
 from digitalio import DigitalInOut
 
 from adafruit_esp32spi import adafruit_esp32spi

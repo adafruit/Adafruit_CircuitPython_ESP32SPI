@@ -107,7 +107,7 @@ class WSGIServer:
 
     def finish_response(self, result):
         """
-        Called after the application callbile returns result data to respond with.
+        Called after the application callable returns result data to respond with.
         Creates the HTTP Response payload from the response_headers and results data,
         and sends it back to client.
 
@@ -138,23 +138,23 @@ class WSGIServer:
         :rtype: Socket
         """
         sock = None
-        if self._server_sock.socknum != NO_SOCK_AVAIL:
-            if self._client_sock.socknum != NO_SOCK_AVAIL:
-                # check previous received client socket
-                if self._debug > 2:
-                    print("checking if last client sock still valid")
-                if self._client_sock.connected() and self._client_sock.available():
-                    sock = self._client_sock
-            if not sock:
-                # check for new client sock
-                if self._debug > 2:
-                    print("checking for new client sock")
-                client_sock_num = _the_interface.socket_available(
-                    self._server_sock.socknum
-                )
-                sock = socket.socket(socknum=client_sock_num)
-        else:
-            print("Server has not been started, cannot check for clients!")
+        if self._server_sock.socknum == NO_SOCK_AVAIL:
+            raise ValueError("Server has not been started, cannot check for clients!")
+
+        if self._client_sock.socknum != NO_SOCK_AVAIL:
+            # check previous received client socket
+            if self._debug > 2:
+                print("checking if last client sock still valid")
+            if self._client_sock.connected() and self._client_sock.available():
+                sock = self._client_sock
+        if not sock:
+            # check for new client sock
+            if self._debug > 2:
+                print("checking for new client sock")
+            client_sock_num = _the_interface.socket_available(
+                self._server_sock.socknum
+            )
+            sock = socket.socket(socknum=client_sock_num)
 
         if sock and sock.socknum != NO_SOCK_AVAIL:
             if self._debug > 2:
