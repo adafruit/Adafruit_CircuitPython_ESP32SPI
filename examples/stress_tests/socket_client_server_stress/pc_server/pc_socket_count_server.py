@@ -1,6 +1,5 @@
-# SPDX-FileCopyrightText: 2019 ladyada for Adafruit Industries
+# SPDX-FileCopyrightText: 2020 ladyada for Adafruit Industries
 # SPDX-License-Identifier: MIT
-
 """This runs on the PC side, as a socket server for a stress test"""
 import socketserver
 import itertools
