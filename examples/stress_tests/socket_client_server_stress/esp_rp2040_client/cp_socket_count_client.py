@@ -44,12 +44,12 @@ s.settimeout(TIMEOUT)
 
 
 while True:
-  print("Connecting")
-  s.connect(socketaddr)
-  # get a count from the Socket. lets receive this as 4 bytes - unpack as an int.
-  data = s.recv(4)
-  # print it
-  print(f"Data length {len(data)}. Data: ", end='')
-  print(struct.unpack("!I", data))
-  time.sleep(0.01)
-  s.close()
+    print("Connecting")
+    s.connect(socketaddr)
+    # get a count from the Socket. lets receive this as 4 bytes - unpack as an int.
+    data = s.recv(4)
+    # print it
+    print(f"Data length {len(data)}. Data: ", end="")
+    print(struct.unpack("!I", data))
+    time.sleep(0.01)
+    s.close()

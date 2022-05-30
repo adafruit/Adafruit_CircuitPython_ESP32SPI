@@ -13,7 +13,9 @@ spi = busio.SPI(board.GP14, board.GP11, board.GP12)
 esp32_cs = DigitalInOut(board.GP10)
 esp32_ready = DigitalInOut(board.GP9)
 esp32_reset = DigitalInOut(board.GP8)
-esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset, debug=True)
+esp = adafruit_esp32spi.ESP_SPIcontrol(
+    spi, esp32_cs, esp32_ready, esp32_reset, debug=True
+)
 
 # Fetch and print status
 if esp.status == adafruit_esp32spi.WL_IDLE_STATUS:

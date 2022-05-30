@@ -36,8 +36,10 @@ esp.connect(secrets)
 # create the socket
 socket.set_interface(esp)
 
+
 class CountServer:
     """Server to return counts"""
+
     def __init__(self):
         self._server_sock = socket.socket(socknum=NO_SOCK_AVAIL)
         self._client_sock = socket.socket(socknum=NO_SOCK_AVAIL)
@@ -70,7 +72,7 @@ class CountServer:
         sock = None
         if self._server_sock.socknum == NO_SOCK_AVAIL:
             raise ValueError("Server has not been started, cannot check for clients!")
-        
+
         if self._client_sock.socknum != NO_SOCK_AVAIL:
             # check previous received client socket
             if self._debug > 2:
@@ -81,9 +83,7 @@ class CountServer:
             # check for new client sock
             if self._debug > 3:
                 print("checking for new client sock")
-            client_sock_num = esp.socket_available(
-                self._server_sock.socknum
-            )
+            client_sock_num = esp.socket_available(self._server_sock.socknum)
             sock = socket.socket(socknum=client_sock_num)
 
         if sock and sock.socknum != NO_SOCK_AVAIL:
@@ -93,7 +93,7 @@ class CountServer:
             return self._client_sock
 
         return None
-    
+
     def response(self):
         current = self._counter
         self._counter += 1
@@ -116,6 +116,7 @@ class CountServer:
                     if self._debug > 3:
                         print("closing")
                     self._client_sock.close()
+
 
 cs = CountServer()
 cs.start()
