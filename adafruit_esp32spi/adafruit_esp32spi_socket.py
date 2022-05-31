@@ -161,44 +161,36 @@ class socket:
         gc.collect()
         return ret
 
-    def recv_into(self, buffer, nbytes=0):
-        """Read some bytes from the connected remote address into a given buffer
+    def recv_into(self, buffer, nbytes: int = 0):
+        """Read bytes from the connected remote address into a given buffer.
 
-        :param bytearray buffer: The buffer to read into
-        :param int nbytes: (Optional) Number of bytes to receive default is 0,
-            which will receive as many bytes as possible before filling the
+        :param bytearray buffer: the buffer to read into
+        :param int nbytes: maximum number of bytes to receive; if 0,
+            receive as many bytes as possible before filling the
             buffer or timing out
         """
-
         if not 0 <= nbytes <= len(buffer):
-            raise ValueError(
-                "Can only read number of bytes between 0 and length of supplied buffer"
-            )
+            raise ValueError("nbytes must be 0 to len(buffer)")
 
-        stamp = time.monotonic()
-        to_read = len(buffer)
-        limit = 0 if nbytes == 0 else to_read - nbytes
-        received = []
-        while to_read > limit:
-            # print("Bytes to read:", to_read)
-            avail = self.available()
-            if avail:
-                stamp = time.monotonic()
-                recv = _the_interface.socket_read(self._socknum, min(to_read, avail))
-                received.append(recv)
-                start = len(buffer) - to_read
-                to_read -= len(recv)
-                end = len(buffer) - to_read
-                buffer[start:end] = bytearray(recv)
-                gc.collect()
-            elif received:
-                # We've received some bytes but no more are available. So return
-                # what we have.
+        last_read_time = time.monotonic()
+        num_to_read = len(buffer) if nbytes == 0 else nbytes
+        num_read = 0
+        while num_read < num_to_read:
+            num_avail = self.available()
+            if num_avail > 0:
+                last_read_time = time.monotonic()
+                bytes_read = _the_interface.socket_read(
+                    self._socknum, min(num_to_read, num_avail)
+                )
+                buffer[num_read : num_read + len(bytes_read)] = bytes_read
+                num_read += len(bytes_read)
+            elif num_read > 0:
+                # We got a message, but there are no more bytes to read, so we can stop.
                 break
-            if self._timeout > 0 and time.monotonic() - stamp > self._timeout:
+            # No bytes yet, or more byte requested.
+            if self._timeout > 0 and time.monotonic() - last_read_time > self._timeout:
                 break
-        gc.collect()
-        return len(buffer) - to_read
+        return num_read
 
     def read(self, size=0):
         """Read up to 'size' bytes from the socket, this may be buffered internally!
