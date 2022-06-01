@@ -271,7 +271,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         for _ in range(10):
             r = self._read_byte(spi)
             if r == _ERR_CMD:
-                raise BrokenPipeError("Error response to command")
+                raise RuntimeError("Error response to command")
             if r == desired:
                 return True
             time.sleep(0.01)
