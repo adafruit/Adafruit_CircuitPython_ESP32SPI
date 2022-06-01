@@ -281,7 +281,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         """Read a byte and verify its the value we want"""
         r = self._read_byte(spi)
         if r != desired:
-            raise BrokenPipeError("Expected %02X but got %02X" % (desired, r))
+            raise RuntimeError("Expected %02X but got %02X" % (desired, r))
 
     def _wait_response_cmd(self, cmd, num_responses=None, *, param_len_16=False):
         """Wait for ready, then parse the response"""
