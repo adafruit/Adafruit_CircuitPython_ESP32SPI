@@ -175,7 +175,7 @@ class socket:
         last_read_time = time.monotonic()
         num_to_read = len(buffer) if nbytes == 0 else nbytes
         num_read = 0
-        while num_read < num_to_read:
+        while num_to_read > 0:
             num_avail = self.available()
             if num_avail > 0:
                 last_read_time = time.monotonic()
@@ -184,10 +184,11 @@ class socket:
                 )
                 buffer[num_read : num_read + len(bytes_read)] = bytes_read
                 num_read += len(bytes_read)
+                num_to_read -= num_read
             elif num_read > 0:
                 # We got a message, but there are no more bytes to read, so we can stop.
                 break
-            # No bytes yet, or more byte requested.
+            # No bytes yet, or more bytes requested.
             if self._timeout > 0 and time.monotonic() - last_read_time > self._timeout:
                 break
         return num_read
