@@ -39,7 +39,7 @@ def getaddrinfo(host, port, family=0, socktype=0, proto=0, flags=0):
     """Given a hostname and a port name, return a 'socket.getaddrinfo'
     compatible list of tuples. Honestly, we ignore anything but host & port"""
     if not isinstance(port, int):
-        raise RuntimeError("Port must be an integer")
+        raise ValueError("Port must be an integer")
     ipaddr = _the_interface.get_host_by_name(host)
     return [(AF_INET, socktype, proto, "", (ipaddr, port))]
 
@@ -56,7 +56,7 @@ class socket:
         self, family=AF_INET, type=SOCK_STREAM, proto=0, fileno=None, socknum=None
     ):
         if family != AF_INET:
-            raise RuntimeError("Only AF_INET family supported")
+            raise ValueError("Only AF_INET family supported")
         self._type = type
         self._buffer = b""
         self._socknum = socknum if socknum else _the_interface.get_socket()
@@ -74,7 +74,7 @@ class socket:
         if not _the_interface.socket_connect(
             self._socknum, host, port, conn_mode=conntype
         ):
-            raise RuntimeError("Failed to connect to host", host)
+            raise ConnectionError("Failed to connect to host", host)
         self._buffer = b""
 
     def send(self, data):  # pylint: disable=no-self-use
@@ -105,7 +105,7 @@ class socket:
                 self._buffer += _the_interface.socket_read(self._socknum, avail)
             elif self._timeout > 0 and time.monotonic() - stamp > self._timeout:
                 self.close()  # Make sure to close socket so that we don't exhaust sockets.
-                raise RuntimeError("Didn't receive full response, failing out")
+                raise OSError("Didn't receive full response, failing out")
         firstline, self._buffer = self._buffer.split(eol, 1)
         gc.collect()
         return firstline

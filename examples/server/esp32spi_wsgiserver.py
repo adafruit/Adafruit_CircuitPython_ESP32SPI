@@ -213,7 +213,7 @@ try:
                 static
             )
         )
-except (OSError) as e:
+except OSError as e:
     raise RuntimeError(
         """
         This example depends on a static asset directory.
@@ -240,7 +240,7 @@ while True:
     try:
         wsgiServer.update_poll()
         # Could do any other background tasks here, like reading sensors
-    except (ValueError, RuntimeError) as e:
+    except OSError as e:
         print("Failed to update server, restarting ESP32\n", e)
         wifi.reset()
         continue
