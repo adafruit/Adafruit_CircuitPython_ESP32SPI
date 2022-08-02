@@ -13,6 +13,10 @@ Introduction
     :target: https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI/actions/
     :alt: Build Status
 
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :target: https://github.com/psf/black
+    :alt: Code Style: Black
+
 CircuitPython driver library for using ESP32 as WiFi co-processor using SPI.
 The companion firmware `is available on GitHub
 <https://github.com/adafruit/nina-fw>`_. Please be sure to check the example code for
