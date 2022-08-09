@@ -1,6 +1,6 @@
-# SPDX-FileCopyrightText: 2019 ladyada for Adafruit Industries
+# SPDX-FileCopyrightText: 2017 Scott Shawcroft, written for Adafruit Industries
 #
-# SPDX-License-Identifier: Unlicense
+# SPDX-License-Identifier: MIT
 
 name: Build CI
 
@@ -47,13 +47,31 @@ jobs:
         pip install --force-reinstall Sphinx sphinx-rtd-theme pre-commit
     - name: Library version
       run: git describe --dirty --always --tags
+    - name: Setup problem matchers
+      uses: adafruit/circuitpython-action-library-ci-problem-matchers@v1
     - name: Pre-commit hooks
       run: |
         pre-commit run --all-files
     - name: Build assets
       run: circuitpython-build-bundles --filename_prefix ${{ steps.repo-name.outputs.repo-name }} --library_location .
+    - name: Archive bundles
+      uses: actions/upload-artifact@v2
+      with:
+        name: bundles
+        path: ${{ github.workspace }}/bundles/
     - name: Build docs
       working-directory: docs
       run: sphinx-build -E -W -b html . _build/html
-    - name: Setup problem matchers
-      uses: adafruit/circuitpython-action-library-ci-problem-matchers@v1
+    - name: Check For pyproject.toml
+      id: need-pypi
+      run: |
+        echo ::set-output name=pyproject-toml::$( find . -wholename './pyproject.toml' )
+    - name: Build Python package
+      if: contains(steps.need-pypi.outputs.pyproject-toml, 'pyproject.toml')
+      run: |
+        pip install --upgrade build twine
+        for file in $(find -not -path "./.*" -not -path "./docs*" \( -name "*.py" -o -name "*.toml" \) ); do
+            sed -i -e "s/0.0.0-auto.0/1.2.3/" $file;
+        done;
+        python -m build
+        twine check dist/*
