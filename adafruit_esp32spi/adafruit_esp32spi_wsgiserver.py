@@ -119,11 +119,16 @@ class WSGIServer:
                 response += "{0}: {1}\r\n".format(*header)
             response += "\r\n"
             self._client_sock.send(response.encode("utf-8"))
-            for data in result:
-                if isinstance(data, bytes):
-                    self._client_sock.send(data)
-                else:
-                    self._client_sock.send(data.encode("utf-8"))
+            if isinstance(result, bytes):  # send whole response if possible (see #174)
+                self._client_sock.send(result)
+            elif isinstance(result, str):
+                self._client_sock.send(result.encode("utf-8"))
+            else:  # fall back to sending byte-by-byte
+                for data in result:
+                    if isinstance(data, bytes):
+                        self._client_sock.send(data)
+                    else:
+                        self._client_sock.send(data.encode("utf-8"))
             gc.collect()
         finally:
             if self._debug > 2:
