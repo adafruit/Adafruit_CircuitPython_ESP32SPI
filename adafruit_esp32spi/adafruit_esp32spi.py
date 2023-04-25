@@ -325,7 +325,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         *,
         reply_params=1,
         sent_param_len_16=False,
-        recv_param_len_16=False
+        recv_param_len_16=False,
     ):
         """Send a high level SPI command, wait and return the response"""
         self._send_command(cmd, params, param_len_16=sent_param_len_16)
@@ -563,7 +563,9 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         that contains a 'ssid' and 'password' entry"""
         self.connect_AP(secrets["ssid"], secrets["password"])
 
-    def connect_AP(self, ssid, password, timeout_s=10):  # pylint: disable=invalid-name
+    def connect_AP(
+        self, ssid, password, timeout_s=10, show_password=False
+    ):  # pylint: disable=invalid-name
         """Connect to an access point with given name and password.
         Will wait until specified timeout seconds and return on success
         or raise an exception on failure.
@@ -571,9 +573,13 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         :param ssid: the SSID to connect to
         :param passphrase: the password of the access point
         :param timeout_s: number of seconds until we time out and fail to create AP
+        :param show_password: print password if debug == True (default False)
         """
         if self._debug:
-            print("Connect to AP", ssid, password)
+            print(
+                f"Connect to AP: {ssid=}, password=\
+                    {repr(password if show_password else '*' * len(password))}"
+            )
         if isinstance(ssid, str):
             ssid = bytes(ssid, "utf-8")
         if password:
