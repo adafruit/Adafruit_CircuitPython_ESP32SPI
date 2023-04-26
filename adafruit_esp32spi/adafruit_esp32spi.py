@@ -141,9 +141,18 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
 
     # pylint: disable=too-many-arguments
     def __init__(
-        self, spi, cs_dio, ready_dio, reset_dio, gpio0_dio=None, *, debug=False
+        self,
+        spi,
+        cs_dio,
+        ready_dio,
+        reset_dio,
+        gpio0_dio=None,
+        *,
+        debug=False,
+        debug_show_secrets=False,
     ):
         self._debug = debug
+        self._debug_show_secrets = debug_show_secrets
         self.set_psk = False
         self.set_crt = False
         self._buffer = bytearray(10)
@@ -563,9 +572,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         that contains a 'ssid' and 'password' entry"""
         self.connect_AP(secrets["ssid"], secrets["password"])
 
-    def connect_AP(
-        self, ssid, password, timeout_s=10, show_password=False
-    ):  # pylint: disable=invalid-name
+    def connect_AP(self, ssid, password, timeout_s=10):  # pylint: disable=invalid-name
         """Connect to an access point with given name and password.
         Will wait until specified timeout seconds and return on success
         or raise an exception on failure.
@@ -573,12 +580,11 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         :param ssid: the SSID to connect to
         :param passphrase: the password of the access point
         :param timeout_s: number of seconds until we time out and fail to create AP
-        :param show_password: print password if debug == True (default False)
         """
         if self._debug:
             print(
                 f"Connect to AP: {ssid=}, password=\
-                    {repr(password if show_password else '*' * len(password))}"
+                    {repr(password if self._debug_show_secrets else '*' * len(password))}"
             )
         if isinstance(ssid, str):
             ssid = bytes(ssid, "utf-8")
