@@ -141,9 +141,18 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
 
     # pylint: disable=too-many-arguments
     def __init__(
-        self, spi, cs_dio, ready_dio, reset_dio, gpio0_dio=None, *, debug=False
+        self,
+        spi,
+        cs_dio,
+        ready_dio,
+        reset_dio,
+        gpio0_dio=None,
+        *,
+        debug=False,
+        debug_show_secrets=False,
     ):
         self._debug = debug
+        self._debug_show_secrets = debug_show_secrets
         self.set_psk = False
         self.set_crt = False
         self._buffer = bytearray(10)
@@ -325,7 +334,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         *,
         reply_params=1,
         sent_param_len_16=False,
-        recv_param_len_16=False
+        recv_param_len_16=False,
     ):
         """Send a high level SPI command, wait and return the response"""
         self._send_command(cmd, params, param_len_16=sent_param_len_16)
@@ -573,7 +582,10 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         :param timeout_s: number of seconds until we time out and fail to create AP
         """
         if self._debug:
-            print("Connect to AP", ssid, password)
+            print(
+                f"Connect to AP: {ssid=}, password=\
+                    {repr(password if self._debug_show_secrets else '*' * len(password))}"
+            )
         if isinstance(ssid, str):
             ssid = bytes(ssid, "utf-8")
         if password:
