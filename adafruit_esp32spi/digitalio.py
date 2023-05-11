@@ -117,6 +117,7 @@ class DigitalInOut:
     """
 
     _pin = None
+
     # pylint: disable = attribute-defined-outside-init
     def __init__(self, esp, pin):
         self._esp = esp

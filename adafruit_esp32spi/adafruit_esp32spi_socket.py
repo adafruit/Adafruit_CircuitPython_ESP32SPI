@@ -34,6 +34,7 @@ NO_SOCKET_AVAIL = const(255)
 
 MAX_PACKET = const(4000)
 
+
 # pylint: disable=too-many-arguments, unused-argument
 def getaddrinfo(host, port, family=0, socktype=0, proto=0, flags=0):
     """Given a hostname and a port name, return a 'socket.getaddrinfo'
@@ -45,6 +46,7 @@ def getaddrinfo(host, port, family=0, socktype=0, proto=0, flags=0):
 
 
 # pylint: enable=too-many-arguments, unused-argument
+
 
 # pylint: disable=unused-argument, redefined-builtin, invalid-name
 class socket:

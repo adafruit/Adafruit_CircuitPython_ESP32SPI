@@ -390,7 +390,8 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
 
     def get_scan_networks(self):
         """The results of the latest SSID scan. Returns a list of dictionaries with
-        'ssid', 'rssi', 'encryption', bssid, and channel entries, one for each AP found"""
+        'ssid', 'rssi', 'encryption', bssid, and channel entries, one for each AP found
+        """
         self._send_command(_SCAN_NETWORKS)
         names = self._wait_response_cmd(_SCAN_NETWORKS)
         # print("SSID names:", names)
