@@ -42,7 +42,7 @@ while True:
         print("Fetching json from", TIME_API)
         response = wifi.get(TIME_API)
         break
-    except (ValueError, RuntimeError) as e:
+    except OSError as e:
         print("Failed to get data, retrying\n", e)
         continue
 

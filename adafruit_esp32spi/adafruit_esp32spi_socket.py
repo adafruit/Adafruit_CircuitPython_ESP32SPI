@@ -34,17 +34,19 @@ NO_SOCKET_AVAIL = const(255)
 
 MAX_PACKET = const(4000)
 
+
 # pylint: disable=too-many-arguments, unused-argument
 def getaddrinfo(host, port, family=0, socktype=0, proto=0, flags=0):
     """Given a hostname and a port name, return a 'socket.getaddrinfo'
     compatible list of tuples. Honestly, we ignore anything but host & port"""
     if not isinstance(port, int):
-        raise RuntimeError("Port must be an integer")
+        raise ValueError("Port must be an integer")
     ipaddr = _the_interface.get_host_by_name(host)
     return [(AF_INET, socktype, proto, "", (ipaddr, port))]
 
 
 # pylint: enable=too-many-arguments, unused-argument
+
 
 # pylint: disable=unused-argument, redefined-builtin, invalid-name
 class socket:
@@ -56,7 +58,7 @@ class socket:
         self, family=AF_INET, type=SOCK_STREAM, proto=0, fileno=None, socknum=None
     ):
         if family != AF_INET:
-            raise RuntimeError("Only AF_INET family supported")
+            raise ValueError("Only AF_INET family supported")
         self._type = type
         self._buffer = b""
         self._socknum = socknum if socknum else _the_interface.get_socket()
@@ -74,7 +76,7 @@ class socket:
         if not _the_interface.socket_connect(
             self._socknum, host, port, conn_mode=conntype
         ):
-            raise RuntimeError("Failed to connect to host", host)
+            raise ConnectionError("Failed to connect to host", host)
         self._buffer = b""
 
     def send(self, data):  # pylint: disable=no-self-use
@@ -110,7 +112,7 @@ class socket:
         last_read_time = time.monotonic()
         num_to_read = len(buffer) if nbytes == 0 else nbytes
         num_read = 0
-        while num_read < num_to_read:
+        while num_to_read > 0:
             num_avail = self._available()
             if num_avail > 0:
                 last_read_time = time.monotonic()
@@ -119,10 +121,11 @@ class socket:
                 )
                 buffer[num_read : num_read + len(bytes_read)] = bytes_read
                 num_read += len(bytes_read)
+                num_to_read -= num_read
             elif num_read > 0:
                 # We got a message, but there are no more bytes to read, so we can stop.
                 break
-            # No bytes yet, or more byte requested.
+            # No bytes yet, or more bytes requested.
             if self._timeout > 0 and time.monotonic() - last_read_time > self._timeout:
                 break
         return num_read

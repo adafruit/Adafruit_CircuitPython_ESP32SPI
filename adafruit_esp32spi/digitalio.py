@@ -61,7 +61,7 @@ class Pin:
                 self._mode = self.OUT
                 self._esp.set_pin_mode(self.pin_id, 1)
             else:
-                raise RuntimeError("Invalid mode defined")
+                raise ValueError("Invalid mode defined")
 
     def value(self, val=None):
         """Sets ESP32 Pin GPIO output mode.
@@ -76,7 +76,7 @@ class Pin:
                 self._value = val
                 self._esp.set_digital_write(self.pin_id, 1)
             else:
-                raise RuntimeError("Invalid value for pin")
+                raise ValueError("Invalid value for pin")
         else:
             raise NotImplementedError(
                 "digitalRead not currently implemented in esp32spi"
@@ -117,6 +117,7 @@ class DigitalInOut:
     """
 
     _pin = None
+
     # pylint: disable = attribute-defined-outside-init
     def __init__(self, esp, pin):
         self._esp = esp

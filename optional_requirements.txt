@@ -2,6 +2,6 @@
 #
 # SPDX-License-Identifier: Unlicense
 
-Adafruit-Blinka
+adafruit-circuitpython-neopixel
+adafruit-circuitpython-fancyled
 adafruit-circuitpython-requests
-adafruit-circuitpython-busdevice
