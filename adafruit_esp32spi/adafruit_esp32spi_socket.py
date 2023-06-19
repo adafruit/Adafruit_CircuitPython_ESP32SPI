@@ -127,7 +127,7 @@ class socket:
                 break
             # No bytes yet, or more bytes requested.
             if self._timeout > 0 and time.monotonic() - last_read_time > self._timeout:
-                break
+                raise timeout("timed out")
         return num_read
 
     def settimeout(self, value):
@@ -167,6 +167,14 @@ class socket:
     def close(self):
         """Close the socket, after reading whatever remains"""
         _the_interface.socket_close(self._socknum)
+
+
+class timeout(TimeoutError):
+    """TimeoutError class. An instance of this error will be raised by recv_into() if
+    the timeout has elapsed and we haven't received any data yet."""
+
+    def __init__(self, msg):
+        super().__init__(msg)
 
 
 # pylint: enable=unused-argument, redefined-builtin, invalid-name
