@@ -88,80 +88,15 @@ class socket:
         _the_interface.socket_write(self._socknum, data, conn_mode=conntype)
         gc.collect()
 
-    def write(self, data):
-        """Sends data to the socket.
-        NOTE: This method is deprecated and will be removed.
-        """
-        self.send(data)
-
-    def readline(self, eol=b"\r\n"):
-        """Attempt to return as many bytes as we can up to but not including
-        end-of-line character (default is '\\r\\n')"""
-
-        # print("Socket readline")
-        stamp = time.monotonic()
-        while eol not in self._buffer:
-            # there's no line already in there, read some more
-            avail = self.available()
-            if avail:
-                self._buffer += _the_interface.socket_read(self._socknum, avail)
-            elif self._timeout > 0 and time.monotonic() - stamp > self._timeout:
-                self.close()  # Make sure to close socket so that we don't exhaust sockets.
-                raise OSError("Didn't receive full response, failing out")
-        firstline, self._buffer = self._buffer.split(eol, 1)
-        gc.collect()
-        return firstline
-
-    def recv(self, bufsize=0):
+    def recv(self, bufsize: int) -> bytes:
         """Reads some bytes from the connected remote address. Will only return
         an empty string after the configured timeout.
 
         :param int bufsize: maximum number of bytes to receive
         """
-        # print("Socket read", bufsize)
-        if bufsize == 0:  # read as much as we can at the moment
-            while True:
-                avail = self.available()
-                if avail:
-                    self._buffer += _the_interface.socket_read(self._socknum, avail)
-                else:
-                    break
-            gc.collect()
-            ret = self._buffer
-            self._buffer = b""
-            gc.collect()
-            return ret
-        stamp = time.monotonic()
-
-        to_read = bufsize - len(self._buffer)
-        received = []
-        while to_read > 0:
-            # print("Bytes to read:", to_read)
-            avail = self.available()
-            if avail:
-                stamp = time.monotonic()
-                recv = _the_interface.socket_read(self._socknum, min(to_read, avail))
-                received.append(recv)
-                to_read -= len(recv)
-                gc.collect()
-            elif received:
-                # We've received some bytes but no more are available. So return
-                # what we have.
-                break
-            if self._timeout > 0 and time.monotonic() - stamp > self._timeout:
-                break
-        # print(received)
-        self._buffer += b"".join(received)
-
-        ret = None
-        if len(self._buffer) == bufsize:
-            ret = self._buffer
-            self._buffer = b""
-        else:
-            ret = self._buffer[:bufsize]
-            self._buffer = self._buffer[bufsize:]
-        gc.collect()
-        return ret
+        buf = bytearray(bufsize)
+        self.recv_into(buf, bufsize)
+        return bytes(buf)
 
     def recv_into(self, buffer, nbytes: int = 0):
         """Read bytes from the connected remote address into a given buffer.
@@ -178,7 +113,7 @@ class socket:
         num_to_read = len(buffer) if nbytes == 0 else nbytes
         num_read = 0
         while num_to_read > 0:
-            num_avail = self.available()
+            num_avail = self._available()
             if num_avail > 0:
                 last_read_time = time.monotonic()
                 bytes_read = _the_interface.socket_read(
@@ -192,33 +127,28 @@ class socket:
                 break
             # No bytes yet, or more bytes requested.
             if self._timeout > 0 and time.monotonic() - last_read_time > self._timeout:
-                break
+                raise timeout("timed out")
         return num_read
 
-    def read(self, size=0):
-        """Read up to 'size' bytes from the socket, this may be buffered internally!
-        If 'size' isnt specified, return everything in the buffer.
-        NOTE: This method is deprecated and will be removed.
-        """
-        return self.recv(size)
-
     def settimeout(self, value):
-        """Set the read timeout for sockets, if value is 0 it will block"""
+        """Set the read timeout for sockets.
+        If value is 0 socket reads will block until a message is available.
+        """
         self._timeout = value
 
-    def available(self):
+    def _available(self):
         """Returns how many bytes of data are available to be read (up to the MAX_PACKET length)"""
-        if self.socknum != NO_SOCKET_AVAIL:
+        if self._socknum != NO_SOCKET_AVAIL:
             return min(_the_interface.socket_available(self._socknum), MAX_PACKET)
         return 0
 
-    def connected(self):
+    def _connected(self):
         """Whether or not we are connected to the socket"""
-        if self.socknum == NO_SOCKET_AVAIL:
+        if self._socknum == NO_SOCKET_AVAIL:
             return False
-        if self.available():
+        if self._available():
             return True
-        status = _the_interface.socket_status(self.socknum)
+        status = _the_interface.socket_status(self._socknum)
         result = status not in (
             adafruit_esp32spi.SOCKET_LISTEN,
             adafruit_esp32spi.SOCKET_CLOSED,
@@ -234,14 +164,17 @@ class socket:
             self._socknum = NO_SOCKET_AVAIL
         return result
 
-    @property
-    def socknum(self):
-        """The socket number"""
-        return self._socknum
-
     def close(self):
         """Close the socket, after reading whatever remains"""
         _the_interface.socket_close(self._socknum)
+
+
+class timeout(TimeoutError):
+    """TimeoutError class. An instance of this error will be raised by recv_into() if
+    the timeout has elapsed and we haven't received any data yet."""
+
+    def __init__(self, msg):
+        super().__init__(msg)
 
 
 # pylint: enable=unused-argument, redefined-builtin, invalid-name

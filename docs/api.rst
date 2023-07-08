@@ -13,9 +13,6 @@
 .. automodule:: adafruit_esp32spi.adafruit_esp32spi_wifimanager
    :members:
 
-.. automodule:: adafruit_esp32spi.adafruit_esp32spi_wsgiserver
-   :members:
-
 .. automodule:: adafruit_esp32spi.digitalio
    :members:
 
