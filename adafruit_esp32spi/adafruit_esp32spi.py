@@ -27,10 +27,12 @@ Implementation Notes
 """
 
 import struct
+import os
 import time
 from micropython import const
 from adafruit_bus_device.spi_device import SPIDevice
 from digitalio import Direction
+
 
 __version__ = "0.0.0+auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI.git"
@@ -568,10 +570,10 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         if resp[0][0] != 1:
             raise OSError("Failed to disconnect")
 
-    def connect(self, secrets):
+    def connect(self):
         """Connect to an access point using a secrets dictionary
         that contains a 'ssid' and 'password' entry"""
-        self.connect_AP(secrets["ssid"], secrets["password"])
+        self.connect_AP(os.getenv("ssid"), os.getenv("password"))
 
     def connect_AP(self, ssid, password, timeout_s=10):  # pylint: disable=invalid-name
         """Connect to an access point with given name and password.
@@ -586,6 +588,12 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             print(
                 f"Connect to AP: {ssid=}, password=\
                     {repr(password if self._debug_show_secrets else '*' * len(password))}"
+            )
+
+        if ssid is None or password is None:
+            raise RuntimeError(
+                "Must provide ssid and password in settings.toml."
+                "Please add them there and try again."
             )
         if isinstance(ssid, str):
             ssid = bytes(ssid, "utf-8")

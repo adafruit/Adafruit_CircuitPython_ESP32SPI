@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2021 Adafruit Industries
 # SPDX-License-Identifier: MIT
 
-from secrets import secrets  # pylint: disable=no-name-in-module
+
 import board
 from digitalio import DigitalInOut
 from adafruit_esp32spi import adafruit_esp32spi
@@ -21,7 +21,7 @@ esp32_reset = DigitalInOut(board.ESP_RESET)
 esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset)
 
 # connect to wifi AP
-esp.connect(secrets)
+esp.connect()
 
 # test for connectivity to server
 print("Server ping:", esp.ping(HOST), "ms")

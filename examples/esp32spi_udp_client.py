@@ -8,12 +8,8 @@ from digitalio import DigitalInOut
 from adafruit_esp32spi import adafruit_esp32spi
 import adafruit_esp32spi.adafruit_esp32spi_socket as socket
 
-# Get wifi details and more from a secrets.py file
-try:
-    from secrets import secrets
-except ImportError:
-    print("WiFi secrets are kept in secrets.py, please add them there!")
-    raise
+# Set wifi details and more from a settings.toml file
+
 
 TIMEOUT = 5
 # edit host and port to match server
@@ -29,7 +25,7 @@ esp32_reset = DigitalInOut(board.ESP_RESET)
 esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset)
 
 # connect to wifi AP
-esp.connect(secrets)
+esp.connect()
 
 # test for connectivity to server
 print("Server ping:", esp.ping(HOST), "ms")

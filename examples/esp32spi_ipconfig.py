@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2019 ladyada for Adafruit Industries
 # SPDX-License-Identifier: MIT
 
+import os
 import time
 import board
 import busio
@@ -8,12 +9,12 @@ from digitalio import DigitalInOut
 import adafruit_esp32spi.adafruit_esp32spi_socket as socket
 from adafruit_esp32spi import adafruit_esp32spi
 
-# Get wifi details and more from a secrets.py file
-try:
-    from secrets import secrets
-except ImportError:
-    print("WiFi secrets are kept in secrets.py, please add them there!")
-    raise
+# Set wifi details and more from a settings.toml file
+if os.getenv("ssid") is None or os.getenv("password") is None:
+    raise RuntimeError(
+        "Must provide 'ssid', 'password' in settings.toml. "
+        "Please add them there and try again."
+    )
 
 HOSTNAME = "esp32-spi-hostname-test"
 
@@ -48,7 +49,7 @@ print("MAC addr:", [hex(i) for i in esp.MAC_address])
 print("Connecting to AP...")
 while not esp.is_connected:
     try:
-        esp.connect_AP(secrets["ssid"], secrets["password"])
+        esp.connect_AP(os.getenv("ssid"), os.getenv("password"))
     except OSError as e:
         print("could not connect to AP, retrying: ", e)
         continue

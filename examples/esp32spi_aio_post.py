@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2019 ladyada for Adafruit Industries
 # SPDX-License-Identifier: MIT
 
+import os
 import time
 import board
 import busio
@@ -11,12 +12,18 @@ from adafruit_esp32spi import adafruit_esp32spi_wifimanager
 
 print("ESP32 SPI webclient test")
 
-# Get wifi details and more from a secrets.py file
-try:
-    from secrets import secrets
-except ImportError:
-    print("WiFi secrets are kept in secrets.py, please add them there!")
-    raise
+if (
+    os.getenv("ssid") is None
+    or os.getenv("password") is None
+    or os.getenv("aio_username") is None
+    or os.getenv("aio_key") is None
+):
+    raise RuntimeError(
+        "Must provide 'ssid', 'password', 'aio_username' and 'aio_key'"
+        " in settings.toml. Please add them there and try again."
+    )
+
+# Set wifi details and more from a settings.toml file
 
 # If you are using a board with pre-defined ESP32 Pins:
 esp32_cs = DigitalInOut(board.ESP_CS)
@@ -43,7 +50,7 @@ status_light = neopixel.NeoPixel(
 # GREEN_LED = PWMOut.PWMOut(esp, 27)
 # BLUE_LED = PWMOut.PWMOut(esp, 25)
 # status_light = adafruit_rgbled.RGBLED(RED_LED, BLUE_LED, GREEN_LED)
-wifi = adafruit_esp32spi_wifimanager.ESPSPI_WiFiManager(esp, secrets, status_light)
+wifi = adafruit_esp32spi_wifimanager.ESPSPI_WiFiManager(esp, status_light)
 
 counter = 0
 
@@ -55,12 +62,12 @@ while True:
         payload = {"value": data}
         response = wifi.post(
             "https://io.adafruit.com/api/v2/"
-            + secrets["aio_username"]
+            + os.getenv("aio_username")
             + "/feeds/"
             + feed
             + "/data",
             json=payload,
-            headers={"X-AIO-KEY": secrets["aio_key"]},
+            headers={"X-AIO-KEY": os.getenv("aio_key")},
         )
         print(response.json())
         response.close()

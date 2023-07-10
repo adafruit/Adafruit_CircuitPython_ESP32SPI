@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2019 ladyada for Adafruit Industries
 # SPDX-License-Identifier: MIT
 
+import os
 import time
 import board
 import busio
@@ -10,12 +11,12 @@ import rtc
 from adafruit_esp32spi import adafruit_esp32spi
 from adafruit_esp32spi import adafruit_esp32spi_wifimanager
 
-# Get wifi details and more from a secrets.py file
-try:
-    from secrets import secrets
-except ImportError:
-    print("WiFi secrets are kept in secrets.py, please add them there!")
-    raise
+# Set wifi details and more from a settings.toml file
+if os.getenv("ssid") is None or os.getenv("password") is None:
+    raise RuntimeError(
+        "Must provide 'ssid', 'password' in settings.toml. "
+        "Please add them there and try again."
+    )
 
 print("ESP32 local time")
 
@@ -32,7 +33,7 @@ status_light = neopixel.NeoPixel(
 )  # Uncomment for Most Boards
 """Uncomment below for ItsyBitsy M4"""
 # status_light = dotstar.DotStar(board.APA102_SCK, board.APA102_MOSI, 1, brightness=0.2)
-wifi = adafruit_esp32spi_wifimanager.ESPSPI_WiFiManager(esp, secrets, status_light)
+wifi = adafruit_esp32spi_wifimanager.ESPSPI_WiFiManager(esp, status_light)
 
 the_rtc = rtc.RTC()
 

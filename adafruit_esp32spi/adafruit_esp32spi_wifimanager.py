@@ -12,7 +12,7 @@ WiFi Manager for making ESP32 SPI as WiFi much easier
 """
 
 # pylint: disable=no-name-in-module
-
+import os
 from time import sleep
 from micropython import const
 import adafruit_requests as requests
@@ -33,7 +33,6 @@ class ESPSPI_WiFiManager:
     def __init__(
         self,
         esp,
-        secrets,
         status_pixel=None,
         attempts=2,
         connection_type=NORMAL,
@@ -41,7 +40,6 @@ class ESPSPI_WiFiManager:
     ):
         """
         :param ESP_SPIcontrol esp: The ESP object we are using
-        :param dict secrets: The WiFi and Adafruit IO secrets dict (See examples)
         :param status_pixel: (Optional) The pixel device - A NeoPixel, DotStar,
             or RGB LED (default=None). The status LED, if given, turns red when
             attempting to connect to a Wi-Fi network or create an access point,
@@ -55,8 +53,8 @@ class ESPSPI_WiFiManager:
         # Read the settings
         self.esp = esp
         self.debug = debug
-        self.ssid = secrets["ssid"]
-        self.password = secrets.get("password", None)
+        self.ssid = os.getenv("ssid")
+        self.password = os.getenv("password")
         self.attempts = attempts
         self._connection_type = connection_type
         requests.set_socket(socket, esp)
@@ -65,18 +63,18 @@ class ESPSPI_WiFiManager:
         self._ap_index = 0
 
         # Check for WPA2 Enterprise keys in the secrets dictionary and load them if they exist
-        if secrets.get("ent_ssid"):
-            self.ent_ssid = secrets["ent_ssid"]
+        if os.getenv("ent_ssid") is not None:
+            self.ent_ssid = os.getenv("ent_ssid")
         else:
-            self.ent_ssid = secrets["ssid"]
-        if secrets.get("ent_ident"):
-            self.ent_ident = secrets["ent_ident"]
+            self.ent_ssid = os.getenv("ssid")
+        if os.getenv("ent_ident") is not None:
+            self.ent_ident = os.getenv("ent_ident")
         else:
             self.ent_ident = ""
-        if secrets.get("ent_user"):
-            self.ent_user = secrets["ent_user"]
-        if secrets.get("ent_password"):
-            self.ent_password = secrets["ent_password"]
+        if os.getenv("ent_user") is not None:
+            self.ent_user = os.getenv("ent_user")
+        if os.getenv("ent_password") is not None:
+            self.ent_password = os.getenv("ent_password")
 
     # pylint: enable=too-many-arguments
 
