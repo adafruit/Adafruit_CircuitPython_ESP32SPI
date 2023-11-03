@@ -4,16 +4,25 @@
 import struct
 import time
 import board
+import busio
+from os import getenv
 from digitalio import DigitalInOut
 from adafruit_esp32spi import adafruit_esp32spi
 import adafruit_esp32spi.adafruit_esp32spi_socket as socket
 
-# Get wifi details and more from a secrets.py file
-try:
-    from secrets import secrets
-except ImportError:
-    print("WiFi secrets are kept in secrets.py, please add them there!")
-    raise
+# Get wifi details and more from a settings.toml file
+# tokens used by this Demo: CIRCUITPY_WIFI_SSID, CIRCUITPY_WIFI_PASSWORD
+secrets = {
+    "ssid": getenv("CIRCUITPY_WIFI_SSID"),
+    "password": getenv("CIRCUITPY_WIFI_PASSWORD")
+}
+if secrets == {"ssid": None, "password": None}:
+    try:
+        # Fallback on secrets.py until depreciation is over and option is removed
+        from secrets import secrets  # pylint: disable=no-name-in-module
+    except ImportError:
+        print("WiFi secrets are kept in settings.toml, please add them there!")
+        raise
 
 TIMEOUT = 5
 # edit host and port to match server
@@ -21,8 +30,15 @@ HOST = "pool.ntp.org"
 PORT = 123
 NTP_TO_UNIX_EPOCH = 2208988800  # 1970-01-01 00:00:00
 
+# Secondary (SCK1) SPI used to connect to WiFi board on Arduino Nano Connect RP2040
+if 'SCK1' in dir(board):
+    spi = busio.SPI(board.SCK1, board.MOSI1, board.MISO1)
+else:
+    if "SPI" in dir(board):
+        spi = board.SPI()
+    else:
+        spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
 # PyPortal or similar; edit pins as needed
-spi = board.SPI()
 esp32_cs = DigitalInOut(board.ESP_CS)
 esp32_ready = DigitalInOut(board.ESP_BUSY)
 esp32_reset = DigitalInOut(board.ESP_RESET)

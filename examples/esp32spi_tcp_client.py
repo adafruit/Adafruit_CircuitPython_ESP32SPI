@@ -1,20 +1,41 @@
 # SPDX-FileCopyrightText: 2021 Adafruit Industries
 # SPDX-License-Identifier: MIT
 
-from secrets import secrets  # pylint: disable=no-name-in-module
+from os import getenv
 import board
+import busio
 from digitalio import DigitalInOut
 from adafruit_esp32spi import adafruit_esp32spi
 import adafruit_esp32spi.adafruit_esp32spi_socket as socket
 
+# Get wifi details and more from a settings.toml file
+# tokens used by this Demo: CIRCUITPY_WIFI_SSID, CIRCUITPY_WIFI_PASSWORD
+secrets = {
+    "ssid": getenv("CIRCUITPY_WIFI_SSID"),
+    "password": getenv("CIRCUITPY_WIFI_PASSWORD")
+}
+if secrets == {"ssid": None, "password": None}:
+    try:
+        # Fallback on secrets.py until depreciation is over and option is removed
+        from secrets import secrets  # pylint: disable=no-name-in-module
+    except ImportError:
+        print("WiFi secrets are kept in settings.toml, please add them there!")
+        raise
 
 TIMEOUT = 5
 # edit host and port to match server
 HOST = "wifitest.adafruit.com"
 PORT = 80
 
+# Secondary (SCK1) SPI used to connect to WiFi board on Arduino Nano Connect RP2040
+if 'SCK1' in dir(board):
+    spi = busio.SPI(board.SCK1, board.MOSI1, board.MISO1)
+else:
+    if "SPI" in dir(board):
+        spi = board.SPI()
+    else:
+        spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
 # PyPortal or similar; edit pins as needed
-spi = board.SPI()
 esp32_cs = DigitalInOut(board.ESP_CS)
 esp32_ready = DigitalInOut(board.ESP_BUSY)
 esp32_reset = DigitalInOut(board.ESP_RESET)
