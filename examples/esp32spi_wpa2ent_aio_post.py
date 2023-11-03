@@ -2,9 +2,9 @@
 # SPDX-License-Identifier: MIT
 
 import time
+from os import getenv
 import board
 import busio
-from os import getenv
 from digitalio import DigitalInOut
 import neopixel
 from adafruit_esp32spi import adafruit_esp32spi
@@ -17,13 +17,13 @@ print("ESP32 SPI WPA2 Enterprise webclient test")
 #                           CIRCUITPY_WIFI_ENT_SSID, CIRCUITPY_WIFI_ENT_PASSWORD,
 #                           CIRCUITPY_WIFI_ENT_USER, CIRCUITPY_WIFI_ENT_IDENT
 secrets = {}
-for token in ["ssid","password","user","ident"]:
-    if getenv("CIRCUITPY_WIFI_ENT_"+token.upper()):
-        secrets[token] = getenv("CIRCUITPY_WIFI_"+token.upper())
-for token in ["aio_username","aio_key"]:
-    if getenv("CIRCUITPY_"+token.upper()):
-        secrets[token] = getenv("CIRCUITPY_"+token.upper())
-if secrets == {}:
+for token in ["ssid", "password", "user", "ident"]:
+    if getenv("CIRCUITPY_WIFI_ENT_" + token.upper()):
+        secrets[token] = getenv("CIRCUITPY_WIFI_" + token.upper())
+for token in ["aio_username", "aio_key"]:
+    if getenv("CIRCUITPY_" + token.upper()):
+        secrets[token] = getenv("CIRCUITPY_" + token.upper())
+if not secrets:
     try:
         # Fallback on secrets.py until depreciation is over and option is removed
         from secrets import secrets  # pylint: disable=no-name-in-module
@@ -44,16 +44,14 @@ except AttributeError:
     esp32_reset = DigitalInOut(board.D5)
 
 # Secondary (SCK1) SPI used to connect to WiFi board on Arduino Nano Connect RP2040
-if 'SCK1' in dir(board):
+if "SCK1" in dir(board):
     spi = busio.SPI(board.SCK1, board.MOSI1, board.MISO1)
 else:
     spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
 esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset)
 
 """Use below for Most Boards"""
-status_light = neopixel.NeoPixel(
-    board.NEOPIXEL, 1, brightness=0.2
-)
+status_light = neopixel.NeoPixel(board.NEOPIXEL, 1, brightness=0.2)
 """Uncomment below for ItsyBitsy M4"""
 # status_light = dotstar.DotStar(board.APA102_SCK, board.APA102_MOSI, 1, brightness=0.2)
 """Uncomment below for an externally defined RGB LED (including Arduino Nano Connect)"""

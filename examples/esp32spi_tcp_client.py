@@ -12,7 +12,7 @@ import adafruit_esp32spi.adafruit_esp32spi_socket as socket
 # tokens used by this Demo: CIRCUITPY_WIFI_SSID, CIRCUITPY_WIFI_PASSWORD
 secrets = {
     "ssid": getenv("CIRCUITPY_WIFI_SSID"),
-    "password": getenv("CIRCUITPY_WIFI_PASSWORD")
+    "password": getenv("CIRCUITPY_WIFI_PASSWORD"),
 }
 if secrets == {"ssid": None, "password": None}:
     try:
@@ -28,7 +28,7 @@ HOST = "wifitest.adafruit.com"
 PORT = 80
 
 # Secondary (SCK1) SPI used to connect to WiFi board on Arduino Nano Connect RP2040
-if 'SCK1' in dir(board):
+if "SCK1" in dir(board):
     spi = busio.SPI(board.SCK1, board.MOSI1, board.MISO1)
 else:
     if "SPI" in dir(board):

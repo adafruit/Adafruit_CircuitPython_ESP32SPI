@@ -67,8 +67,8 @@ class ESPSPI_WiFiManager:
         self._ap_index = 0
 
         # Check for WPA2 Enterprise keys in the secrets dictionary and load them if they exist
-        self.ent_ssid = secrets.get("ent_ssid",secrets["ssid"])
-        self.ent_ident = secrets.get("ent_ident","")
+        self.ent_ssid = secrets.get("ent_ssid", secrets["ssid"])
+        self.ent_ident = secrets.get("ent_ident", "")
         self.ent_user = secrets.get("ent_user")
         self.ent_password = secrets.get("ent_password")
 

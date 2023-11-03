@@ -31,6 +31,7 @@ def version_compare(version1, version2):
         normalize(version1) < normalize(version2)
     )
 
+
 print("ESP32 SPI WPA2 Enterprise test")
 
 # ESP32 setup
@@ -46,7 +47,7 @@ except AttributeError:
     esp32_reset = DigitalInOut(board.D5)
 
 # Secondary (SCK1) SPI used to connect to WiFi board on Arduino Nano Connect RP2040
-if 'SCK1' in dir(board):
+if "SCK1" in dir(board):
     spi = busio.SPI(board.SCK1, board.MOSI1, board.MISO1)
 else:
     spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
