@@ -42,6 +42,8 @@ class ESPSPI_WiFiManager:
         """
         :param ESP_SPIcontrol esp: The ESP object we are using
         :param dict secrets: The WiFi and Adafruit IO secrets dict (See examples)
+            The use of secrets.py to populate the secrets dict is depreciated
+            in favor of using settings.toml.
         :param status_pixel: (Optional) The pixel device - A NeoPixel, DotStar,
             or RGB LED (default=None). The status LED, if given, turns red when
             attempting to connect to a Wi-Fi network or create an access point,
@@ -65,18 +67,10 @@ class ESPSPI_WiFiManager:
         self._ap_index = 0
 
         # Check for WPA2 Enterprise keys in the secrets dictionary and load them if they exist
-        if secrets.get("ent_ssid"):
-            self.ent_ssid = secrets["ent_ssid"]
-        else:
-            self.ent_ssid = secrets["ssid"]
-        if secrets.get("ent_ident"):
-            self.ent_ident = secrets["ent_ident"]
-        else:
-            self.ent_ident = ""
-        if secrets.get("ent_user"):
-            self.ent_user = secrets["ent_user"]
-        if secrets.get("ent_password"):
-            self.ent_password = secrets["ent_password"]
+        self.ent_ssid = secrets.get("ent_ssid", secrets["ssid"])
+        self.ent_ident = secrets.get("ent_ident", "")
+        self.ent_user = secrets.get("ent_user")
+        self.ent_password = secrets.get("ent_password")
 
     # pylint: enable=too-many-arguments
 

@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2019 ladyada for Adafruit Industries
 # SPDX-License-Identifier: MIT
 
+from os import getenv
 import board
 import busio
 from digitalio import DigitalInOut
@@ -8,12 +9,19 @@ import adafruit_requests as requests
 import adafruit_esp32spi.adafruit_esp32spi_socket as socket
 from adafruit_esp32spi import adafruit_esp32spi
 
-# Get wifi details and more from a secrets.py file
-try:
-    from secrets import secrets
-except ImportError:
-    print("WiFi secrets are kept in secrets.py, please add them there!")
-    raise
+# Get wifi details and more from a settings.toml file
+# tokens used by this Demo: CIRCUITPY_WIFI_SSID, CIRCUITPY_WIFI_PASSWORD
+secrets = {
+    "ssid": getenv("CIRCUITPY_WIFI_SSID"),
+    "password": getenv("CIRCUITPY_WIFI_PASSWORD"),
+}
+if secrets == {"ssid": None, "password": None}:
+    try:
+        # Fallback on secrets.py until depreciation is over and option is removed
+        from secrets import secrets
+    except ImportError:
+        print("WiFi secrets are kept in settings.toml, please add them there!")
+        raise
 
 print("Raspberry Pi RP2040 - ESP32 SPI webclient test")
 
