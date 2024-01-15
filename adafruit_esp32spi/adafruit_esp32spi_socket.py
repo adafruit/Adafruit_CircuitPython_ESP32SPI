@@ -117,7 +117,9 @@ class socket:
             # esp32spi_wsgiserver: socket_readline
             if len(self._buffer) > 0:
                 bytes_to_read = min(num_to_read, len(self._buffer))
-                buffer[num_read : num_read + bytes_to_read] = self._buffer[:bytes_to_read]
+                buffer[num_read : num_read + bytes_to_read] = self._buffer[
+                    :bytes_to_read
+                ]
                 num_read += bytes_to_read
                 num_to_read -= bytes_to_read
                 self._buffer = self._buffer[bytes_to_read:]
