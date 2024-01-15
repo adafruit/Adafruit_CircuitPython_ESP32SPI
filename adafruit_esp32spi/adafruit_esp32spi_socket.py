@@ -113,6 +113,17 @@ class socket:
         num_to_read = len(buffer) if nbytes == 0 else nbytes
         num_read = 0
         while num_to_read > 0:
+            # we might have read socket data into the self._buffer with:
+            # esp32spi_wsgiserver: socket_readline
+            if len(self._buffer) > 0:
+                bytes_to_read = min(num_to_read, len(self._buffer))
+                buffer[num_read : num_read + bytes_to_read] = self._buffer[:bytes_to_read]
+                num_read += bytes_to_read
+                num_to_read -= bytes_to_read
+                self._buffer = self._buffer[bytes_to_read:]
+                # explicitly recheck num_to_read to avoid extra checks
+                continue
+
             num_avail = self._available()
             if num_avail > 0:
                 last_read_time = time.monotonic()
