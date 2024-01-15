@@ -121,7 +121,7 @@ class socket:
                 )
                 buffer[num_read : num_read + len(bytes_read)] = bytes_read
                 num_read += len(bytes_read)
-                num_to_read -= num_read
+                num_to_read -= len(bytes_read)
             elif num_read > 0:
                 # We got a message, but there are no more bytes to read, so we can stop.
                 break
