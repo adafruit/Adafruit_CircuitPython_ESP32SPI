@@ -15,9 +15,9 @@ WiFi Manager for making ESP32 SPI as WiFi much easier
 
 from time import sleep
 from micropython import const
-import adafruit_requests as requests
+import adafruit_connection_manager
+import adafruit_requests
 from adafruit_esp32spi import adafruit_esp32spi
-import adafruit_esp32spi.adafruit_esp32spi_socket as socket
 
 
 # pylint: disable=too-many-instance-attributes
@@ -61,10 +61,14 @@ class ESPSPI_WiFiManager:
         self.password = secrets.get("password", None)
         self.attempts = attempts
         self._connection_type = connection_type
-        requests.set_socket(socket, esp)
         self.statuspix = status_pixel
         self.pixel_status(0)
         self._ap_index = 0
+
+        # create requests session
+        pool = adafruit_connection_manager.get_radio_socketpool(self.esp)
+        ssl_context = adafruit_connection_manager.get_radio_ssl_context(self.esp)
+        self._requests = adafruit_requests.Session(pool, ssl_context)
 
         # Check for WPA2 Enterprise keys in the secrets dictionary and load them if they exist
         self.ent_ssid = secrets.get("ent_ssid", secrets["ssid"])
@@ -220,7 +224,7 @@ class ESPSPI_WiFiManager:
         if not self.esp.is_connected:
             self.connect()
         self.pixel_status((0, 0, 100))
-        return_val = requests.get(url, **kw)
+        return_val = self._requests.get(url, **kw)
         self.pixel_status(0)
         return return_val
 
@@ -239,7 +243,7 @@ class ESPSPI_WiFiManager:
         if not self.esp.is_connected:
             self.connect()
         self.pixel_status((0, 0, 100))
-        return_val = requests.post(url, **kw)
+        return_val = self._requests.post(url, **kw)
         self.pixel_status(0)
         return return_val
 
@@ -258,7 +262,7 @@ class ESPSPI_WiFiManager:
         if not self.esp.is_connected:
             self.connect()
         self.pixel_status((0, 0, 100))
-        return_val = requests.put(url, **kw)
+        return_val = self._requests.put(url, **kw)
         self.pixel_status(0)
         return return_val
 
@@ -277,7 +281,7 @@ class ESPSPI_WiFiManager:
         if not self.esp.is_connected:
             self.connect()
         self.pixel_status((0, 0, 100))
-        return_val = requests.patch(url, **kw)
+        return_val = self._requests.patch(url, **kw)
         self.pixel_status(0)
         return return_val
 
@@ -296,7 +300,7 @@ class ESPSPI_WiFiManager:
         if not self.esp.is_connected:
             self.connect()
         self.pixel_status((0, 0, 100))
-        return_val = requests.delete(url, **kw)
+        return_val = self._requests.delete(url, **kw)
         self.pixel_status(0)
         return return_val
 
