@@ -66,6 +66,17 @@ class socket:
 
     # pylint: enable=too-many-arguments
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        self.close()
+        while (
+            _the_interface.socket_status(self._socknum)
+            != adafruit_esp32spi.SOCKET_CLOSED
+        ):
+            pass
+
     def connect(self, address, conntype=None):
         """Connect the socket to the 'address' (which can be 32bit packed IP or
         a hostname string). 'conntype' is an extra that may indicate SSL or not,
