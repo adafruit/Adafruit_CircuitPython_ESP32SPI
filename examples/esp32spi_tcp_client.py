@@ -6,7 +6,7 @@ import board
 import busio
 from digitalio import DigitalInOut
 from adafruit_esp32spi import adafruit_esp32spi
-import adafruit_esp32spi.adafruit_esp32spi_socket as socket
+import adafruit_esp32spi.adafruit_esp32spi_socketpool as socketpool
 
 # Get wifi details and more from a settings.toml file
 # tokens used by this Demo: CIRCUITPY_WIFI_SSID, CIRCUITPY_WIFI_PASSWORD
@@ -48,9 +48,9 @@ esp.connect(secrets)
 print("Server ping:", esp.ping(HOST), "ms")
 
 # create the socket
-socket.set_interface(esp)
-socketaddr = socket.getaddrinfo(HOST, PORT)[0][4]
-s = socket.socket()
+pool = socketpool.SocketPool(esp)
+socketaddr = pool.getaddrinfo(HOST, PORT)[0][4]
+s = pool.socket()
 s.settimeout(TIMEOUT)
 
 print("Connecting")

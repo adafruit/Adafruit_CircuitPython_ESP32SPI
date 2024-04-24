@@ -7,7 +7,7 @@
 .. automodule:: adafruit_esp32spi.adafruit_esp32spi
    :members:
 
-.. automodule:: adafruit_esp32spi.adafruit_esp32spi_socket
+.. automodule:: adafruit_esp32spi.adafruit_esp32spi_socketpool
    :members:
 
 .. automodule:: adafruit_esp32spi.adafruit_esp32spi_wifimanager

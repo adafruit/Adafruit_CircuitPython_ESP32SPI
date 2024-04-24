@@ -6,7 +6,7 @@ from os import getenv
 import board
 import busio
 from digitalio import DigitalInOut
-import adafruit_esp32spi.adafruit_esp32spi_socket as socket
+import adafruit_esp32spi.adafruit_esp32spi_socketpool as socketpool
 from adafruit_esp32spi import adafruit_esp32spi
 
 # Get wifi details and more from a settings.toml file
@@ -51,9 +51,9 @@ else:
     spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
 
 esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset)
-socket.set_interface(esp)
+pool = socketpool.SocketPool(esp)
 
-s_in = socket.socket(type=socket.SOCK_DGRAM)
+s_in = pool.socket(type=pool.SOCK_DGRAM)
 s_in.settimeout(UDP_TIMEOUT)
 print("set hostname:", HOSTNAME)
 esp.set_hostname(HOSTNAME)
@@ -96,7 +96,7 @@ print("ip:", IP_ADDR)
 print("My IP address is", esp.pretty_ip(esp.ip_address))
 print("udp in addr: ", UDP_IN_ADDR, UDP_IN_PORT)
 
-socketaddr_udp_in = socket.getaddrinfo(UDP_IN_ADDR, UDP_IN_PORT)[0][4]
+socketaddr_udp_in = pool.getaddrinfo(UDP_IN_ADDR, UDP_IN_PORT)[0][4]
 s_in.connect(socketaddr_udp_in, conntype=esp.UDP_MODE)
 print("connected local UDP")
 
