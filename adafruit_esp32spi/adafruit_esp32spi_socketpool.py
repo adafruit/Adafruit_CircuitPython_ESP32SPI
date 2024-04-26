@@ -46,7 +46,7 @@ class SocketPool(SocketPoolContants):
     def __new__(cls, iface: ESP_SPIcontrol):
         # We want to make sure to return the same pool for the same interface
         if iface not in _global_socketpool:
-            _global_socketpool[iface] = object.__new__(cls)
+            _global_socketpool[iface] = super().__new__(cls)
         return _global_socketpool[iface]
 
     def __init__(self, iface: ESP_SPIcontrol):
