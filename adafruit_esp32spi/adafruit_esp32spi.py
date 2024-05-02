@@ -576,7 +576,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
     def connect(self, ssid, password=None, timeout=10):
         """Connect to an access point with given name and password."""
         if isinstance(ssid, dict):  # secrets
-            ssid, password = ssid["ssid"], ssid["password"]
+            ssid, password = ssid["ssid"], ssid.get("password")
         self.connect_AP(ssid, password, timeout_s=timeout)
 
     def connect_AP(self, ssid, password, timeout_s=10):  # pylint: disable=invalid-name
