@@ -372,12 +372,12 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
     @property
     def MAC_address_actual(self):  # pylint: disable=invalid-name
         """A bytearray containing the actual MAC address of the ESP32"""
-        if self._debug:
-            print("MAC address")
-        resp = self._send_command_get_response(_GET_MACADDR_CMD, [b"\xFF"])
-        new_resp = bytearray(resp[0])
-        new_resp = reversed(new_resp)
-        return new_resp
+        return bytearray(reversed(self.MAC_address))
+
+    @property
+    def mac_address(self):
+        """A bytes containing the actual MAC address of the ESP32"""
+        return bytes(reversed(self.MAC_address))
 
     def start_scan_networks(self):
         """Begin a scan of visible access points. Follow up with a call
@@ -573,8 +573,10 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         if resp[0][0] != 1:
             raise OSError("Failed to disconnect")
 
-    def connect(self, ssid, password, timeout=10):
+    def connect(self, ssid, password=None, timeout=10):
         """Connect to an access point with given name and password."""
+        if isinstance(ssid, dict):  # secrets
+            ssid, password = ssid["ssid"], ssid["password"]
         self.connect_AP(ssid, password, timeout_s=timeout)
 
     def connect_AP(self, ssid, password, timeout_s=10):  # pylint: disable=invalid-name
