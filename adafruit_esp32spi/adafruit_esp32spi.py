@@ -377,7 +377,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
     @property
     def mac_address(self):
         """A bytes containing the actual MAC address of the ESP32"""
-        return bytes(reversed(self.MAC_address))
+        return bytes(self.MAC_address_actual)
 
     def start_scan_networks(self):
         """Begin a scan of visible access points. Follow up with a call
