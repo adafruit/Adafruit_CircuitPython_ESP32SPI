@@ -574,7 +574,13 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             raise OSError("Failed to disconnect")
 
     def connect(self, ssid, password=None, timeout=10):
-        """Connect to an access point with given name and password."""
+        """Connect to an access point with given name and password.
+        
+        **Deprecated functionality:** If the first argument (``ssid``) is a ``dict``,
+        assume it is a dictionary with entries for keys ``"ssid"`` and, optionally, ``"password"``.
+        This mimics the previous signature for ``connect()``.
+        This upward compatbility will be removed in a future release.
+        """
         if isinstance(ssid, dict):  # secrets
             ssid, password = ssid["ssid"], ssid.get("password")
         self.connect_AP(ssid, password, timeout_s=timeout)
