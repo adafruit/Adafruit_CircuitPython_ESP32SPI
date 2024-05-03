@@ -372,12 +372,12 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
     @property
     def MAC_address_actual(self):  # pylint: disable=invalid-name
         """A bytearray containing the actual MAC address of the ESP32"""
-        if self._debug:
-            print("MAC address")
-        resp = self._send_command_get_response(_GET_MACADDR_CMD, [b"\xFF"])
-        new_resp = bytearray(resp[0])
-        new_resp = reversed(new_resp)
-        return new_resp
+        return bytearray(reversed(self.MAC_address))
+
+    @property
+    def mac_address(self):
+        """A bytes containing the actual MAC address of the ESP32"""
+        return bytes(self.MAC_address_actual)
 
     def start_scan_networks(self):
         """Begin a scan of visible access points. Follow up with a call
@@ -545,13 +545,18 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         return self.network_data["ip_addr"]
 
     @property
-    def is_connected(self):
+    def connected(self):
         """Whether the ESP32 is connected to an access point"""
         try:
             return self.status == WL_CONNECTED
         except OSError:
             self.reset()
             return False
+
+    @property
+    def is_connected(self):
+        """Whether the ESP32 is connected to an access point"""
+        return self.connected
 
     @property
     def ap_listening(self):
@@ -568,10 +573,17 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         if resp[0][0] != 1:
             raise OSError("Failed to disconnect")
 
-    def connect(self, secrets):
-        """Connect to an access point using a secrets dictionary
-        that contains a 'ssid' and 'password' entry"""
-        self.connect_AP(secrets["ssid"], secrets["password"])
+    def connect(self, ssid, password=None, timeout=10):
+        """Connect to an access point with given name and password.
+
+        **Deprecated functionality:** If the first argument (``ssid``) is a ``dict``,
+        assume it is a dictionary with entries for keys ``"ssid"`` and, optionally, ``"password"``.
+        This mimics the previous signature for ``connect()``.
+        This upward compatbility will be removed in a future release.
+        """
+        if isinstance(ssid, dict):  # secrets
+            ssid, password = ssid["ssid"], ssid.get("password")
+        self.connect_AP(ssid, password, timeout_s=timeout)
 
     def connect_AP(self, ssid, password, timeout_s=10):  # pylint: disable=invalid-name
         """Connect to an access point with given name and password.
@@ -646,6 +658,11 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         if stat == WL_AP_FAILED:
             raise ConnectionError("Failed to create AP", ssid)
         raise OSError("Unknown error 0x%02x" % stat)
+
+    @property
+    def ipv4_address(self):
+        """IP address of the station when connected to an access point."""
+        return self.pretty_ip(self.ip_address)
 
     def pretty_ip(self, ip):  # pylint: disable=no-self-use, invalid-name
         """Converts a bytearray IP address to a dotted-quad string for printing"""
