@@ -575,7 +575,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
 
     def connect(self, ssid, password=None, timeout=10):
         """Connect to an access point with given name and password.
-        
+
         **Deprecated functionality:** If the first argument (``ssid``) is a ``dict``,
         assume it is a dictionary with entries for keys ``"ssid"`` and, optionally, ``"password"``.
         This mimics the previous signature for ``connect()``.
