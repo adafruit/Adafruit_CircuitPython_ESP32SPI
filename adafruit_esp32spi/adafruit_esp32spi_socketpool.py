@@ -121,7 +121,7 @@ class Socket:
 
     def send(self, data):
         """Send some data to the socket."""
-        if self._type is SocketPool.SOCK_DGRAM:
+        if self._type == SocketPool.SOCK_DGRAM:
             conntype = self._interface.UDP_MODE
         else:
             conntype = self._interface.TCP_MODE
