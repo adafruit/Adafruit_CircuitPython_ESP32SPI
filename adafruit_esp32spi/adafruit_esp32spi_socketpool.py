@@ -108,7 +108,11 @@ class Socket:
         depending on the underlying interface"""
         host, port = address
         if conntype is None:
-            conntype = self._interface.TCP_MODE
+            conntype = (
+                self._interface.UDP_MODE
+                if self._type == SocketPool.SOCK_DGRAM
+                else self._interface.TCP_MODE
+            )
         if not self._interface.socket_connect(
             self._socknum, host, port, conn_mode=conntype
         ):
