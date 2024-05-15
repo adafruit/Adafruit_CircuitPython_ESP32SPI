@@ -128,6 +128,11 @@ class Socket:
         self._interface.socket_write(self._socknum, data, conn_mode=conntype)
         gc.collect()
 
+    def sendto(self, data, address):
+        """Connect and send some data to the socket."""
+        self.connect(address)
+        self.send(data)
+
     def recv(self, bufsize: int) -> bytes:
         """Reads some bytes from the connected remote address. Will only return
         an empty string after the configured timeout.
