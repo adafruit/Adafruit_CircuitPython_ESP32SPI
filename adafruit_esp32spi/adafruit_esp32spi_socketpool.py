@@ -29,8 +29,8 @@ from adafruit_esp32spi import adafruit_esp32spi as esp32spi
 _global_socketpool = {}
 
 
-class SocketPoolContants:  # pylint: disable=too-few-public-methods
-    """Helper class for the constants that are needed everywhere"""
+class SocketPool:
+    """ESP32SPI SocketPool library"""
 
     SOCK_STREAM = const(0)
     SOCK_DGRAM = const(1)
@@ -38,10 +38,6 @@ class SocketPoolContants:  # pylint: disable=too-few-public-methods
     NO_SOCKET_AVAIL = const(255)
 
     MAX_PACKET = const(4000)
-
-
-class SocketPool(SocketPoolContants):
-    """ESP32SPI SocketPool library"""
 
     def __new__(cls, iface: ESP_SPIcontrol):
         # We want to make sure to return the same pool for the same interface
@@ -60,12 +56,12 @@ class SocketPool(SocketPoolContants):
         if not isinstance(port, int):
             raise ValueError("Port must be an integer")
         ipaddr = self._interface.get_host_by_name(host)
-        return [(SocketPoolContants.AF_INET, socktype, proto, "", (ipaddr, port))]
+        return [(SocketPool.AF_INET, socktype, proto, "", (ipaddr, port))]
 
     def socket(  # pylint: disable=redefined-builtin
         self,
-        family=SocketPoolContants.AF_INET,
-        type=SocketPoolContants.SOCK_STREAM,
+        family=AF_INET,
+        type=SOCK_STREAM,
         proto=0,
         fileno=None,
     ):
