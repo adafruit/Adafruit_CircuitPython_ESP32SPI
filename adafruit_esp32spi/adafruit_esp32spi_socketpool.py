@@ -21,6 +21,7 @@ except ImportError:
     pass
 
 
+import errno
 import time
 import gc
 from micropython import const
@@ -181,7 +182,7 @@ class Socket:
                 break
             # No bytes yet, or more bytes requested.
             if self._timeout > 0 and time.monotonic() - last_read_time > self._timeout:
-                raise timeout("timed out")
+                raise OSError(errno.ETIMEDOUT)
         return num_read
 
     def settimeout(self, value):
@@ -223,11 +224,3 @@ class Socket:
     def close(self):
         """Close the socket, after reading whatever remains"""
         self._interface.socket_close(self._socknum)
-
-
-class timeout(TimeoutError):  # pylint: disable=invalid-name
-    """TimeoutError class. An instance of this error will be raised by recv_into() if
-    the timeout has elapsed and we haven't received any data yet."""
-
-    def __init__(self, msg):
-        super().__init__(msg)
