@@ -718,7 +718,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         if self._debug:
             print("*** Open socket to", dest, port, conn_mode)
         if conn_mode == ESP_SPIcontrol.TLS_MODE and self._tls_socket is not None:
-            raise OSError(23)  # ENFILE - File table overflow
+            raise OSError(23, "Only one open SSL connection allowed")
         port_param = struct.pack(">H", port)
         if isinstance(dest, str):  # use the 5 arg version
             dest = bytes(dest, "utf-8")
