@@ -96,10 +96,7 @@ class ESPSPI_WiFiManager:
             print("Firmware vers.", self.esp.firmware_version)
             print("MAC addr:", [hex(i) for i in self.esp.MAC_address])
             for access_pt in self.esp.scan_networks():
-                print(
-                    "\t%s\t\tRSSI: %d"
-                    % (str(access_pt["ssid"], "utf-8"), access_pt["rssi"])
-                )
+                print("\t%s\t\tRSSI: %d" % (access_pt.ssid, access_pt.rssi))
         if self._connection_type == ESPSPI_WiFiManager.NORMAL:
             self.connect_normal()
         elif self._connection_type == ESPSPI_WiFiManager.ENTERPRISE:
@@ -328,7 +325,7 @@ class ESPSPI_WiFiManager:
             self.connect()
         self.pixel_status((0, 0, 100))
         self.pixel_status(0)
-        return self.esp.pretty_ip(self.esp.ip_address)
+        return self.esp.ipv4_address
 
     def pixel_status(self, value):
         """
@@ -349,4 +346,4 @@ class ESPSPI_WiFiManager:
         """
         if not self.esp.is_connected:
             self.connect()
-        return self.esp.rssi
+        return self.esp.ap_info.rssi

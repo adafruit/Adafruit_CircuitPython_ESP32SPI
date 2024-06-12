@@ -59,17 +59,15 @@ requests = adafruit_requests.Session(pool, ssl_context)
 if esp.status == adafruit_esp32spi.WL_IDLE_STATUS:
     print("ESP32 found and in idle mode")
 
-# Get the ESP32 fw version number, remove trailing byte off the returned bytearray
-# and then convert it to a string for prettier printing and later comparison
-firmware_version = "".join([chr(b) for b in esp.firmware_version[:-1]])
-print("Firmware vers.", firmware_version)
+# Get the ESP32 fw version number
+print("Firmware vers.", esp.firmware_version)
 
 print("MAC addr:", [hex(i) for i in esp.MAC_address])
 
 # WPA2 Enterprise support was added in fw ver 1.3.0. Check that the ESP32
 # is running at least that version, otherwise, bail out
 assert (
-    version_compare(firmware_version, "1.3.0") >= 0
+    version_compare(esp.firmware_version, "1.3.0") >= 0
 ), "Incorrect ESP32 firmware version; >= 1.3.0 required."
 
 # Set up the SSID you would like to connect to
@@ -98,8 +96,8 @@ while not esp.is_connected:
     time.sleep(2)
 
 print("")
-print("Connected to", str(esp.ssid, "utf-8"), "\tRSSI:", esp.rssi)
-print("My IP address is", esp.pretty_ip(esp.ip_address))
+print("Connected to", esp.ap_info.ssid, "\tRSSI:", esp.ap_info.rssi)
+print("My IP address is", esp.ipv4_address)
 print(
     "IP lookup adafruit.com: %s" % esp.pretty_ip(esp.get_host_by_name("adafruit.com"))
 )

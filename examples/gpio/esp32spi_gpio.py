@@ -67,11 +67,7 @@ esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset)
 
 esp_reset_all()
 
-espfirmware = ""
-for _ in esp.firmware_version:
-    if _ != 0:
-        espfirmware += "{:c}".format(_)
-print("ESP32 Firmware:", espfirmware)
+print("ESP32 Firmware:", esp.firmware_version)
 
 print(
     "ESP32 MAC:      {5:02X}:{4:02X}:{3:02X}:{2:02X}:{1:02X}:{0:02X}".format(
