@@ -131,7 +131,7 @@ ADC_ATTEN_DB_11 = const(3)
 # pylint: disable=too-many-lines
 
 
-class ESP_Network:
+class Network:
     """A wifi network provided by a nearby access point."""
 
     def __init__(  # pylint: disable=too-many-arguments
@@ -491,7 +491,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             channel = self._send_command_get_response(_GET_IDX_CHAN_CMD, ((i,),))[0]
             authmode = self._send_command_get_response(_GET_IDX_ENCT_CMD, ((i,),))[0]
             APs.append(
-                ESP_Network(
+                Network(
                     raw_ssid=name,
                     raw_bssid=bssid,
                     raw_rssi=rssi,
@@ -608,7 +608,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         """Network object containing BSSID, SSID, authmode, channel, country and RSSI when
         connected to an access point. None otherwise."""
         if self.is_connected:
-            return ESP_Network(esp_spi_control=self)
+            return Network(esp_spi_control=self)
         return None
 
     @property
