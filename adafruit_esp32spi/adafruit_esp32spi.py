@@ -195,9 +195,7 @@ class ESP_Network:
     @property
     def country(self):
         """String id of the country code"""
-        if self._raw_country:
-            return self._raw_country
-        return None
+        return self._raw_country
 
     @property
     def authmode(self):
