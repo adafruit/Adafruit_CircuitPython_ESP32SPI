@@ -131,6 +131,95 @@ ADC_ATTEN_DB_11 = const(3)
 # pylint: disable=too-many-lines
 
 
+class Network:
+    """A wifi network provided by a nearby access point."""
+
+    def __init__(  # pylint: disable=too-many-arguments
+        self,
+        esp_spi_control=None,
+        raw_ssid=None,
+        raw_bssid=None,
+        raw_rssi=None,
+        raw_channel=None,
+        raw_country=None,
+        raw_authmode=None,
+    ):
+        self._esp_spi_control = esp_spi_control
+        self._raw_ssid = raw_ssid
+        self._raw_bssid = raw_bssid
+        self._raw_rssi = raw_rssi
+        self._raw_channel = raw_channel
+        self._raw_country = raw_country
+        self._raw_authmode = raw_authmode
+
+    def _get_response(self, cmd):
+        respose = self._esp_spi_control._send_command_get_response(  # pylint: disable=protected-access
+            cmd, [b"\xFF"]
+        )
+        return respose[0]
+
+    @property
+    def ssid(self):
+        """String id of the network"""
+        if self._raw_ssid:
+            response = self._raw_ssid
+        else:
+            response = self._get_response(_GET_CURR_SSID_CMD)
+        return response.decode("utf-8")
+
+    @property
+    def bssid(self):
+        """BSSID of the network (usually the AP’s MAC address)"""
+        if self._raw_bssid:
+            response = self._raw_bssid
+        else:
+            response = self._get_response(_GET_CURR_BSSID_CMD)
+        return bytes(response)
+
+    @property
+    def rssi(self):
+        """Signal strength of the network"""
+        if self._raw_bssid:
+            response = self._raw_rssi
+        else:
+            response = self._get_response(_GET_CURR_RSSI_CMD)
+        return struct.unpack("<i", response)[0]
+
+    @property
+    def channel(self):
+        """Channel number the network is operating on"""
+        if self._raw_channel:
+            return self._raw_channel[0]
+        return None
+
+    @property
+    def country(self):
+        """String id of the country code"""
+        return self._raw_country
+
+    @property
+    def authmode(self):
+        """String id of the authmode
+
+        derived from Nina code:
+        https://github.com/adafruit/nina-fw/blob/master/arduino/libraries/WiFi/src/WiFi.cpp#L385
+        """
+        if self._raw_authmode:
+            response = self._raw_authmode[0]
+        else:
+            response = self._get_response(_GET_CURR_ENCT_CMD)[0]
+
+        if response == 7:
+            return "OPEN"
+        if response == 5:
+            return "WEP"
+        if response == 2:
+            return "PSK"
+        if response == 4:
+            return "WPA2"
+        return "UNKNOWN"
+
+
 class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-instance-attributes
     """A class that will talk to an ESP32 module programmed with special firmware
     that lets it act as a fast an efficient WiFi co-processor"""
@@ -359,7 +448,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         if self._debug:
             print("Firmware version")
         resp = self._send_command_get_response(_GET_FW_VERSION_CMD)
-        return resp[0]
+        return resp[0].decode("utf-8").replace("\x00", "")
 
     @property
     def MAC_address(self):  # pylint: disable=invalid-name
@@ -397,16 +486,19 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         # print("SSID names:", names)
         APs = []  # pylint: disable=invalid-name
         for i, name in enumerate(names):
-            a_p = {"ssid": name}
-            rssi = self._send_command_get_response(_GET_IDX_RSSI_CMD, ((i,),))[0]
-            a_p["rssi"] = struct.unpack("<i", rssi)[0]
-            encr = self._send_command_get_response(_GET_IDX_ENCT_CMD, ((i,),))[0]
-            a_p["encryption"] = encr[0]
             bssid = self._send_command_get_response(_GET_IDX_BSSID_CMD, ((i,),))[0]
-            a_p["bssid"] = bssid
-            chan = self._send_command_get_response(_GET_IDX_CHAN_CMD, ((i,),))[0]
-            a_p["channel"] = chan[0]
-            APs.append(a_p)
+            rssi = self._send_command_get_response(_GET_IDX_RSSI_CMD, ((i,),))[0]
+            channel = self._send_command_get_response(_GET_IDX_CHAN_CMD, ((i,),))[0]
+            authmode = self._send_command_get_response(_GET_IDX_ENCT_CMD, ((i,),))[0]
+            APs.append(
+                Network(
+                    raw_ssid=name,
+                    raw_bssid=bssid,
+                    raw_rssi=rssi,
+                    raw_channel=channel,
+                    raw_authmode=authmode,
+                )
+            )
         return APs
 
     def scan_networks(self):
@@ -512,23 +604,12 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             raise OSError("Failed to setup AP password")
 
     @property
-    def ssid(self):
-        """The name of the access point we're connected to"""
-        resp = self._send_command_get_response(_GET_CURR_SSID_CMD, [b"\xFF"])
-        return resp[0]
-
-    @property
-    def bssid(self):
-        """The MAC-formatted service set ID of the access point we're connected to"""
-        resp = self._send_command_get_response(_GET_CURR_BSSID_CMD, [b"\xFF"])
-        return resp[0]
-
-    @property
-    def rssi(self):
-        """The receiving signal strength indicator for the access point we're
-        connected to"""
-        resp = self._send_command_get_response(_GET_CURR_RSSI_CMD, [b"\xFF"])
-        return struct.unpack("<i", resp[0])[0]
+    def ap_info(self):
+        """Network object containing BSSID, SSID, authmode, channel, country and RSSI when
+        connected to an access point. None otherwise."""
+        if self.is_connected:
+            return Network(esp_spi_control=self)
+        return None
 
     @property
     def network_data(self):
@@ -942,7 +1023,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         :param int pin: ESP32 GPIO pin to read from.
         """
         # Verify nina-fw => 1.5.0
-        fw_semver_maj = bytes(self.firmware_version).decode("utf-8")[2]
+        fw_semver_maj = self.firmware_version[2]
         assert int(fw_semver_maj) >= 5, "Please update nina-fw to 1.5.0 or above."
 
         resp = self._send_command_get_response(_SET_DIGITAL_READ_CMD, ((pin,),))[0]
@@ -961,7 +1042,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         :param int atten: attenuation constant
         """
         # Verify nina-fw => 1.5.0
-        fw_semver_maj = bytes(self.firmware_version).decode("utf-8")[2]
+        fw_semver_maj = self.firmware_version[2]
         assert int(fw_semver_maj) >= 5, "Please update nina-fw to 1.5.0 or above."
 
         resp = self._send_command_get_response(_SET_ANALOG_READ_CMD, ((pin,), (atten,)))

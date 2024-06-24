@@ -70,7 +70,7 @@ while not esp.is_connected:
     except OSError as e:
         print("could not connect to AP, retrying: ", e)
         continue
-print("Connected to", str(esp.ssid, "utf-8"), "\tRSSI:", esp.rssi)
+print("Connected to", esp.ap_info.ssid, "\tRSSI:", esp.ap_info.rssi)
 ip1 = esp.ip_address
 
 print("set ip dns")
@@ -91,9 +91,7 @@ print(
     esp.pretty_ip(info["netmask"]),
 )
 
-IP_ADDR = esp.pretty_ip(esp.ip_address)
-print("ip:", IP_ADDR)
-print("My IP address is", esp.pretty_ip(esp.ip_address))
+print("My IP address is", esp.ipv4_address)
 print("udp in addr: ", UDP_IN_ADDR, UDP_IN_PORT)
 
 socketaddr_udp_in = pool.getaddrinfo(UDP_IN_ADDR, UDP_IN_PORT)[0][4]

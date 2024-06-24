@@ -46,7 +46,7 @@ print("Firmware vers.", esp.firmware_version)
 print("MAC addr:", [hex(i) for i in esp.MAC_address])
 
 for ap in esp.scan_networks():
-    print("\t%s\t\tRSSI: %d" % (str(ap["ssid"], "utf-8"), ap["rssi"]))
+    print("\t%s\t\tRSSI: %d" % (ap.ssid, ap.rssi))
 
 print("Connecting to AP...")
 while not esp.is_connected:
@@ -55,8 +55,8 @@ while not esp.is_connected:
     except OSError as e:
         print("could not connect to AP, retrying: ", e)
         continue
-print("Connected to", str(esp.ssid, "utf-8"), "\tRSSI:", esp.rssi)
-print("My IP address is", esp.pretty_ip(esp.ip_address))
+print("Connected to", esp.ap_info.ssid, "\tRSSI:", esp.ap_info.rssi)
+print("My IP address is", esp.ipv4_address)
 print(
     "IP lookup adafruit.com: %s" % esp.pretty_ip(esp.get_host_by_name("adafruit.com"))
 )
