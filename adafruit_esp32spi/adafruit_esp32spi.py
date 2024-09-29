@@ -416,7 +416,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             print("Read %d: " % len(responses[0]), responses)
         return responses
 
-    def _send_command_get_response(
+    def _send_command_get_response(  # pylint: disable=too-many-arguments
         self,
         cmd,
         params=None,
