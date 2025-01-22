@@ -76,7 +76,13 @@ class SocketPool:
 
 class Socket:
     """A simplified implementation of the Python 'socket' class, for connecting
-    through an interface to a remote device"""
+    through an interface to a remote device. Has properties specific to the
+    implementation.
+
+    :param SocketPool socket_pool: The underlying socket pool.
+    :param Optional[int] socknum: Allows wrapping a Socket instance around a socket
+                              number returned by the nina firmware. Used internally.
+    """
 
     def __init__(  # pylint: disable=redefined-builtin,too-many-arguments,unused-argument
         self,
