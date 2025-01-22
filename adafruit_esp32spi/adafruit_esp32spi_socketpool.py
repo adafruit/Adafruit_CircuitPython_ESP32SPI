@@ -33,11 +33,15 @@ _global_socketpool = {}
 class SocketPool:
     """ESP32SPI SocketPool library"""
 
-    SOCK_STREAM = const(0)
-    SOCK_DGRAM = const(1)
+    # socketpool constants
+    SOCK_STREAM = const(1)
+    SOCK_DGRAM = const(2)
     AF_INET = const(2)
-    NO_SOCKET_AVAIL = const(255)
+    SOL_SOCKET = const(0xfff)
+    SO_REUSEADDR = const(0x0004)
 
+    # implementation specific constants
+    NO_SOCKET_AVAIL = const(255)
     MAX_PACKET = const(4000)
 
     def __new__(cls, iface: ESP_SPIcontrol):
@@ -81,6 +85,7 @@ class Socket:
         type: int = SocketPool.SOCK_STREAM,
         proto: int = 0,
         fileno: Optional[int] = None,
+        socknum: Optional[int] = None,
     ):
         if family != SocketPool.AF_INET:
             raise ValueError("Only AF_INET family supported")
@@ -88,7 +93,7 @@ class Socket:
         self._interface = self._socket_pool._interface
         self._type = type
         self._buffer = b""
-        self._socknum = self._interface.get_socket()
+        self._socknum = socknum if socknum is not None else self._interface.get_socket()
         self.settimeout(0)
 
     def __enter__(self):
@@ -122,13 +127,14 @@ class Socket:
             conntype = self._interface.UDP_MODE
         else:
             conntype = self._interface.TCP_MODE
-        self._interface.socket_write(self._socknum, data, conn_mode=conntype)
+        sent = self._interface.socket_write(self._socknum, data, conn_mode=conntype)
         gc.collect()
+        return sent
 
     def sendto(self, data, address):
         """Connect and send some data to the socket."""
         self.connect(address)
-        self.send(data)
+        return self.send(data)
 
     def recv(self, bufsize: int) -> bytes:
         """Reads some bytes from the connected remote address. Will only return
@@ -224,3 +230,42 @@ class Socket:
     def close(self):
         """Close the socket, after reading whatever remains"""
         self._interface.socket_close(self._socknum)
+
+    ####################################################################
+    # WORK IN PROGRESS
+    ####################################################################
+
+    def setsockopt(self, *opts, **kwopts):
+        """Dummy call for compatibility."""
+        # FIXME
+        pass
+
+    def listen(self, backlog):
+        """Dummy call for compatibility."""
+        # FIXME
+        # probably nothing to do actually
+        # maybe check that we have called bind or something ?
+        pass
+
+    def setblocking(self, blocking):
+        """Dummy call for compatibility."""
+        # FIXME
+        # is this settimeout(0) ? (if True) or something else ?
+        pass
+
+    def bind(self, host_port):
+        host, port = host_port
+        self._interface.start_server(port, self._socknum)
+        print(f"Binding to {self._socknum}")
+
+    def accept(self):
+        client_sock_num = self._interface.socket_available(self._socknum)
+        if client_sock_num != SocketPool.NO_SOCKET_AVAIL:
+            sock = Socket(self._socket_pool, socknum=client_sock_num)
+            # get remote information (addr and port)
+            remote = self._interface.get_remote_data(client_sock_num)
+            IP_ADDRESS = "{}.{}.{}.{}".format(*remote['ip_addr'])
+            PORT = remote['port']
+            client_address = (IP_ADDRESS, PORT)
+            return sock, client_address
+        raise OSError(errno.ECONNRESET)
