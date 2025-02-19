@@ -10,5 +10,5 @@
 CIRCUITPY_WIFI_SSID="yourssid"
 CIRCUITPY_WIFI_PASSWORD="yourpassword"
 CIRCUITPY_TIMEZONE="America/New_York"
-CIRCUITPY_AIO_USERNAME="youraiousername"
-CIRCUITPY_AIO_KEY="youraiokey"
+ADAFRUIT_AIO_USERNAME="youraiousername"
+ADAFRUIT_AIO_KEY="youraiokey"

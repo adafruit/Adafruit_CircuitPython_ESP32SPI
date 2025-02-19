@@ -13,6 +13,7 @@ WiFi Manager for making ESP32 SPI as WiFi much easier
 
 # pylint: disable=no-name-in-module
 
+import warnings
 from time import sleep
 from micropython import const
 import adafruit_connection_manager
@@ -21,7 +22,7 @@ from adafruit_esp32spi import adafruit_esp32spi
 
 
 # pylint: disable=too-many-instance-attributes
-class ESPSPI_WiFiManager:
+class WiFiManager:
     """
     A class to help manage the Wifi connection
     """
@@ -33,7 +34,11 @@ class ESPSPI_WiFiManager:
     def __init__(
         self,
         esp,
-        secrets,
+        ssid,
+        password=None,
+        *,
+        enterprise_ident=None,
+        enterprise_user=None,
         status_pixel=None,
         attempts=2,
         connection_type=NORMAL,
@@ -41,9 +46,10 @@ class ESPSPI_WiFiManager:
     ):
         """
         :param ESP_SPIcontrol esp: The ESP object we are using
-        :param dict secrets: The WiFi and Adafruit IO secrets dict (See examples)
-            The use of secrets.py to populate the secrets dict is depreciated
-            in favor of using settings.toml.
+        :param str ssid: the SSID of the created Access Point. Must be less than 32 chars.
+        :param str password: the password of the created Access Point. Must be 8-63 chars.
+        :param str enterprise_ident: the ident when connecting to an enterprise Access Point.
+        :param str enterprise_user: the user when connecting to an enterprise Access Point.
         :param status_pixel: (Optional) The pixel device - A NeoPixel, DotStar,
             or RGB LED (default=None). The status LED, if given, turns red when
             attempting to connect to a Wi-Fi network or create an access point,
@@ -57,8 +63,8 @@ class ESPSPI_WiFiManager:
         # Read the settings
         self.esp = esp
         self.debug = debug
-        self.ssid = secrets["ssid"]
-        self.password = secrets.get("password", None)
+        self.ssid = ssid
+        self.password = password
         self.attempts = attempts
         self._connection_type = connection_type
         self.statuspix = status_pixel
@@ -70,11 +76,11 @@ class ESPSPI_WiFiManager:
         ssl_context = adafruit_connection_manager.get_radio_ssl_context(self.esp)
         self._requests = adafruit_requests.Session(pool, ssl_context)
 
-        # Check for WPA2 Enterprise keys in the secrets dictionary and load them if they exist
-        self.ent_ssid = secrets.get("ent_ssid", secrets["ssid"])
-        self.ent_ident = secrets.get("ent_ident", "")
-        self.ent_user = secrets.get("ent_user")
-        self.ent_password = secrets.get("ent_password")
+        # Check for WPA2 Enterprise values
+        self.ent_ssid = ssid
+        self.ent_ident = enterprise_ident
+        self.ent_user = enterprise_user
+        self.ent_password = password
 
     # pylint: enable=too-many-arguments
 
@@ -97,9 +103,9 @@ class ESPSPI_WiFiManager:
             print("MAC addr:", [hex(i) for i in self.esp.MAC_address])
             for access_pt in self.esp.scan_networks():
                 print("\t%s\t\tRSSI: %d" % (access_pt.ssid, access_pt.rssi))
-        if self._connection_type == ESPSPI_WiFiManager.NORMAL:
+        if self._connection_type == WiFiManager.NORMAL:
             self.connect_normal()
-        elif self._connection_type == ESPSPI_WiFiManager.ENTERPRISE:
+        elif self._connection_type == WiFiManager.ENTERPRISE:
             self.connect_enterprise()
         else:
             raise TypeError("Invalid WiFi connection type specified")
@@ -347,3 +353,57 @@ class ESPSPI_WiFiManager:
         if not self.esp.is_connected:
             self.connect()
         return self.esp.ap_info.rssi
+
+
+# pylint: disable=too-many-instance-attributes
+class ESPSPI_WiFiManager(WiFiManager):
+    """
+    A legacy class to help manage the Wifi connection. Please update to using WiFiManager
+    """
+
+    # pylint: disable=too-many-arguments
+    def __init__(
+        self,
+        esp,
+        secrets,
+        status_pixel=None,
+        attempts=2,
+        connection_type=WiFiManager.NORMAL,
+        debug=False,
+    ):
+        """
+        :param ESP_SPIcontrol esp: The ESP object we are using
+        :param dict secrets: The WiFi secrets dict
+            The use of secrets.py to populate the secrets dict is depreciated
+            in favor of using settings.toml.
+        :param status_pixel: (Optional) The pixel device - A NeoPixel, DotStar,
+            or RGB LED (default=None). The status LED, if given, turns red when
+            attempting to connect to a Wi-Fi network or create an access point,
+            turning green upon success. Additionally, if given, it will turn blue
+            when attempting an HTTP method or returning IP address, turning off
+            upon success.
+        :type status_pixel: NeoPixel, DotStar, or RGB LED
+        :param int attempts: (Optional) Failed attempts before resetting the ESP32 (default=2)
+        :param const connection_type: (Optional) Type of WiFi connection: NORMAL or ENTERPRISE
+        """
+
+        warnings.warn(
+            "ESP32WiFiManager, which uses `secrets`, is deprecated. Use WifiManager instead and "
+            "fetch values from settings.toml with `os.getenv()`."
+        )
+
+        ssid = secrets.get("ssid")
+        password = secrets.get("secrets", None)
+        enterprise_ident = secrets.get("ent_ident", "")
+        enterprise_user = secrets.get("ent_user")
+        super().__init__(
+            esp=esp,
+            ssid=ssid,
+            password=password,
+            enterprise_ident=enterprise_ident,
+            enterprise_user=enterprise_user,
+            status_pixel=status_pixel,
+            attempts=attempts,
+            connection_type=connection_type,
+            debug=debug,
+        )

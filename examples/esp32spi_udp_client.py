@@ -12,17 +12,8 @@ import adafruit_esp32spi.adafruit_esp32spi_socketpool as socketpool
 
 # Get wifi details and more from a settings.toml file
 # tokens used by this Demo: CIRCUITPY_WIFI_SSID, CIRCUITPY_WIFI_PASSWORD
-secrets = {
-    "ssid": getenv("CIRCUITPY_WIFI_SSID"),
-    "password": getenv("CIRCUITPY_WIFI_PASSWORD"),
-}
-if secrets == {"ssid": None, "password": None}:
-    try:
-        # Fallback on secrets.py until depreciation is over and option is removed
-        from secrets import secrets  # pylint: disable=no-name-in-module
-    except ImportError:
-        print("WiFi secrets are kept in settings.toml, please add them there!")
-        raise
+ssid = getenv("CIRCUITPY_WIFI_SSID")
+password = getenv("CIRCUITPY_WIFI_PASSWORD")
 
 TIMEOUT = 5
 # edit host and port to match server
@@ -45,7 +36,7 @@ esp32_reset = DigitalInOut(board.ESP_RESET)
 esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset)
 
 # connect to wifi AP
-esp.connect(secrets)
+esp.connect(ssid, password)
 
 # test for connectivity to server
 print("Server ping:", esp.ping(HOST), "ms")

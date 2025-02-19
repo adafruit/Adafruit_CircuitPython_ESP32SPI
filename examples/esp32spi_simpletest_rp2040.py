@@ -11,17 +11,8 @@ from adafruit_esp32spi import adafruit_esp32spi
 
 # Get wifi details and more from a settings.toml file
 # tokens used by this Demo: CIRCUITPY_WIFI_SSID, CIRCUITPY_WIFI_PASSWORD
-secrets = {
-    "ssid": getenv("CIRCUITPY_WIFI_SSID"),
-    "password": getenv("CIRCUITPY_WIFI_PASSWORD"),
-}
-if secrets == {"ssid": None, "password": None}:
-    try:
-        # Fallback on secrets.py until depreciation is over and option is removed
-        from secrets import secrets
-    except ImportError:
-        print("WiFi secrets are kept in settings.toml, please add them there!")
-        raise
+ssid = getenv("CIRCUITPY_WIFI_SSID")
+password = getenv("CIRCUITPY_WIFI_PASSWORD")
 
 print("Raspberry Pi RP2040 - ESP32 SPI webclient test")
 
@@ -51,7 +42,7 @@ for ap in esp.scan_networks():
 print("Connecting to AP...")
 while not esp.is_connected:
     try:
-        esp.connect_AP(secrets["ssid"], secrets["password"])
+        esp.connect_AP(ssid, password)
     except OSError as e:
         print("could not connect to AP, retrying: ", e)
         continue

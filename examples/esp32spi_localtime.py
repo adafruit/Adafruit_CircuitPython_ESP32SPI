@@ -9,21 +9,12 @@ from digitalio import DigitalInOut
 import neopixel
 import rtc
 from adafruit_esp32spi import adafruit_esp32spi
-from adafruit_esp32spi import adafruit_esp32spi_wifimanager
+from adafruit_esp32spi.adafruit_esp32spi_wifimanager import WiFiManager
 
 # Get wifi details and more from a settings.toml file
 # tokens used by this Demo: CIRCUITPY_WIFI_SSID, CIRCUITPY_WIFI_PASSWORD
-secrets = {
-    "ssid": getenv("CIRCUITPY_WIFI_SSID"),
-    "password": getenv("CIRCUITPY_WIFI_PASSWORD"),
-}
-if secrets == {"ssid": None, "password": None}:
-    try:
-        # Fallback on secrets.py until depreciation is over and option is removed
-        from secrets import secrets
-    except ImportError:
-        print("WiFi secrets are kept in settings.toml, please add them there!")
-        raise
+ssid = getenv("CIRCUITPY_WIFI_SSID")
+password = getenv("CIRCUITPY_WIFI_PASSWORD")
 
 print("ESP32 local time")
 
@@ -58,7 +49,7 @@ status_light = neopixel.NeoPixel(board.NEOPIXEL, 1, brightness=0.2)
 # BLUE_LED = PWMOut.PWMOut(esp, 25)
 # status_light = adafruit_rgbled.RGBLED(RED_LED, BLUE_LED, GREEN_LED)
 
-wifi = adafruit_esp32spi_wifimanager.ESPSPI_WiFiManager(esp, secrets, status_light)
+wifi = WiFiManager(esp, ssid, password, status_light=status_light)
 
 the_rtc = rtc.RTC()
 
