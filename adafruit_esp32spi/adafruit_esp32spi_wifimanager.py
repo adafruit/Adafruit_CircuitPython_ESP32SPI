@@ -395,7 +395,7 @@ class ESPSPI_WiFiManager(WiFiManager):
         super().__init__(
             esp=esp,
             ssid=secrets.get("ssid"),
-            password=secrets.get("secrets"),
+            password=secrets.get("password"),
             enterprise_ident=secrets.get("ent_ident", ""),
             enterprise_user=secrets.get("ent_user"),
             status_pixel=status_pixel,
