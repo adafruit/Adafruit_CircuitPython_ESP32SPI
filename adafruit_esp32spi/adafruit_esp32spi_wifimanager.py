@@ -46,10 +46,10 @@ class WiFiManager:
     ):
         """
         :param ESP_SPIcontrol esp: The ESP object we are using
-        :param str ssid: the SSID of the created Access Point. Must be less than 32 chars.
-        :param str password: the password of the created Access Point. Must be 8-63 chars.
-        :param str enterprise_ident: the ident when connecting to an enterprise Access Point.
-        :param str enterprise_user: the user when connecting to an enterprise Access Point.
+        :param str ssid: the SSID of the access point. Must be less than 32 chars.
+        :param str password: the password for the access point. Must be 8-63 chars.
+        :param str enterprise_ident: the ident to use when connecting to an enterprise access point.
+        :param str enterprise_user: the username to use when connecting to an enterprise access point.
         :param status_pixel: (Optional) The pixel device - A NeoPixel, DotStar,
             or RGB LED (default=None). The status LED, if given, turns red when
             attempting to connect to a Wi-Fi network or create an access point,
@@ -374,7 +374,7 @@ class ESPSPI_WiFiManager(WiFiManager):
         """
         :param ESP_SPIcontrol esp: The ESP object we are using
         :param dict secrets: The WiFi secrets dict
-            The use of secrets.py to populate the secrets dict is depreciated
+            The use of secrets.py to populate the secrets dict is deprecated
             in favor of using settings.toml.
         :param status_pixel: (Optional) The pixel device - A NeoPixel, DotStar,
             or RGB LED (default=None). The status LED, if given, turns red when
@@ -392,16 +392,12 @@ class ESPSPI_WiFiManager(WiFiManager):
             "fetch values from settings.toml with `os.getenv()`."
         )
 
-        ssid = secrets.get("ssid")
-        password = secrets.get("secrets", None)
-        enterprise_ident = secrets.get("ent_ident", "")
-        enterprise_user = secrets.get("ent_user")
         super().__init__(
             esp=esp,
-            ssid=ssid,
-            password=password,
-            enterprise_ident=enterprise_ident,
-            enterprise_user=enterprise_user,
+            ssid=secrets.get("ssid"),
+            password=secrets.get("secrets"),
+            enterprise_ident=secrets.get("ent_ident", ""),
+            enterprise_user=secrets.get("ent_user"),
             status_pixel=status_pixel,
             attempts=attempts,
             connection_type=connection_type,
