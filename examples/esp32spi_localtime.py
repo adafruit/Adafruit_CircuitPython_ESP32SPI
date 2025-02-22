@@ -9,21 +9,12 @@ from digitalio import DigitalInOut
 import neopixel
 import rtc
 from adafruit_esp32spi import adafruit_esp32spi
-from adafruit_esp32spi import adafruit_esp32spi_wifimanager
+from adafruit_esp32spi.adafruit_esp32spi_wifimanager import WiFiManager
 
 # Get wifi details and more from a settings.toml file
 # tokens used by this Demo: CIRCUITPY_WIFI_SSID, CIRCUITPY_WIFI_PASSWORD
-secrets = {
-    "ssid": getenv("CIRCUITPY_WIFI_SSID"),
-    "password": getenv("CIRCUITPY_WIFI_PASSWORD"),
-}
-if secrets == {"ssid": None, "password": None}:
-    try:
-        # Fallback on secrets.py until depreciation is over and option is removed
-        from secrets import secrets
-    except ImportError:
-        print("WiFi secrets are kept in settings.toml, please add them there!")
-        raise
+ssid = getenv("CIRCUITPY_WIFI_SSID")
+password = getenv("CIRCUITPY_WIFI_PASSWORD")
 
 print("ESP32 local time")
 
@@ -47,18 +38,18 @@ else:
 esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset)
 
 """Use below for Most Boards"""
-status_light = neopixel.NeoPixel(board.NEOPIXEL, 1, brightness=0.2)
+status_pixel = neopixel.NeoPixel(board.NEOPIXEL, 1, brightness=0.2)
 """Uncomment below for ItsyBitsy M4"""
-# status_light = dotstar.DotStar(board.APA102_SCK, board.APA102_MOSI, 1, brightness=0.2)
+# status_pixel = dotstar.DotStar(board.APA102_SCK, board.APA102_MOSI, 1, brightness=0.2)
 """Uncomment below for an externally defined RGB LED (including Arduino Nano Connect)"""
 # import adafruit_rgbled
 # from adafruit_esp32spi import PWMOut
 # RED_LED = PWMOut.PWMOut(esp, 26)
 # GREEN_LED = PWMOut.PWMOut(esp, 27)
 # BLUE_LED = PWMOut.PWMOut(esp, 25)
-# status_light = adafruit_rgbled.RGBLED(RED_LED, BLUE_LED, GREEN_LED)
+# status_pixel = adafruit_rgbled.RGBLED(RED_LED, BLUE_LED, GREEN_LED)
 
-wifi = adafruit_esp32spi_wifimanager.ESPSPI_WiFiManager(esp, secrets, status_light)
+wifi = WiFiManager(esp, ssid, password, status_pixel=status_pixel)
 
 the_rtc = rtc.RTC()
 

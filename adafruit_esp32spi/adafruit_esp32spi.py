@@ -28,6 +28,7 @@ Implementation Notes
 
 import struct
 import time
+import warnings
 from micropython import const
 from adafruit_bus_device.spi_device import SPIDevice
 from digitalio import Direction
@@ -660,9 +661,13 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         **Deprecated functionality:** If the first argument (``ssid``) is a ``dict``,
         assume it is a dictionary with entries for keys ``"ssid"`` and, optionally, ``"password"``.
         This mimics the previous signature for ``connect()``.
-        This upward compatbility will be removed in a future release.
+        This upward compatibility will be removed in a future release.
         """
         if isinstance(ssid, dict):  # secrets
+            warnings.warn(
+                "The passing in of `secrets`, is deprecated. Use connect() with `ssid` and "
+                "`password` instead and fetch values from settings.toml with `os.getenv()`."
+            )
             ssid, password = ssid["ssid"], ssid.get("password")
         self.connect_AP(ssid, password, timeout_s=timeout)
 

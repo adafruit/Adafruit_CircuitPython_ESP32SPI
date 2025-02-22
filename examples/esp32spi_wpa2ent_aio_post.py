@@ -8,28 +8,21 @@ import busio
 from digitalio import DigitalInOut
 import neopixel
 from adafruit_esp32spi import adafruit_esp32spi
-from adafruit_esp32spi.adafruit_esp32spi_wifimanager import ESPSPI_WiFiManager
+from adafruit_esp32spi.adafruit_esp32spi_wifimanager import WiFiManager
 
 print("ESP32 SPI WPA2 Enterprise webclient test")
 
 # Get wifi details and more from a settings.toml file
-# tokens used by this Demo: CIRCUITPY_AIO_USERNAME, CIRCUITPY_AIO_KEY,
-#                           CIRCUITPY_WIFI_ENT_SSID, CIRCUITPY_WIFI_ENT_PASSWORD,
-#                           CIRCUITPY_WIFI_ENT_USER, CIRCUITPY_WIFI_ENT_IDENT
-secrets = {}
-for token in ["ssid", "password", "user", "ident"]:
-    if getenv("CIRCUITPY_WIFI_ENT_" + token.upper()):
-        secrets[token] = getenv("CIRCUITPY_WIFI_" + token.upper())
-for token in ["aio_username", "aio_key"]:
-    if getenv("CIRCUITPY_" + token.upper()):
-        secrets[token] = getenv("CIRCUITPY_" + token.upper())
-if not secrets:
-    try:
-        # Fallback on secrets.py until depreciation is over and option is removed
-        from secrets import secrets  # pylint: disable=no-name-in-module
-    except ImportError:
-        print("WiFi secrets are kept in settings.toml, please add them there!")
-        raise
+# tokens used by this Demo: CIRCUITPY_WIFI_SSID, CIRCUITPY_WIFI_PASSWORD,
+#                           CIRCUITPY_WIFI_ENT_USER, CIRCUITPY_WIFI_ENT_IDENT,
+#                           ADAFRUIT_AIO_USERNAME, ADAFRUIT_AIO_KEY
+ssid = getenv("CIRCUITPY_WIFI_SSID")
+password = getenv("CIRCUITPY_WIFI_PASSWORD")
+enterprise_ident = getenv("CIRCUITPY_WIFI_ENT_IDENT")
+enterprise_user = getenv("CIRCUITPY_WIFI_ENT_USER")
+
+aio_username = getenv("ADAFRUIT_AIO_USERNAME")
+aio_key = getenv("ADAFRUIT_AIO_KEY")
 
 # ESP32 setup
 # If your board does define the three pins listed below,
@@ -51,19 +44,25 @@ else:
 esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset)
 
 """Use below for Most Boards"""
-status_light = neopixel.NeoPixel(board.NEOPIXEL, 1, brightness=0.2)
+status_pixel = neopixel.NeoPixel(board.NEOPIXEL, 1, brightness=0.2)
 """Uncomment below for ItsyBitsy M4"""
-# status_light = dotstar.DotStar(board.APA102_SCK, board.APA102_MOSI, 1, brightness=0.2)
+# status_pixel = dotstar.DotStar(board.APA102_SCK, board.APA102_MOSI, 1, brightness=0.2)
 """Uncomment below for an externally defined RGB LED (including Arduino Nano Connect)"""
 # import adafruit_rgbled
 # from adafruit_esp32spi import PWMOut
 # RED_LED = PWMOut.PWMOut(esp, 26)
 # GREEN_LED = PWMOut.PWMOut(esp, 27)
 # BLUE_LED = PWMOut.PWMOut(esp, 25)
-# status_light = adafruit_rgbled.RGBLED(RED_LED, BLUE_LED, GREEN_LED)
+# status_pixel = adafruit_rgbled.RGBLED(RED_LED, BLUE_LED, GREEN_LED)
 
-wifi = ESPSPI_WiFiManager(
-    esp, secrets, status_light, connection_type=ESPSPI_WiFiManager.ENTERPRISE
+wifi = WiFiManager(
+    esp,
+    ssid,
+    password,
+    enterprise_ident=enterprise_ident,
+    enterprise_user=enterprise_user,
+    status_pixel=status_pixel,
+    connection_type=WiFiManager.ENTERPRISE,
 )
 
 counter = 0
@@ -76,12 +75,12 @@ while True:
         payload = {"value": data}
         response = wifi.post(
             "https://io.adafruit.com/api/v2/"
-            + secrets["aio_username"]
+            + aio_username
             + "/feeds/"
             + feed
             + "/data",
             json=payload,
-            headers={"X-AIO-KEY": secrets["aio_key"]},
+            headers={"X-AIO-KEY": aio_key},
         )
         print(response.json())
         response.close()
