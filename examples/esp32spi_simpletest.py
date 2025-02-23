@@ -17,7 +17,7 @@ password = getenv("CIRCUITPY_WIFI_PASSWORD")
 print("ESP32 SPI webclient test")
 
 TEXT_URL = "http://wifitest.adafruit.com/testwifi/index.html"
-JSON_URL = "http://api.coindesk.com/v1/bpi/currentprice/USD.json"
+JSON_URL = "http://wifitest.adafruit.com/testwifi/sample.json"
 
 
 # If you are using a board with pre-defined ESP32 Pins:
