@@ -249,31 +249,6 @@ class Socket:
     # WORK IN PROGRESS
     ####################################################################
 
-    def setsockopt(self, *opts, **kwopts):
-        """Dummy call for compatibility."""
-
-    def setblocking(self, flag: bool):
-        """Set the blocking behaviour of this socket.
-        :param bool flag: False means non-blocking, True means block indefinitely.
-        """
-        if flag:
-            self.settimeout(None)
-        else:
-            self.settimeout(0)
-
-    def bind(self, address: Tuple[str, int]):
-        """Bind a socket to an address"""
-        self._bound = address
-
-    def listen(self, backlog: int):  # pylint: disable=unused-argument
-        """Set socket to listen for incoming connections.
-        :param int backlog: length of backlog queue for waiting connections (ignored)
-        """
-        if not self._bound:
-            self._bound = (self._interface.ip_address, 80)
-        port = self._bound[1]
-        self._interface.start_server(port, self._socknum)
-
     def accept(self):
         """Accept a connection on a listening socket of type SOCK_STREAM,
         creating a new socket of type SOCK_STREAM. Returns a tuple of
@@ -289,3 +264,28 @@ class Socket:
             client_address = (ip_address, port)
             return sock, client_address
         raise OSError(errno.ECONNRESET)
+
+    def bind(self, address: Tuple[str, int]):
+        """Bind a socket to an address"""
+        self._bound = address
+
+    def listen(self, backlog: int):  # pylint: disable=unused-argument
+        """Set socket to listen for incoming connections.
+        :param int backlog: length of backlog queue for waiting connections (ignored)
+        """
+        if not self._bound:
+            self._bound = (self._interface.ip_address, 80)
+        port = self._bound[1]
+        self._interface.start_server(port, self._socknum)
+
+    def setblocking(self, flag: bool):
+        """Set the blocking behaviour of this socket.
+        :param bool flag: False means non-blocking, True means block indefinitely.
+        """
+        if flag:
+            self.settimeout(None)
+        else:
+            self.settimeout(0)
+
+    def setsockopt(self, *opts, **kwopts):
+        """Dummy call for compatibility."""
