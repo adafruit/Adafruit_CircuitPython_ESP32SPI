@@ -10,21 +10,24 @@ A socket compatible interface thru the ESP SPI command set
 
 * Author(s): ladyada
 """
+
 from __future__ import annotations
 
 try:
     from typing import TYPE_CHECKING, Optional
 
     if TYPE_CHECKING:
-        from esp32spi.adafruit_esp32spi import ESP_SPIcontrol
+        from esp32spi.adafruit_esp32spi import ESP_SPIcontrol  # noqa: UP007
 except ImportError:
     pass
 
 
 import errno
-import time
 import gc
+import time
+
 from micropython import const
+
 from adafruit_esp32spi import adafruit_esp32spi as esp32spi
 
 _global_socketpool = {}
@@ -49,9 +52,7 @@ class SocketPool:
     def __init__(self, iface: ESP_SPIcontrol):
         self._interface = iface
 
-    def getaddrinfo(  # pylint: disable=too-many-arguments,unused-argument
-        self, host, port, family=0, socktype=0, proto=0, flags=0
-    ):
+    def getaddrinfo(self, host, port, family=0, socktype=0, proto=0, flags=0):
         """Given a hostname and a port name, return a 'socket.getaddrinfo'
         compatible list of tuples. Honestly, we ignore anything but host & port"""
         if not isinstance(port, int):
@@ -59,7 +60,7 @@ class SocketPool:
         ipaddr = self._interface.get_host_by_name(host)
         return [(SocketPool.AF_INET, socktype, proto, "", (ipaddr, port))]
 
-    def socket(  # pylint: disable=redefined-builtin
+    def socket(
         self,
         family=AF_INET,
         type=SOCK_STREAM,
@@ -74,13 +75,13 @@ class Socket:
     """A simplified implementation of the Python 'socket' class, for connecting
     through an interface to a remote device"""
 
-    def __init__(  # pylint: disable=redefined-builtin,too-many-arguments,unused-argument
+    def __init__(
         self,
         socket_pool: SocketPool,
         family: int = SocketPool.AF_INET,
         type: int = SocketPool.SOCK_STREAM,
         proto: int = 0,
-        fileno: Optional[int] = None,
+        fileno: Optional[int] = None,  # noqa: UP007
     ):
         if family != SocketPool.AF_INET:
             raise ValueError("Only AF_INET family supported")
@@ -110,9 +111,7 @@ class Socket:
                 if self._type == SocketPool.SOCK_DGRAM
                 else self._interface.TCP_MODE
             )
-        if not self._interface.socket_connect(
-            self._socknum, host, port, conn_mode=conntype
-        ):
+        if not self._interface.socket_connect(self._socknum, host, port, conn_mode=conntype):
             raise ConnectionError("Failed to connect to host", host)
         self._buffer = b""
 
@@ -159,9 +158,7 @@ class Socket:
             # esp32spi_wsgiserver: socket_readline
             if len(self._buffer) > 0:
                 bytes_to_read = min(num_to_read, len(self._buffer))
-                buffer[num_read : num_read + bytes_to_read] = self._buffer[
-                    :bytes_to_read
-                ]
+                buffer[num_read : num_read + bytes_to_read] = self._buffer[:bytes_to_read]
                 num_read += bytes_to_read
                 num_to_read -= bytes_to_read
                 self._buffer = self._buffer[bytes_to_read:]
@@ -171,9 +168,7 @@ class Socket:
             num_avail = self._available()
             if num_avail > 0:
                 last_read_time = time.monotonic()
-                bytes_read = self._interface.socket_read(
-                    self._socknum, min(num_to_read, num_avail)
-                )
+                bytes_read = self._interface.socket_read(self._socknum, min(num_to_read, num_avail))
                 buffer[num_read : num_read + len(bytes_read)] = bytes_read
                 num_read += len(bytes_read)
                 num_to_read -= len(bytes_read)
@@ -194,9 +189,7 @@ class Socket:
     def _available(self):
         """Returns how many bytes of data are available to be read (up to the MAX_PACKET length)"""
         if self._socknum != SocketPool.NO_SOCKET_AVAIL:
-            return min(
-                self._interface.socket_available(self._socknum), SocketPool.MAX_PACKET
-            )
+            return min(self._interface.socket_available(self._socknum), SocketPool.MAX_PACKET)
         return 0
 
     def _connected(self):
@@ -206,7 +199,7 @@ class Socket:
         if self._available():
             return True
         status = self._interface.socket_status(self._socknum)
-        result = status not in (
+        result = status not in {
             esp32spi.SOCKET_LISTEN,
             esp32spi.SOCKET_CLOSED,
             esp32spi.SOCKET_FIN_WAIT_1,
@@ -215,7 +208,7 @@ class Socket:
             esp32spi.SOCKET_SYN_SENT,
             esp32spi.SOCKET_SYN_RCVD,
             esp32spi.SOCKET_CLOSE_WAIT,
-        )
+        }
         if not result:
             self.close()
             self._socknum = SocketPool.NO_SOCKET_AVAIL

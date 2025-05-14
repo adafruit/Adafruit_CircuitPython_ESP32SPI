@@ -29,9 +29,10 @@ Implementation Notes
 import struct
 import time
 import warnings
-from micropython import const
+
 from adafruit_bus_device.spi_device import SPIDevice
 from digitalio import Direction
+from micropython import const
 
 __version__ = "0.0.0+auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI.git"
@@ -129,13 +130,11 @@ ADC_ATTEN_DB_2_5 = const(1)
 ADC_ATTEN_DB_6 = const(2)
 ADC_ATTEN_DB_11 = const(3)
 
-# pylint: disable=too-many-lines
-
 
 class Network:
     """A wifi network provided by a nearby access point."""
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         esp_spi_control=None,
         raw_ssid=None,
@@ -154,9 +153,7 @@ class Network:
         self._raw_authmode = raw_authmode
 
     def _get_response(self, cmd):
-        respose = self._esp_spi_control._send_command_get_response(  # pylint: disable=protected-access
-            cmd, [b"\xFF"]
-        )
+        respose = self._esp_spi_control._send_command_get_response(cmd, [b"\xff"])
         return respose[0]
 
     @property
@@ -221,7 +218,7 @@ class Network:
         return "UNKNOWN"
 
 
-class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-instance-attributes
+class ESP_SPIcontrol:
     """A class that will talk to an ESP32 module programmed with special firmware
     that lets it act as a fast an efficient WiFi co-processor"""
 
@@ -229,7 +226,6 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
     UDP_MODE = const(1)
     TLS_MODE = const(2)
 
-    # pylint: disable=too-many-arguments
     def __init__(
         self,
         spi,
@@ -297,7 +293,6 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         if self._debug >= 3:
             print()
 
-    # pylint: disable=too-many-branches
     def _send_command(self, cmd, params=None, *, param_len_16=False):
         """Send over a command with a list of parameters"""
         if not params:
@@ -342,13 +337,9 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
                     break
             else:
                 raise TimeoutError("ESP32 timed out on SPI select")
-            spi.write(
-                self._sendbuf, start=0, end=packet_len
-            )  # pylint: disable=no-member
+            spi.write(self._sendbuf, start=0, end=packet_len)
             if self._debug >= 3:
                 print("Wrote: ", [hex(b) for b in self._sendbuf[0:packet_len]])
-
-    # pylint: disable=too-many-branches
 
     def _read_byte(self, spi):
         """Read one byte from SPI"""
@@ -380,7 +371,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         """Read a byte and verify its the value we want"""
         r = self._read_byte(spi)
         if r != desired:
-            raise BrokenPipeError("Expected %02X but got %02X" % (desired, r))
+            raise BrokenPipeError(f"Expected {desired:02X} but got {r:02X}")
 
     def _wait_response_cmd(self, cmd, num_responses=None, *, param_len_16=False):
         """Wait for ready, then parse the response"""
@@ -417,7 +408,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             print("Read %d: " % len(responses[0]), responses)
         return responses
 
-    def _send_command_get_response(  # pylint: disable=too-many-arguments
+    def _send_command_get_response(
         self,
         cmd,
         params=None,
@@ -428,9 +419,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
     ):
         """Send a high level SPI command, wait and return the response"""
         self._send_command(cmd, params, param_len_16=sent_param_len_16)
-        return self._wait_response_cmd(
-            cmd, reply_params, param_len_16=recv_param_len_16
-        )
+        return self._wait_response_cmd(cmd, reply_params, param_len_16=recv_param_len_16)
 
     @property
     def status(self):
@@ -452,15 +441,15 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         return resp[0].decode("utf-8").replace("\x00", "")
 
     @property
-    def MAC_address(self):  # pylint: disable=invalid-name
+    def MAC_address(self):
         """A bytearray containing the MAC address of the ESP32"""
         if self._debug:
             print("MAC address")
-        resp = self._send_command_get_response(_GET_MACADDR_CMD, [b"\xFF"])
+        resp = self._send_command_get_response(_GET_MACADDR_CMD, [b"\xff"])
         return resp[0]
 
     @property
-    def MAC_address_actual(self):  # pylint: disable=invalid-name
+    def MAC_address_actual(self):
         """A bytearray containing the actual MAC address of the ESP32"""
         return bytearray(reversed(self.MAC_address))
 
@@ -485,7 +474,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         self._send_command(_SCAN_NETWORKS)
         names = self._wait_response_cmd(_SCAN_NETWORKS)
         # print("SSID names:", names)
-        APs = []  # pylint: disable=invalid-name
+        APs = []
         for i, name in enumerate(names):
             bssid = self._send_command_get_response(_GET_IDX_BSSID_CMD, ((i,),))[0]
             rssi = self._send_command_get_response(_GET_IDX_RSSI_CMD, ((i,),))[0]
@@ -509,13 +498,13 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         self.start_scan_networks()
         for _ in range(10):  # attempts
             time.sleep(2)
-            APs = self.get_scan_networks()  # pylint: disable=invalid-name
+            APs = self.get_scan_networks()
             if APs:
                 return APs
         return None
 
     def set_ip_config(self, ip_address, gateway, mask="255.255.255.0"):
-        """Tells the ESP32 to set ip, gateway and network mask b"\xFF"
+        """Tells the ESP32 to set ip, gateway and network mask b"\xff"
 
         :param str ip_address: IP address (as a string).
         :param str gateway: Gateway (as a string).
@@ -598,9 +587,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
 
     def _wifi_set_ap_passphrase(self, ssid, passphrase, channel):
         """Creates an Access point with SSID, passphrase, and Channel"""
-        resp = self._send_command_get_response(
-            _SET_AP_PASSPHRASE_CMD, [ssid, passphrase, channel]
-        )
+        resp = self._send_command_get_response(_SET_AP_PASSPHRASE_CMD, [ssid, passphrase, channel])
         if resp[0][0] != 1:
             raise OSError("Failed to setup AP password")
 
@@ -616,9 +603,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
     def network_data(self):
         """A dictionary containing current connection details such as the 'ip_addr',
         'netmask' and 'gateway'"""
-        resp = self._send_command_get_response(
-            _GET_IPADDR_CMD, [b"\xFF"], reply_params=3
-        )
+        resp = self._send_command_get_response(_GET_IPADDR_CMD, [b"\xff"], reply_params=3)
         return {"ip_addr": resp[0], "netmask": resp[1], "gateway": resp[2]}
 
     @property
@@ -671,7 +656,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             ssid, password = ssid["ssid"], ssid.get("password")
         self.connect_AP(ssid, password, timeout_s=timeout)
 
-    def connect_AP(self, ssid, password, timeout_s=10):  # pylint: disable=invalid-name
+    def connect_AP(self, ssid, password, timeout_s=10):
         """Connect to an access point with given name and password.
         Will wait until specified timeout seconds and return on success
         or raise an exception on failure.
@@ -699,15 +684,13 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             if stat == WL_CONNECTED:
                 return stat
             time.sleep(0.05)
-        if stat in (WL_CONNECT_FAILED, WL_CONNECTION_LOST, WL_DISCONNECTED):
+        if stat in {WL_CONNECT_FAILED, WL_CONNECTION_LOST, WL_DISCONNECTED}:
             raise ConnectionError("Failed to connect to ssid", ssid)
         if stat == WL_NO_SSID_AVAIL:
             raise ConnectionError("No such ssid", ssid)
-        raise OSError("Unknown error 0x%02X" % stat)
+        raise OSError(f"Unknown error 0x{stat:02X}")
 
-    def create_AP(
-        self, ssid, password, channel=1, timeout=10
-    ):  # pylint: disable=invalid-name
+    def create_AP(self, ssid, password, channel=1, timeout=10):
         """Create an access point with the given name, password, and channel.
         Will wait until specified timeout seconds and return on success
         or raise an exception on failure.
@@ -743,18 +726,18 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             time.sleep(0.05)
         if stat == WL_AP_FAILED:
             raise ConnectionError("Failed to create AP", ssid)
-        raise OSError("Unknown error 0x%02x" % stat)
+        raise OSError(f"Unknown error 0x{stat:02x}")
 
     @property
     def ipv4_address(self):
         """IP address of the station when connected to an access point."""
         return self.pretty_ip(self.ip_address)
 
-    def pretty_ip(self, ip):  # pylint: disable=no-self-use, invalid-name
+    def pretty_ip(self, ip):  # noqa: PLR6301
         """Converts a bytearray IP address to a dotted-quad string for printing"""
-        return "%d.%d.%d.%d" % (ip[0], ip[1], ip[2], ip[3])
+        return f"{ip[0]}.{ip[1]}.{ip[2]}.{ip[3]}"
 
-    def unpretty_ip(self, ip):  # pylint: disable=no-self-use, invalid-name
+    def unpretty_ip(self, ip):  # noqa: PLR6301
         """Converts a dotted-quad string to a bytearray IP address"""
         octets = [int(x) for x in ip.split(".")]
         return bytes(octets)
@@ -834,9 +817,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         SOCKET_FIN_WAIT_2, SOCKET_CLOSE_WAIT, SOCKET_CLOSING, SOCKET_LAST_ACK, or
         SOCKET_TIME_WAIT"""
         self._socknum_ll[0][0] = socket_num
-        resp = self._send_command_get_response(
-            _GET_CLIENT_STATE_TCP_CMD, self._socknum_ll
-        )
+        resp = self._send_command_get_response(_GET_CLIENT_STATE_TCP_CMD, self._socknum_ll)
         return resp[0][0]
 
     def socket_connected(self, socket_num):
@@ -867,9 +848,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         if conn_mode == self.UDP_MODE:
             # UDP verifies chunks on write, not bytes
             if sent != total_chunks:
-                raise ConnectionError(
-                    "Failed to write %d chunks (sent %d)" % (total_chunks, sent)
-                )
+                raise ConnectionError("Failed to write %d chunks (sent %d)" % (total_chunks, sent))
             # UDP needs to finalize with this command, does the actual sending
             resp = self._send_command_get_response(_SEND_UDP_DATA_CMD, self._socknum_ll)
             if resp[0][0] != 1:
@@ -878,9 +857,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
 
         if sent != len(buffer):
             self.socket_close(socket_num)
-            raise ConnectionError(
-                "Failed to send %d bytes (sent %d)" % (len(buffer), sent)
-            )
+            raise ConnectionError("Failed to send %d bytes (sent %d)" % (len(buffer), sent))
 
         resp = self._send_command_get_response(_DATA_SENT_TCP_CMD, self._socknum_ll)
         if resp[0][0] != 1:
@@ -945,9 +922,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         if socket_num == self._tls_socket:
             self._tls_socket = None
 
-    def start_server(
-        self, port, socket_num, conn_mode=TCP_MODE, ip=None
-    ):  # pylint: disable=invalid-name
+    def start_server(self, port, socket_num, conn_mode=TCP_MODE, ip=None):  # pylint: disable=invalid-name
         """Opens a server on the specified port, using the ESP32's internal reference number"""
         if self._debug:
             print("*** starting server")
@@ -1003,9 +978,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         :param int pin: ESP32 GPIO pin to write to.
         :param bool value: Value for the pin.
         """
-        resp = self._send_command_get_response(
-            _SET_DIGITAL_WRITE_CMD, ((pin,), (value,))
-        )
+        resp = self._send_command_get_response(_SET_DIGITAL_WRITE_CMD, ((pin,), (value,)))
         if resp[0][0] != 1:
             raise OSError("Failed to write to pin")
 
@@ -1016,9 +989,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         :param float value: 0=off 1.0=full on
         """
         value = int(255 * analog_value)
-        resp = self._send_command_get_response(
-            _SET_ANALOG_WRITE_CMD, ((pin,), (value,))
-        )
+        resp = self._send_command_get_response(_SET_ANALOG_WRITE_CMD, ((pin,), (value,)))
         if resp[0][0] != 1:
             raise OSError("Failed to write to pin")
 
@@ -1036,9 +1007,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             return False
         if resp[0] == 1:
             return True
-        raise OSError(
-            "_SET_DIGITAL_READ response error: response is not boolean", resp[0]
-        )
+        raise OSError("_SET_DIGITAL_READ response error: response is not boolean", resp[0])
 
     def set_analog_read(self, pin, atten=ADC_ATTEN_DB_11):
         """Get the analog input value of pin. Returns an int between 0 and 65536.
@@ -1053,9 +1022,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         resp = self._send_command_get_response(_SET_ANALOG_READ_CMD, ((pin,), (atten,)))
         resp_analog = struct.unpack("<i", resp[0])
         if resp_analog[0] < 0:
-            raise ValueError(
-                "_SET_ANALOG_READ parameter error: invalid pin", resp_analog[0]
-            )
+            raise ValueError("_SET_ANALOG_READ parameter error: invalid pin", resp_analog[0])
         if self._debug:
             print(resp, resp_analog, resp_analog[0], 16 * resp_analog[0])
         return 16 * resp_analog[0]
@@ -1068,10 +1035,8 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
             if resp_time == (0,):
                 raise OSError("_GET_TIME returned 0")
             return resp_time
-        if self.status in (WL_AP_LISTENING, WL_AP_CONNECTED):
-            raise OSError(
-                "Cannot obtain NTP while in AP mode, must be connected to internet"
-            )
+        if self.status in {WL_AP_LISTENING, WL_AP_CONNECTED}:
+            raise OSError("Cannot obtain NTP while in AP mode, must be connected to internet")
         raise OSError("Must be connected to WiFi before obtaining NTP.")
 
     def set_certificate(self, client_certificate):
@@ -1083,9 +1048,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         if self._debug:
             print("** Setting client certificate")
         if self.status == WL_CONNECTED:
-            raise ValueError(
-                "set_certificate must be called BEFORE a connection is established."
-            )
+            raise ValueError("set_certificate must be called BEFORE a connection is established.")
         if isinstance(client_certificate, str):
             client_certificate = bytes(client_certificate, "utf-8")
         if "-----BEGIN CERTIFICATE" not in client_certificate:
@@ -1106,9 +1069,7 @@ class ESP_SPIcontrol:  # pylint: disable=too-many-public-methods, too-many-insta
         if self._debug:
             print("** Setting client's private key.")
         if self.status == WL_CONNECTED:
-            raise ValueError(
-                "set_private_key must be called BEFORE a connection is established."
-            )
+            raise ValueError("set_private_key must be called BEFORE a connection is established.")
         if isinstance(private_key, str):
             private_key = bytes(private_key, "utf-8")
         if "-----BEGIN RSA" not in private_key:

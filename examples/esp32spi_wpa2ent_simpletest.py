@@ -11,11 +11,13 @@
 
 import re
 import time
+
+import adafruit_connection_manager
+import adafruit_requests
 import board
 import busio
 from digitalio import DigitalInOut
-import adafruit_connection_manager
-import adafruit_requests
+
 from adafruit_esp32spi import adafruit_esp32spi
 
 
@@ -26,9 +28,7 @@ def version_compare(version1, version2):
     def normalize(v):
         return [int(x) for x in re.sub(r"(\.0+)*$", "", v).split(".")]
 
-    return (normalize(version1) > normalize(version2)) - (
-        normalize(version1) < normalize(version2)
-    )
+    return (normalize(version1) > normalize(version2)) - (normalize(version1) < normalize(version2))
 
 
 print("ESP32 SPI WPA2 Enterprise test")
@@ -98,9 +98,7 @@ while not esp.is_connected:
 print("")
 print("Connected to", esp.ap_info.ssid, "\tRSSI:", esp.ap_info.rssi)
 print("My IP address is", esp.ipv4_address)
-print(
-    "IP lookup adafruit.com: %s" % esp.pretty_ip(esp.get_host_by_name("adafruit.com"))
-)
+print("IP lookup adafruit.com: %s" % esp.pretty_ip(esp.get_host_by_name("adafruit.com")))
 print("Ping google.com: %d ms" % esp.ping("google.com"))
 
 print("Done!")

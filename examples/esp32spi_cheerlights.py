@@ -3,12 +3,12 @@
 
 import time
 from os import getenv
+
+import adafruit_fancyled.adafruit_fancyled as fancy
 import board
 import busio
-from digitalio import DigitalInOut
-
 import neopixel
-import adafruit_fancyled.adafruit_fancyled as fancy
+from digitalio import DigitalInOut
 
 from adafruit_esp32spi import adafruit_esp32spi
 from adafruit_esp32spi.adafruit_esp32spi_wifimanager import WiFiManager

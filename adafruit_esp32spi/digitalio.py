@@ -13,6 +13,7 @@ DigitalIO for ESP32 over SPI.
 https://github.com/adafruit/Adafruit_Blinka/blob/master/src/adafruit_blinka/microcontroller/bcm283x/pin.py
 https://github.com/adafruit/Adafruit_Blinka/blob/master/src/digitalio.py
 """
+
 from micropython import const
 
 
@@ -28,7 +29,6 @@ class Pin:
     or the use of internal pull-up resistors.
     """
 
-    # pylint: disable=invalid-name
     IN = const(0x00)
     OUT = const(0x01)
     LOW = const(0x00)
@@ -78,15 +78,12 @@ class Pin:
             else:
                 raise ValueError("Invalid value for pin")
         else:
-            raise NotImplementedError(
-                "digitalRead not currently implemented in esp32spi"
-            )
+            raise NotImplementedError("digitalRead not currently implemented in esp32spi")
 
     def __repr__(self):
         return str(self.pin_id)
 
 
-# pylint: disable = too-few-public-methods
 class DriveMode:
     """DriveMode Enum."""
 
@@ -118,7 +115,6 @@ class DigitalInOut:
 
     _pin = None
 
-    # pylint: disable = attribute-defined-outside-init
     def __init__(self, esp, pin):
         self._esp = esp
         self._pin = Pin(pin, self._esp)
@@ -149,9 +145,7 @@ class DigitalInOut:
 
         :param Pull pull: Pull configuration for the input.
         """
-        raise NotImplementedError(
-            "Digital reads are not currently supported in ESP32SPI."
-        )
+        raise NotImplementedError("Digital reads are not currently supported in ESP32SPI.")
 
     @property
     def direction(self):
@@ -207,8 +201,6 @@ class DigitalInOut:
                                Either PUSH_PULL or OPEN_DRAIN
         """
         if mode is DriveMode.OPEN_DRAIN:
-            raise NotImplementedError(
-                "Drive mode %s not implemented in ESP32SPI." % mode
-            )
+            raise NotImplementedError("Drive mode %s not implemented in ESP32SPI." % mode)
         if mode is DriveMode.PUSH_PULL:
             self._pin.init(mode=Pin.OUT)

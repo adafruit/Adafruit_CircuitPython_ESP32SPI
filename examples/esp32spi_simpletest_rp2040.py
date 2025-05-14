@@ -2,11 +2,13 @@
 # SPDX-License-Identifier: MIT
 
 from os import getenv
+
+import adafruit_connection_manager
+import adafruit_requests
 import board
 import busio
 from digitalio import DigitalInOut
-import adafruit_connection_manager
-import adafruit_requests
+
 from adafruit_esp32spi import adafruit_esp32spi
 
 # Get wifi details and more from a settings.toml file
@@ -48,9 +50,7 @@ while not esp.is_connected:
         continue
 print("Connected to", esp.ap_info.ssid, "\tRSSI:", esp.ap_info.rssi)
 print("My IP address is", esp.ipv4_address)
-print(
-    "IP lookup adafruit.com: %s" % esp.pretty_ip(esp.get_host_by_name("adafruit.com"))
-)
+print("IP lookup adafruit.com: %s" % esp.pretty_ip(esp.get_host_by_name("adafruit.com")))
 print("Ping google.com: %d ms" % esp.ping("google.com"))
 
 # esp._debug = True
