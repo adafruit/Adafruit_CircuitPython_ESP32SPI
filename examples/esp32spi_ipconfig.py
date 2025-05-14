@@ -3,9 +3,11 @@
 
 import time
 from os import getenv
+
 import board
 import busio
 from digitalio import DigitalInOut
+
 import adafruit_esp32spi.adafruit_esp32spi_socketpool as socketpool
 from adafruit_esp32spi import adafruit_esp32spi
 

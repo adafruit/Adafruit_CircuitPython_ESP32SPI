@@ -2,11 +2,13 @@
 # SPDX-License-Identifier: MIT
 
 from os import getenv
+
 import board
 import busio
 from digitalio import DigitalInOut
-from adafruit_esp32spi import adafruit_esp32spi
+
 import adafruit_esp32spi.adafruit_esp32spi_socketpool as socketpool
+from adafruit_esp32spi import adafruit_esp32spi
 
 # Get wifi details and more from a settings.toml file
 # tokens used by this Demo: CIRCUITPY_WIFI_SSID, CIRCUITPY_WIFI_PASSWORD
@@ -21,11 +23,10 @@ PORT = 80
 # Secondary (SCK1) SPI used to connect to WiFi board on Arduino Nano Connect RP2040
 if "SCK1" in dir(board):
     spi = busio.SPI(board.SCK1, board.MOSI1, board.MISO1)
+elif "SPI" in dir(board):
+    spi = board.SPI()
 else:
-    if "SPI" in dir(board):
-        spi = board.SPI()
-    else:
-        spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
+    spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
 # PyPortal or similar; edit pins as needed
 esp32_cs = DigitalInOut(board.ESP_CS)
 esp32_ready = DigitalInOut(board.ESP_BUSY)

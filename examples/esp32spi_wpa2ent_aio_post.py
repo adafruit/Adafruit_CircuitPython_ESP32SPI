@@ -3,10 +3,12 @@
 
 import time
 from os import getenv
+
 import board
 import busio
-from digitalio import DigitalInOut
 import neopixel
+from digitalio import DigitalInOut
+
 from adafruit_esp32spi import adafruit_esp32spi
 from adafruit_esp32spi.adafruit_esp32spi_wifimanager import WiFiManager
 
@@ -74,11 +76,7 @@ while True:
         feed = "test"
         payload = {"value": data}
         response = wifi.post(
-            "https://io.adafruit.com/api/v2/"
-            + aio_username
-            + "/feeds/"
-            + feed
-            + "/data",
+            "https://io.adafruit.com/api/v2/" + aio_username + "/feeds/" + feed + "/data",
             json=payload,
             headers={"X-AIO-KEY": aio_key},
         )

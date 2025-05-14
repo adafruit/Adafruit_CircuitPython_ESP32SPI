@@ -11,17 +11,16 @@ WiFi Manager for making ESP32 SPI as WiFi much easier
 * Author(s): Melissa LeBlanc-Williams, ladyada
 """
 
-# pylint: disable=no-name-in-module
-
 import warnings
 from time import sleep
-from micropython import const
+
 import adafruit_connection_manager
 import adafruit_requests
+from micropython import const
+
 from adafruit_esp32spi import adafruit_esp32spi
 
 
-# pylint: disable=too-many-instance-attributes
 class WiFiManager:
     """
     A class to help manage the Wifi connection
@@ -30,7 +29,6 @@ class WiFiManager:
     NORMAL = const(1)
     ENTERPRISE = const(2)
 
-    # pylint: disable=too-many-arguments
     def __init__(
         self,
         esp,
@@ -112,9 +110,7 @@ class WiFiManager:
             raise TypeError("Invalid WiFi connection type specified")
 
     def _get_next_ap(self):
-        if isinstance(self.ssid, (tuple, list)) and isinstance(
-            self.password, (tuple, list)
-        ):
+        if isinstance(self.ssid, (tuple, list)) and isinstance(self.password, (tuple, list)):
             if not self.ssid or not self.password:
                 raise ValueError("SSID and Password should contain at least 1 value")
             if len(self.ssid) != len(self.password):
@@ -124,9 +120,7 @@ class WiFiManager:
             if self._ap_index >= len(self.ssid):
                 self._ap_index = 0
             return access_point
-        if isinstance(self.ssid, (tuple, list)) or isinstance(
-            self.password, (tuple, list)
-        ):
+        if isinstance(self.ssid, (tuple, list)) or isinstance(self.password, (tuple, list)):
             raise NotImplementedError(
                 "If using multiple passwords, both SSID and Password should be lists or tuples"
             )
@@ -168,9 +162,7 @@ class WiFiManager:
                     print("Waiting for AP to be initialized...")
                 self.pixel_status((100, 0, 0))
                 if self.password:
-                    self.esp.create_AP(
-                        bytes(self.ssid, "utf-8"), bytes(self.password, "utf-8")
-                    )
+                    self.esp.create_AP(bytes(self.ssid, "utf-8"), bytes(self.password, "utf-8"))
                 else:
                     self.esp.create_AP(bytes(self.ssid, "utf-8"), None)
                 failure_count = 0
@@ -182,7 +174,7 @@ class WiFiManager:
                     failure_count = 0
                     self.reset()
                 continue
-        print("Access Point created! Connect to ssid:\n {}".format(self.ssid))
+        print(f"Access Point created! Connect to ssid:\n {self.ssid}")
 
     def connect_enterprise(self):
         """
@@ -197,9 +189,7 @@ class WiFiManager:
         while not self.esp.is_connected:
             try:
                 if self.debug:
-                    print(
-                        "Waiting for the ESP32 to connect to the WPA2 Enterprise AP..."
-                    )
+                    print("Waiting for the ESP32 to connect to the WPA2 Enterprise AP...")
                 self.pixel_status((100, 0, 0))
                 sleep(1)
                 failure_count = 0
@@ -356,13 +346,11 @@ class WiFiManager:
         return self.esp.ap_info.rssi
 
 
-# pylint: disable=too-many-instance-attributes
 class ESPSPI_WiFiManager(WiFiManager):
     """
     A legacy class to help manage the Wifi connection. Please update to using WiFiManager
     """
 
-    # pylint: disable=too-many-arguments
     def __init__(
         self,
         esp,

@@ -2,13 +2,14 @@
 #
 # SPDX-License-Identifier: MIT
 
-import time
 import random
-import board
-from digitalio import DigitalInOut, Direction
-import pulseio
-from adafruit_esp32spi import adafruit_esp32spi
+import time
 
+import board
+import pulseio
+from digitalio import DigitalInOut, Direction
+
+from adafruit_esp32spi import adafruit_esp32spi
 
 # ESP32SPI Digital and Analog Pin Reads & Writes
 
@@ -69,11 +70,7 @@ esp_reset_all()
 
 print("ESP32 Firmware:", esp.firmware_version)
 
-print(
-    "ESP32 MAC:      {5:02X}:{4:02X}:{3:02X}:{2:02X}:{1:02X}:{0:02X}".format(
-        *esp.MAC_address
-    )
-)
+print("ESP32 MAC:      {5:02X}:{4:02X}:{3:02X}:{2:02X}:{1:02X}:{0:02X}".format(*esp.MAC_address))
 
 # initial digital write values
 m4_d_w_val = False
@@ -113,7 +110,7 @@ while True:
             "Potentiometer --> ESP read: ",
             esp_a_r_val,
             " (",
-            "{:1.1f}".format(esp_a_r_val * 3.3 / 65536),
+            f"{esp_a_r_val * 3.3 / 65536:1.1f}",
             "v)",
             sep="",
         )
@@ -128,12 +125,12 @@ while True:
         esp.set_analog_write(ESP_A_W_PIN, esp_a_w_val)
         print(
             "ESP wrote: ",
-            "{:1.2f}".format(esp_a_w_val),
+            f"{esp_a_w_val:1.2f}",
             " (",
-            "{:d}".format(int(esp_a_w_val * 65536)),
+            f"{int(esp_a_w_val * 65536):d}",
             ")",
             " (",
-            "{:1.1f}".format(esp_a_w_val * 3.3),
+            f"{esp_a_w_val * 3.3:1.1f}",
             "v)",
             sep="",
             end=" ",
@@ -149,12 +146,12 @@ while True:
         duty = M4_A_R_PIN[0] / (M4_A_R_PIN[0] + M4_A_R_PIN[1])
         print(
             "--> M4 read: ",
-            "{:1.2f}".format(duty),
+            f"{duty:1.2f}",
             " (",
-            "{:d}".format(int(duty * 65536)),
+            f"{int(duty * 65536):d}",
             ")",
             " (",
-            "{:1.1f}".format(duty * 3.3),
+            f"{duty * 3.3:1.1f}",
             "v)",
             " [len=",
             len(M4_A_R_PIN),
