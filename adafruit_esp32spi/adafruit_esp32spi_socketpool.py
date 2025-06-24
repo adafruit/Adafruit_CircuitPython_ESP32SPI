@@ -181,9 +181,7 @@ class Socket:
             num_avail = self._available()
             if num_avail > 0:
                 last_read_time = time.monotonic_ns()
-                bytes_read = self._interface.socket_read(
-                    self._socknum, min(num_to_read, num_avail)
-                )
+                bytes_read = self._interface.socket_read(self._socknum, min(num_to_read, num_avail))
                 buffer[num_read : num_read + len(bytes_read)] = bytes_read
                 num_read += len(bytes_read)
                 num_to_read -= len(bytes_read)
@@ -265,7 +263,7 @@ class Socket:
             return sock, client_address
         raise OSError(errno.ECONNRESET)
 
-    def bind(self, address: Tuple[str, int]):
+    def bind(self, address: tuple[str, int]):
         """Bind a socket to an address"""
         self._bound = address
 
