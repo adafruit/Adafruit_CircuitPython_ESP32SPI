@@ -102,7 +102,7 @@ class Socket:
         self._buffer = b""
         self._socknum = socknum if socknum is not None else self._interface.get_socket()
         self._bound = ()
-        self.settimeout(0)
+        self.settimeout(None)
 
     def __enter__(self):
         return self
