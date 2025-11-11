@@ -825,7 +825,8 @@ class ESP_SPIcontrol:
         return self.socket_status(socket_num) == SOCKET_ESTABLISHED
 
     def socket_write(self, socket_num, buffer, conn_mode=TCP_MODE):
-        """Write the bytearray buffer to a socket"""
+        """Write the bytearray buffer to a socket.
+        Returns the number of bytes written"""
         if self._debug:
             print("Writing:", buffer)
         self._socknum_ll[0][0] = socket_num
@@ -853,7 +854,7 @@ class ESP_SPIcontrol:
             resp = self._send_command_get_response(_SEND_UDP_DATA_CMD, self._socknum_ll)
             if resp[0][0] != 1:
                 raise ConnectionError("Failed to send UDP data")
-            return
+            return sent
 
         if sent != len(buffer):
             self.socket_close(socket_num)
@@ -862,6 +863,8 @@ class ESP_SPIcontrol:
         resp = self._send_command_get_response(_DATA_SENT_TCP_CMD, self._socknum_ll)
         if resp[0][0] != 1:
             raise ConnectionError("Failed to verify data sent")
+
+        return sent
 
     def socket_available(self, socket_num):
         """Determine how many bytes are waiting to be read on the socket"""
