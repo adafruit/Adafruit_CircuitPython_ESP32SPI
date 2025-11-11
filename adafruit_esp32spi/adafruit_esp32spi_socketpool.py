@@ -243,10 +243,6 @@ class Socket:
         """Close the socket, after reading whatever remains"""
         self._interface.socket_close(self._socknum)
 
-    ####################################################################
-    # WORK IN PROGRESS
-    ####################################################################
-
     def accept(self):
         """Accept a connection on a listening socket of type SOCK_STREAM,
         creating a new socket of type SOCK_STREAM. Returns a tuple of
