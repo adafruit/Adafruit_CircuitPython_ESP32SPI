@@ -9,8 +9,8 @@ import busio
 import neopixel
 from digitalio import DigitalInOut
 
-from adafruit_esp32spi import adafruit_esp32spi
-from adafruit_esp32spi.adafruit_esp32spi_wifimanager import WiFiManager
+import adafruit_esp32spi
+from adafruit_esp32spi.wifimanager import WiFiManager
 
 print("ESP32 SPI webclient test")
 
