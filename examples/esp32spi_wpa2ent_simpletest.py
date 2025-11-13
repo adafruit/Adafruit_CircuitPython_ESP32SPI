@@ -18,7 +18,7 @@ import board
 import busio
 from digitalio import DigitalInOut
 
-from adafruit_esp32spi import adafruit_esp32spi
+import adafruit_esp32spi
 
 
 # Version number comparison code. Credit to gnud on stackoverflow

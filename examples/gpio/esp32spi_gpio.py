@@ -9,7 +9,7 @@ import board
 import pulseio
 from digitalio import DigitalInOut, Direction
 
-from adafruit_esp32spi import adafruit_esp32spi
+import adafruit_esp32spi
 
 # ESP32SPI Digital and Analog Pin Reads & Writes
 

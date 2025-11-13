@@ -9,7 +9,7 @@ import board
 import busio
 from digitalio import DigitalInOut
 
-from adafruit_esp32spi import adafruit_esp32spi
+import adafruit_esp32spi
 
 # Get wifi details and more from a settings.toml file
 # tokens used by this Demo: CIRCUITPY_WIFI_SSID, CIRCUITPY_WIFI_PASSWORD
