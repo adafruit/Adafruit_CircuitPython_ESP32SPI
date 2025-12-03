@@ -9,7 +9,10 @@ import board
 import busio
 from digitalio import DigitalInOut
 
-import adafruit_esp32spi
+# Use this import for adafruit_esp32spi version 11.0.0 and up.
+# Note that frozen libraries may not be up to date.
+# import adafruit_esp32spi
+from adafruit_esp32spi import adafruit_esp32spi
 
 # Get wifi details and more from a settings.toml file
 # tokens used by this Demo: CIRCUITPY_WIFI_SSID, CIRCUITPY_WIFI_PASSWORD
