@@ -9,8 +9,12 @@ import busio
 import neopixel
 from digitalio import DigitalInOut
 
-import adafruit_esp32spi
-from adafruit_esp32spi.wifimanager import WiFiManager
+# Use this import for adafruit_esp32spi version 11.0.0 and up.
+# Note that frozen libraries may not be up to date.
+# import adafruit_esp32spi
+# from adafruit_esp32spi.wifimanager import WiFiManager
+from adafruit_esp32spi import adafruit_esp32spi
+from adafruit_esp32spi.adafruit_esp32spi_wifimanager import WiFiManager
 
 print("ESP32 SPI WPA2 Enterprise webclient test")
 
