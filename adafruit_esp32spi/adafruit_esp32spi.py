@@ -114,6 +114,7 @@ SOCKET_TIME_WAIT = const(10)
 
 WL_NO_SHIELD = const(0xFF)
 WL_NO_MODULE = const(0xFF)
+WL_STOPPED = const(0xFE)
 WL_IDLE_STATUS = const(0)
 WL_NO_SSID_AVAIL = const(1)
 WL_SCAN_COMPLETED = const(2)
@@ -424,7 +425,7 @@ class ESP_SPIcontrol:
     @property
     def status(self):
         """The status of the ESP32 WiFi core. Can be WL_NO_SHIELD or WL_NO_MODULE
-        (not found), WL_IDLE_STATUS, WL_NO_SSID_AVAIL, WL_SCAN_COMPLETED,
+        (not found), WL_STOPPED, WL_IDLE_STATUS, WL_NO_SSID_AVAIL, WL_SCAN_COMPLETED,
         WL_CONNECTED, WL_CONNECT_FAILED, WL_CONNECTION_LOST, WL_DISCONNECTED,
         WL_AP_LISTENING, WL_AP_CONNECTED, WL_AP_FAILED"""
         resp = self._send_command_get_response(_GET_CONN_STATUS_CMD)
