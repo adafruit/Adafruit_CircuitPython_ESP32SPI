@@ -24,7 +24,7 @@ password = getenv("CIRCUITPY_WIFI_PASSWORD")
 
 print("ESP32 local time")
 
-TIME_API = "http://worldtimeapi.org/api/ip"
+TIME_API = "https://time.now/developer/api/ip"
 
 # If you are using a board with pre-defined ESP32 Pins:
 esp32_cs = DigitalInOut(board.ESP_CS)
