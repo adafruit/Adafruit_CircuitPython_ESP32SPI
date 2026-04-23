@@ -45,7 +45,7 @@ class Pin:
         if esp_pin in self.ESP32_GPIO_PINS:
             self.pin_id = esp_pin
         else:
-            raise AttributeError("Pin %d is not a valid ESP32 GPIO Pin." % esp_pin)
+            raise AttributeError(f"Pin {esp_pin} is not a valid ESP32 GPIO Pin.")
         self._esp = esp
 
     def init(self, mode=IN):
@@ -201,6 +201,6 @@ class DigitalInOut:
                                Either PUSH_PULL or OPEN_DRAIN
         """
         if mode is DriveMode.OPEN_DRAIN:
-            raise NotImplementedError("Drive mode %s not implemented in ESP32SPI." % mode)
+            raise NotImplementedError(f"Drive mode {mode} not implemented in ESP32SPI.")
         if mode is DriveMode.PUSH_PULL:
             self._pin.init(mode=Pin.OUT)

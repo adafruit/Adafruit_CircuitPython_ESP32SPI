@@ -69,9 +69,9 @@ print("MAC addr:", [hex(i) for i in esp.MAC_address])
 
 # WPA2 Enterprise support was added in fw ver 1.3.0. Check that the ESP32
 # is running at least that version, otherwise, bail out
-assert (
-    version_compare(esp.firmware_version, "1.3.0") >= 0
-), "Incorrect ESP32 firmware version; >= 1.3.0 required."
+assert version_compare(esp.firmware_version, "1.3.0") >= 0, (
+    "Incorrect ESP32 firmware version; >= 1.3.0 required."
+)
 
 # Set up the SSID you would like to connect to
 # Note that we need to call wifi_set_network prior
@@ -101,7 +101,7 @@ while not esp.is_connected:
 print("")
 print("Connected to", esp.ap_info.ssid, "\tRSSI:", esp.ap_info.rssi)
 print("My IP address is", esp.ipv4_address)
-print("IP lookup adafruit.com: %s" % esp.pretty_ip(esp.get_host_by_name("adafruit.com")))
-print("Ping google.com: %d ms" % esp.ping("google.com"))
+print(f"IP lookup adafruit.com: {esp.pretty_ip(esp.get_host_by_name('adafruit.com'))}")
+print(f"Ping google.com: {esp.ping('google.com')} ms")
 
 print("Done!")

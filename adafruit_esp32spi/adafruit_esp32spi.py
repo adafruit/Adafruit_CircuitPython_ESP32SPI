@@ -319,7 +319,7 @@ class ESP_SPIcontrol:
         ptr = 3
         for i, param in enumerate(params):
             if self._debug >= 2:
-                print("\tSending param #%d is %d bytes long" % (i, len(param)))
+                print(f"\tSending param #{i} is {len(param)} bytes long")
             if param_len_16:
                 self._sendbuf[ptr] = (len(param) >> 8) & 0xFF
                 ptr += 1
@@ -399,14 +399,14 @@ class ESP_SPIcontrol:
                     param_len <<= 8
                     param_len |= self._read_byte(spi)
                 if self._debug >= 2:
-                    print("\tParameter #%d length is %d" % (num, param_len))
+                    print(f"\tParameter #{num} length is {param_len}")
                 response = bytearray(param_len)
                 self._read_bytes(spi, response)
                 responses.append(response)
             self._check_data(spi, _END_CMD)
 
         if self._debug >= 2:
-            print("Read %d: " % len(responses[0]), responses)
+            print(f"Read {len(responses[0])}: ", responses)
         return responses
 
     def _send_command_get_response(
@@ -776,7 +776,7 @@ class ESP_SPIcontrol:
         if resp == 255:
             raise OSError(23)  # ENFILE - File table overflow
         if self._debug:
-            print("Allocated socket #%d" % resp)
+            print(f"Allocated socket #{resp}")
         return resp
 
     def socket_open(self, socket_num, dest, port, conn_mode=TCP_MODE):
@@ -850,7 +850,7 @@ class ESP_SPIcontrol:
         if conn_mode == self.UDP_MODE:
             # UDP verifies chunks on write, not bytes
             if sent != total_chunks:
-                raise ConnectionError("Failed to write %d chunks (sent %d)" % (total_chunks, sent))
+                raise ConnectionError(f"Failed to write {total_chunks} chunks (sent {sent})")
             # UDP needs to finalize with this command, does the actual sending
             resp = self._send_command_get_response(_SEND_UDP_DATA_CMD, self._socknum_ll)
             if resp[0][0] != 1:
@@ -859,7 +859,7 @@ class ESP_SPIcontrol:
 
         if sent != len(buffer):
             self.socket_close(socket_num)
-            raise ConnectionError("Failed to send %d bytes (sent %d)" % (len(buffer), sent))
+            raise ConnectionError(f"Failed to send {len(buffer)} bytes (sent {sent})")
 
         resp = self._send_command_get_response(_DATA_SENT_TCP_CMD, self._socknum_ll)
         if resp[0][0] != 1:
@@ -873,15 +873,14 @@ class ESP_SPIcontrol:
         resp = self._send_command_get_response(_AVAIL_DATA_TCP_CMD, self._socknum_ll)
         reply = struct.unpack("<H", resp[0])[0]
         if self._debug:
-            print("ESPSocket: %d bytes available" % reply)
+            print(f"ESPSocket: {reply} bytes available")
         return reply
 
     def socket_read(self, socket_num, size):
         """Read up to 'size' bytes from the socket number. Returns a bytes"""
         if self._debug:
             print(
-                "Reading %d bytes from ESP socket with status %d"
-                % (size, self.socket_status(socket_num))
+                f"Reading {size} bytes from ESP socket with status {self.socket_status(socket_num)}"
             )
         self._socknum_ll[0][0] = socket_num
         resp = self._send_command_get_response(
@@ -917,7 +916,7 @@ class ESP_SPIcontrol:
     def socket_close(self, socket_num):
         """Close a socket using the ESP32's internal reference number"""
         if self._debug:
-            print("*** Closing socket #%d" % socket_num)
+            print(f"*** Closing socket #{socket_num}")
         self._socknum_ll[0][0] = socket_num
         try:
             self._send_command_get_response(_STOP_CLIENT_TCP_CMD, self._socknum_ll)

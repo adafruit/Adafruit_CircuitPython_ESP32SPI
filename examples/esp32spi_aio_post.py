@@ -72,7 +72,7 @@ while True:
         )
         print(response.json())
         response.close()
-        counter = counter + 1
+        counter += 1
         print("OK")
     except OSError as e:
         print("Failed to get data, retrying\n", e)

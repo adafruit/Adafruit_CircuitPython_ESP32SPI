@@ -91,6 +91,7 @@ extend-select = [
 ignore = [
     "PLR2004", # magic-value-comparison
     "UP030", # format literals
+    "UP045", # use X | None for type annotations
     "PLW1514",  # unspecified-encoding
     "PLR0913", # too-many-arguments
     "PLR0915", # too-many-statements

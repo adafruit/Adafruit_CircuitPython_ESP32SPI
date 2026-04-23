@@ -101,7 +101,7 @@ class WiFiManager:
             print("Firmware vers.", self.esp.firmware_version)
             print("MAC addr:", [hex(i) for i in self.esp.MAC_address])
             for access_pt in self.esp.scan_networks():
-                print("\t%s\t\tRSSI: %d" % (access_pt.ssid, access_pt.rssi))
+                print(f"\t{access_pt.ssid}\t\tRSSI: {access_pt.rssi}")
         if self._connection_type == WiFiManager.NORMAL:
             self.connect_normal()
         elif self._connection_type == WiFiManager.ENTERPRISE:

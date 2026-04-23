@@ -30,7 +30,7 @@ class PWMOut:
         if pwm_pin in self.ESP32_PWM_PINS:
             self._pwm_pin = pwm_pin
         else:
-            raise AttributeError("Pin %d is not a valid ESP32 GPIO Pin." % pwm_pin)
+            raise AttributeError(f"Pin {pwm_pin} is not a valid ESP32 GPIO Pin.")
         self._esp = esp
         self._duty_cycle = duty_cycle
         self._freq = frequency
