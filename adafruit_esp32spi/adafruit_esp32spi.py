@@ -1034,7 +1034,15 @@ class ESP_SPIcontrol:
         """The current unix timestamp"""
         if self.status == WL_CONNECTED:
             resp = self._send_command_get_response(_GET_TIME)
-            resp_time = struct.unpack("<i", resp[0])
+            encoded_time = resp[0]
+            if len(encoded_time) == 8:
+                # nina-fw sometime before 3.3.0 changed to replying
+                # with a 64-bit timestamp in order to be prepared for the
+                # "Y2038 problem".
+                # https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI/issues/230
+                resp_time = struct.unpack("<q", encoded_time)
+            else:
+                resp_time = struct.unpack("<i", encoded_time)
             if resp_time == (0,):
                 raise OSError("_GET_TIME returned 0")
             return resp_time
