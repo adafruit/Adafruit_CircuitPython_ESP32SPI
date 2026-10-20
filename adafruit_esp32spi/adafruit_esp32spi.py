@@ -709,7 +709,7 @@ class ESP_SPIcontrol:
             raise ValueError("channel must be between 1 and 14")
 
         if isinstance(channel, int):
-            channel = bytes(channel)
+            channel = bytes([channel])
         if isinstance(ssid, str):
             ssid = bytes(ssid, "utf-8")
         if password:
@@ -720,14 +720,16 @@ class ESP_SPIcontrol:
             self._wifi_set_ap_network(ssid, channel)
 
         times = time.monotonic()
-        while (time.monotonic() - times) < timeout:  # wait up to timeout
+        while True:  # wait up to timeout, checking at least once
             stat = self.status
             if stat == WL_AP_LISTENING:
                 return stat
+            if (time.monotonic() - times) >= timeout:
+                break
             time.sleep(0.05)
         if stat == WL_AP_FAILED:
             raise ConnectionError("Failed to create AP", ssid)
-        raise OSError(f"Unknown error 0x{stat:02x}")
+        raise OSError(f"AP never reported listening, last status 0x{stat:02x}")
 
     @property
     def ipv4_address(self):
