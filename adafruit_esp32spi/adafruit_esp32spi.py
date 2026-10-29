@@ -6,7 +6,7 @@
 `adafruit_esp32spi`
 ================================================================================
 
-CircuitPython driver library for using ESP32 as WiFi  co-processor using SPI
+CircuitPython driver library for using ESP32 as WiFi co-processor using SPI
 
 
 * Author(s): ladyada
@@ -33,6 +33,13 @@ import warnings
 from adafruit_bus_device.spi_device import SPIDevice
 from digitalio import Direction
 from micropython import const
+
+try:
+    # Present when the core manages the ESP32 itself, for example to run web
+    # workflow on it. Commands then go through the core.
+    import _airlift
+except ImportError:
+    _airlift = None
 
 __version__ = "0.0.0+auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI.git"
@@ -221,7 +228,11 @@ class Network:
 
 class ESP_SPIcontrol:
     """A class that will talk to an ESP32 module programmed with special firmware
-    that lets it act as a fast an efficient WiFi co-processor"""
+    that lets it act as a fast an efficient WiFi co-processor
+
+    On boards where CircuitPython itself manages the ESP32 (for example to run
+    web workflow over it), create it with no pins: ``ESP_SPIcontrol()``. Commands
+    are then sent through the core, which shares the ESP32 with user code."""
 
     TCP_MODE = const(0)
     UDP_MODE = const(1)
@@ -229,10 +240,10 @@ class ESP_SPIcontrol:
 
     def __init__(
         self,
-        spi,
-        cs_dio,
-        ready_dio,
-        reset_dio,
+        spi=None,
+        cs_dio=None,
+        ready_dio=None,
+        reset_dio=None,
         gpio0_dio=None,
         *,
         debug=False,
@@ -246,6 +257,18 @@ class ESP_SPIcontrol:
         self._pbuf = bytearray(1)  # buffer for param read
         self._sendbuf = bytearray(256)  # buffer for command sending
         self._socknum_ll = [[0]]  # pre-made list of list of socket #
+        # Only one TLS socket at a time is supported so track when we already have one.
+        self._tls_socket = None
+
+        self._core = spi is None and cs_dio is None and ready_dio is None and reset_dio is None
+        if self._core:
+            if _airlift is None or not _airlift.active():
+                raise RuntimeError(
+                    "No ESP32 pins given, and CircuitPython isn't managing the ESP32"
+                    " (is web workflow configured in settings.toml?)"
+                )
+            # The core owns the ESP32 and keeps it running, so don't reset it.
+            return
 
         self._spi_device = SPIDevice(spi, cs_dio, baudrate=8000000)
         self._cs = cs_dio
@@ -255,8 +278,6 @@ class ESP_SPIcontrol:
         self._cs.direction = Direction.OUTPUT
         self._ready.direction = Direction.INPUT
         self._reset.direction = Direction.OUTPUT
-        # Only one TLS socket at a time is supported so track when we already have one.
-        self._tls_socket = None
         if self._gpio0:
             self._gpio0.direction = Direction.INPUT
         self.reset()
@@ -267,6 +288,9 @@ class ESP_SPIcontrol:
         """Hard reset the ESP32 using the reset pin"""
         if self._debug:
             print("Reset ESP32")
+        if self._core:
+            _airlift.reset()
+            return
         if self._gpio0:
             self._gpio0.direction = Direction.OUTPUT
             self._gpio0.value = True  # not bootload mode
@@ -419,6 +443,17 @@ class ESP_SPIcontrol:
         recv_param_len_16=False,
     ):
         """Send a high level SPI command, wait and return the response"""
+        if self._core:
+            responses = _airlift.transact(
+                cmd,
+                params,
+                reply_params=reply_params,
+                sent_param_len_16=sent_param_len_16,
+                recv_param_len_16=recv_param_len_16,
+            )
+            if self._debug >= 2:
+                print(f"Read {len(responses[0]) if responses else 0}: ", responses)
+            return responses
         self._send_command(cmd, params, param_len_16=sent_param_len_16)
         return self._wait_response_cmd(cmd, reply_params, param_len_16=recv_param_len_16)
 
@@ -472,8 +507,7 @@ class ESP_SPIcontrol:
         """The results of the latest SSID scan. Returns a list of dictionaries with
         'ssid', 'rssi', 'encryption', bssid, and channel entries, one for each AP found
         """
-        self._send_command(_SCAN_NETWORKS)
-        names = self._wait_response_cmd(_SCAN_NETWORKS)
+        names = self._send_command_get_response(_SCAN_NETWORKS, reply_params=None)
         # print("SSID names:", names)
         APs = []
         for i, name in enumerate(names):
@@ -673,6 +707,15 @@ class ESP_SPIcontrol:
             )
         if isinstance(ssid, str):
             ssid = bytes(ssid, "utf-8")
+        # When the core manages the ESP32, it is usually connected already.
+        # Joining again, even the same network, drops every open connection,
+        # including web workflow's.
+        if (
+            self._core
+            and self.status == WL_CONNECTED
+            and self._send_command_get_response(_GET_CURR_SSID_CMD, [b"\xff"])[0] == ssid
+        ):
+            return WL_CONNECTED
         if password:
             if isinstance(password, str):
                 password = bytes(password, "utf-8")
