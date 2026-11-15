@@ -495,8 +495,8 @@ class ESP_SPIcontrol:
         return bytes(self.MAC_address_actual)
 
     @property
-    def pretty_mac_address(self):
-        """A string containing the actual MAC address of the ESP32"""
+    def pretty_mac(self):
+        """A string containing the colon-separated actual MAC address of the ESP32"""
         return ':'.join(f'{_:02x}' for _ in self.mac_address)
 
     def start_scan_networks(self):
