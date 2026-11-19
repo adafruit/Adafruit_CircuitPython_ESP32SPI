@@ -487,7 +487,10 @@ class ESP_SPIcontrol:
     @property
     def MAC_address_actual(self):
         """A bytearray containing the actual MAC address of the ESP32"""
-        return bytearray(reversed(self.MAC_address))
+        if tuple(map(int, self.firmware_version.split('.'))) < (3, 0, 0):
+            return bytearray(reversed(self.MAC_address))
+        else:
+            return bytearray(self.MAC_address)
 
     @property
     def mac_address(self):
