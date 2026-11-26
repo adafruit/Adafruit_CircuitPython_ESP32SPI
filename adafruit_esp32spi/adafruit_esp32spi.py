@@ -44,6 +44,9 @@ except ImportError:
 __version__ = "0.0.0+auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI.git"
 
+# Data bytes per write command (nina-fw reads commands of up to 4092 bytes); also caps _sendbuf
+_MAX_WRITE = const(1024)
+
 _SET_NET_CMD = const(0x10)
 _SET_PASSPHRASE_CMD = const(0x11)
 _SET_IP_CONFIG = const(0x14)
@@ -349,8 +352,11 @@ class ESP_SPIcontrol:
                 ptr += 1
             self._sendbuf[ptr] = len(param) & 0xFF
             ptr += 1
-            for j, par in enumerate(param):
-                self._sendbuf[ptr + j] = par
+            if isinstance(param, (list, tuple)):
+                for j, par in enumerate(param):
+                    self._sendbuf[ptr + j] = par
+            else:
+                self._sendbuf[ptr : ptr + len(param)] = param
             ptr += len(param)
         self._sendbuf[ptr] = _END_CMD
 
@@ -875,7 +881,8 @@ class ESP_SPIcontrol:
             print("Writing:", buffer)
         self._socknum_ll[0][0] = socket_num
         sent = 0
-        total_chunks = (len(buffer) // 64) + 1
+        # Each chunk is one SPI command and, for TCP, one write to the ESP32's socket.
+        total_chunks = max(1, (len(buffer) + _MAX_WRITE - 1) // _MAX_WRITE)
         send_command = _SEND_DATA_TCP_CMD
         if conn_mode == self.UDP_MODE:  # UDP requires a different command to write
             send_command = _INSERT_DATABUF_TCP_CMD
@@ -884,11 +891,13 @@ class ESP_SPIcontrol:
                 send_command,
                 (
                     self._socknum_ll[0],
-                    memoryview(buffer)[(chunk * 64) : ((chunk + 1) * 64)],
+                    memoryview(buffer)[(chunk * _MAX_WRITE) : ((chunk + 1) * _MAX_WRITE)],
                 ),
                 sent_param_len_16=True,
             )
-            sent += resp[0][0]
+            # TCP replies with the 16-bit count written, UDP with 1 per chunk
+            reply = resp[0]
+            sent += reply[0] | (reply[1] << 8 if len(reply) > 1 else 0)
 
         if conn_mode == self.UDP_MODE:
             # UDP verifies chunks on write, not bytes
